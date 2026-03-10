@@ -1,0 +1,149 @@
+/* ============================================
+   TOKENS DE DISEÑO — Skills UA
+   Fuente: Guía Visual v2.0 — UA WG LACNOG
+   Modo: Claro (Light Mode)
+   ============================================ */
+
+:root {
+    /* --- Fondos --- */
+    --bg: #f7f2ea; /* Fondo global — crema cálido            */
+    --card-bg: #ffffff; /* Fondo de cards y modales               */
+
+    /* --- Bordes y separadores --- */
+    --border: #ede8df; /* Bordes de cards y divisores            */
+
+    /* --- Tipografía --- */
+    --text: #1a1a1a; /* Texto principal — títulos              */
+    --text-secondary: #4b5563; /* Texto de cuerpo y descripciones        */
+    --text-muted: #a0aab4; /* Placeholders y metadatos secundarios   */
+
+    /* --- Acento (Naranja) --- */
+    --accent: #e5621a; /* Color principal — botones, íconos      */
+    --accent-soft: rgba(
+        229,
+        98,
+        26,
+        0.08
+    ); /* Fondo tenue — cards seleccionadas  */
+
+    /* --- Estado de éxito (Verde) --- */
+    --green: #28c840; /* Indicador completado — dot semáforo    */
+    --green-text: #16a34a; /* Texto de éxito sobre fondos claros     */
+    --green-bg: #dcfce7; /* Fondo de badges completado             */
+
+    /* --- Semáforos (Window Dots) --- */
+    --red: #ff5f57; /* Dot rojo — estado cerrado/inactivo     */
+    --yellow: #febc2e; /* Dot amarillo — estado standby          */
+
+    /* --- Tipografía --- */
+    --font-display: "Sora", system-ui, sans-serif;
+    --font-body: "Sora", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "Courier New", monospace;
+}
+
+/* ============================================
+   RESET Y ESTILOS BASE
+   ============================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: var(--font-body);
+    background-color: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+/* ============================================
+   TIPOGRAFÍA BASE
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-display);
+    line-height: 1.2;
+    color: var(--text);
+}
+
+code,
+pre,
+kbd,
+samp {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #c45115; /* --accent oscurecido para hover en modo claro */
+}
+
+/* ============================================
+   UTILIDADES DE ACCESIBILIDAD
+   ============================================ */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
