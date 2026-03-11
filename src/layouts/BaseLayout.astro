@@ -20,19 +20,14 @@ const {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <!-- SEO básico -->
         <title>{title} | Skills UA</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalURL} />
-
-        <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
         <!--
       Fuentes: Sora + JetBrains Mono
-      Fuente: Guía Visual v2.0 — UA WG LACNOG
-      preconnect  → conexión anticipada con Google Fonts
-      display=swap → fuente del sistema mientras carga la web font
+      Guía Visual v2.0 — UA WG LACNOG
     -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -43,14 +38,10 @@ const {
     </head>
 
     <body>
-        <header>
-            <slot name="navbar" />
-        </header>
-
+        <slot name="navbar" />
         <main>
             <slot />
         </main>
-
         <footer>
             <slot name="footer" />
         </footer>

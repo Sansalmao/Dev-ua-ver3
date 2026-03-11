@@ -1,0 +1,186 @@
+---
+// Estructura: prototipo ua-skills-demo.html
+// Variables: Guía Visual v2.0
+---
+
+<nav>
+    <!-- Logo -->
+    <div class="nav-brand">
+        <div class="dot-ready"></div>
+        <span class="lbl">~/skills</span><span class="lbl ua">UA</span>
+    </div>
+
+    <!-- Enlaces con prefijos de terminal -->
+    <div class="nav-links">
+        <a class="nav-link" href="/">
+            <span class="prefix">$ UA</span>
+            <span class="seg">- INICIO</span>
+        </a>
+        <a class="nav-link" href="#">
+            <span class="prefix">$ cd</span>
+            <span class="seg">/ blog</span>
+        </a>
+        <a class="nav-link" href="#">
+            <span class="prefix">$ watch</span>
+            <span class="seg">Eventos</span>
+        </a>
+        <a class="nav-link" href="#">
+            <span class="prefix">$ man</span>
+            <span class="seg">—proyecto</span>
+        </a>
+    </div>
+
+    <!-- Botones derecha -->
+    <div class="nav-right">
+        <button class="btn-icon" aria-label="Cambiar tema">
+            <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <circle cx="12" cy="12" r="4"></circle>
+                <path
+                    d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41
+                 M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+                ></path>
+            </svg>
+        </button>
+
+        <button class="btn-lang">
+            <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path
+                    d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
+                 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                ></path>
+            </svg>
+            ES
+        </button>
+    </div>
+</nav>
+
+<style>
+    nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 40px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+    }
+
+    /* --- Brand --- */
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .nav-brand .lbl {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .nav-brand .ua {
+        color: var(--accent);
+    }
+
+    .dot-ready {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+    }
+
+    /* --- Links --- */
+    .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        transition: background 0.15s;
+        color: inherit;
+    }
+
+    .nav-link:hover {
+        background: var(--accent-soft);
+        color: inherit;
+    }
+
+    .nav-link .prefix {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .nav-link .seg {
+        color: var(--text-secondary);
+    }
+
+    /* --- Botones derecha --- */
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: color 0.15s;
+        cursor: pointer;
+        background: none;
+    }
+
+    .btn-icon:hover {
+        color: var(--text);
+    }
+
+    .btn-lang {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-secondary);
+        transition: background 0.15s;
+        cursor: pointer;
+        background: none;
+        font-family: var(--font-body);
+    }
+
+    .btn-lang:hover {
+        background: var(--accent-soft);
+    }
+</style>
