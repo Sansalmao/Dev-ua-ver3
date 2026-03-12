@@ -1,0 +1,43 @@
+---
+// Guía Visual v2.0 — Componente C-02
+
+interface Props {
+    titulo: string; // Título H1 del módulo
+    descripcion: string; // Descripción con barra naranja izquierda
+}
+
+const { titulo, descripcion } = Astro.props;
+---
+
+<header class="page-header">
+    <h1 class="page-header__title">{titulo}</h1>
+    <p class="page-header__desc">{descripcion}</p>
+</header>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    /* H1 con escala fluida entre móvil y escritorio */
+    .page-header__title {
+        font-family: var(--font-display);
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    /* Descripción con barra naranja izquierda */
+    .page-header__desc {
+        font-family: var(--font-body);
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        max-width: 65ch;
+        border-left: 3px solid var(--accent);
+        padding-left: 1rem;
+    }
+</style>

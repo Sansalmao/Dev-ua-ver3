@@ -1,29 +1,21 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import NavBar from "../components/NavBar.astro";
+// src/pages/index.astro
+import ModuleLayout from "../layouts/ModuleLayout.astro";
 ---
 
-<BaseLayout title="Inicio">
-    <NavBar slot="navbar" />
-
-    <!-- Placeholder de verificación -->
-    <div
-        style="padding: 2rem; max-width: 760px; margin: 0 auto; text-align: center;"
-    >
-        <h1
-            style="
-      font-family: var(--font-display);
-      font-size: clamp(34px, 5.5vw, 60px);
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
-    "
-        >
-            ~/skills <span style="color: var(--accent);">UA</span>
-        </h1>
-        <p style="color: var(--text-secondary); font-size: 16px;">
-            BaseLayout + NavBar funcionando
-        </p>
-    </div>
-</BaseLayout>
+<ModuleLayout
+    title="Módulo 01"
+    description="Conceptos de Aceptación Universal"
+    padre="fundamentos"
+    padreHref="/fundamentos"
+    titulo="Módulo 01: Conceptos de UA"
+    subtitulo="Conceptos fundamentales de UA, por qué importa y cómo impacta a los usuarios finales."
+    dificultad="Básico"
+    duracion="1h 30min"
+    objetivo="Comprender los fundamentos de UA"
+    progreso={0}
+>
+    <p style="color: var(--text-secondary);">
+        Contenido del módulo aquí — slot funcionando (prueba)
+    </p>
+</ModuleLayout>

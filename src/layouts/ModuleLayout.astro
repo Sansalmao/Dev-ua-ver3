@@ -1,0 +1,122 @@
+---
+// Extiende BaseLayout — Guía Visual v2.0
+
+import BaseLayout from "./BaseLayout.astro";
+import NavBar from "../components/NavBar.astro";
+import BreadCrumb from "../components/BreadCrumb.astro";
+import PageHeader from "../components/PageHeader.astro";
+
+interface Props {
+    // SEO
+    title: string;
+    description?: string;
+
+    // BreadCrumb
+    padre: string;
+    padreHref: string;
+
+    // PageHeader
+    titulo: string;
+    subtitulo: string;
+
+    // MetadataCard (se implementa en la Semana 2)
+    dificultad?: string;
+    duracion?: string;
+    objetivo?: string;
+    progreso?: number; // 0-100
+}
+
+const {
+    title,
+    description,
+    padre,
+    padreHref,
+    titulo,
+    subtitulo,
+    dificultad = "Básico",
+    duracion = "—",
+    objetivo = "—",
+    progreso = 0,
+} = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+    <!-- NavBar heredado -->
+    <NavBar slot="navbar" />
+
+    <!-- Contenedor principal del módulo -->
+    <div class="module-wrap">
+        <!-- C-01: Ruta de navegación -->
+        <BreadCrumb padre={padre} padreHref={padreHref} actual={titulo} />
+
+        <!-- C-02: Título y descripción -->
+        <PageHeader titulo={titulo} descripcion={subtitulo} />
+
+        <!-- C-03: MetadataCard — placeholder hasta la Semana 2 -->
+        <div class="metadata-placeholder">
+            <span class="meta-item">
+                <span class="meta-key">DIFICULTAD</span>
+                <span class="meta-val">{dificultad}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-key">TIEMPO</span>
+                <span class="meta-val">{duracion}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-key">OBJETIVO</span>
+                <span class="meta-val">{objetivo}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-key">PROGRESO</span>
+                <span class="meta-val" style="color: var(--green-text)"
+                    >{progreso}%</span
+                >
+            </span>
+        </div>
+
+        <!-- Slot principal: contenido del módulo -->
+        <slot />
+    </div>
+</BaseLayout>
+
+<style>
+    /* Contenedor centrado — max 760px según Guía Visual */
+    .module-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* Placeholder de MetadataCard — se reemplaza en Semana 2 */
+    .metadata-placeholder {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 1rem 1.25rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .meta-key {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .meta-val {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+</style>
