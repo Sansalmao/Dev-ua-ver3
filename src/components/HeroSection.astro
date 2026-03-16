@@ -1,0 +1,100 @@
+---
+// Sin props: contenido estático
+---
+
+<section class="hero">
+    <div class="badge-init">Iniciativa LACNOG</div>
+
+    <h1>Aceptación Universal</h1>
+
+    <p>
+        Iniciativa LACNOG para una internet global. Evalúa tu preparación
+        técnica en menos de 5 minutos.
+    </p>
+
+    <button class="btn-cta" id="btn-abrir-modal">
+        <span>$</span>
+        <span>Explorar Skills</span>
+    </button>
+</section>
+
+<style>
+    .hero {
+        text-align: center;
+        padding: 60px 24px 44px;
+    }
+
+    .badge-init {
+        display: inline-block;
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 5px 16px;
+        margin-bottom: 24px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    /* h1 hereda font-family: var(--font-display) desde global.css */
+    h1 {
+        font-size: clamp(34px, 5.5vw, 60px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin-bottom: 18px;
+    }
+
+    p {
+        font-size: 16px;
+        color: var(--text-secondary);
+        max-width: 420px;
+        margin: 0 auto 32px;
+        line-height: 1.6;
+    }
+
+    .btn-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 30px;
+        border-radius: 12px;
+        border: 2px solid var(--accent);
+        background: var(--accent);
+        color: #fff;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition:
+            background 0.25s ease,
+            box-shadow 0.25s ease,
+            transform 0.25s ease;
+        box-shadow: 0 2px 8px rgba(229, 98, 26, 0.18);
+    }
+
+    .btn-cta:hover {
+        background: var(--accent);
+        filter: brightness(0.85);
+        box-shadow: 0 6px 20px rgba(229, 98, 26, 0.35);
+        transform: translateY(-2px);
+    }
+
+    .btn-cta:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(229, 98, 26, 0.18);
+    }
+</style>
+
+<!--
+    El botón emite un evento DOM personalizado "abrir-modal"
+    para que la isla ProfileModal pueda escucharlo en el cliente
+-->
+<script>
+    const btn = document.getElementById("btn-abrir-modal");
+    btn?.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("abrir-modal"));
+    });
+</script>

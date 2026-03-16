@@ -1,21 +1,103 @@
 ---
-// src/pages/index.astro
-import ModuleLayout from "../layouts/ModuleLayout.astro";
+// Vista principal
+import BaseLayout from "../layouts/BaseLayout.astro";
+import NavBar from "../components/NavBar.astro";
+import HeroSection from "../components/HeroSection.astro";
+import DecoCard from "../components/DecoCard.astro";
+import ReadmeCard from "../components/ReadmeCard.astro";
 ---
 
-<ModuleLayout
-    title="Módulo 01"
-    description="Conceptos de Aceptación Universal"
-    padre="fundamentos"
-    padreHref="/fundamentos"
-    titulo="Módulo 01: Conceptos de UA"
-    subtitulo="Conceptos fundamentales de UA, por qué importa y cómo impacta a los usuarios finales."
-    dificultad="Básico"
-    duracion="1h 30min"
-    objetivo="Comprender los fundamentos de UA"
-    progreso={0}
+<BaseLayout
+    title="Inicio"
+    description="Plataforma de aprendizaje en Aceptación Universal — UA Working Group LACNOG"
 >
-    <p style="color: var(--text-secondary);">
-        Contenido del módulo aquí — slot funcionando (prueba)
-    </p>
-</ModuleLayout>
+    <NavBar slot="navbar" />
+
+    <!-- Vista Home -->
+    <div id="view-home">
+        <!-- C: Hero con botón CTA -->
+        <HeroSection />
+
+        <!-- Cards decorativas -->
+        <div class="home-cards">
+            <DecoCard
+                filename="intro.md"
+                dotColor="yellow"
+                title="Conceptos base de UA."
+            >
+                <svg
+                    slot="icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                </svg>
+            </DecoCard>
+
+            <DecoCard
+                filename="standards.md"
+                dotColor="yellow"
+                title="Normativas RFC actuales."
+            >
+                <svg
+                    slot="icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                </svg>
+            </DecoCard>
+
+            <DecoCard
+                filename="community.md"
+                dotColor="red"
+                title="Recursos de comunidad."
+            >
+                <svg
+                    slot="icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path
+                        d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                    ></path>
+                </svg>
+            </DecoCard>
+        </div>
+
+        <!-- Readme Card -->
+        <ReadmeCard />
+    </div>
+</BaseLayout>
+
+<style>
+    /* Grid de tres cards decorativas */
+    .home-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        max-width: 860px;
+        margin: 0 auto 28px;
+        padding: 0 24px;
+    }
+</style>

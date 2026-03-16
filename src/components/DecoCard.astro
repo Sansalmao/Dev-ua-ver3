@@ -1,0 +1,92 @@
+---
+interface Props {
+    filename: string;
+    dotColor: "red" | "yellow" | "green" | "neutral";
+    title: string;
+}
+
+const { filename, dotColor, title } = Astro.props;
+
+// Mapea la prop dotColor a las clases del sistema de semáforos de global.css
+const dotClass = {
+    red: "d-r",
+    yellow: "d-y",
+    green: "d-g",
+    neutral: "d-n",
+}[dotColor];
+---
+
+<div class="deco-card">
+    <div class="dc-head">
+        <div class={dotClass}></div>
+        <span class="dc-fname">{filename}</span>
+    </div>
+    <div class="dc-body">
+        <div class="icon-sm">
+            <!-- Slot para el ícono SVG -->
+            <slot name="icon" />
+        </div>
+        <div class="export-lbl">export default</div>
+        <div class="dc-title">{title}</div>
+    </div>
+</div>
+
+<style>
+    .deco-card {
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+    }
+
+    .deco-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    }
+
+    /* File-header de la card */
+    .dc-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .dc-fname {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .dc-body {
+        padding: 18px;
+    }
+
+    /* Contenedor del ícono SVG */
+    .icon-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        color: var(--accent);
+    }
+
+    .export-lbl {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+    }
+
+    .dc-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+    }
+</style>
