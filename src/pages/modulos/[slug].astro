@@ -1,0 +1,70 @@
+---
+import ModuleLayout from "../../layouts/ModuleLayout.astro";
+import { moduleFrontmatterSchema } from "../../lib/module-schema";
+
+export async function getStaticPaths() {
+    // 1. Importar todos los MDX de la MISMA carpeta (./*.mdx)
+    const modules = import.meta.glob("./*.mdx", { eager: true });
+
+    const paths = [];
+
+    // 2. Mostrar qué archivos encuentra (útil para depurar)
+    console.log("Archivos MDX encontrados:", Object.keys(modules));
+
+    for (const [filePath, module] of Object.entries(modules)) {
+        try {
+            // 3. Extraer frontmatter del módulo MDX
+            const { frontmatter } = module as { frontmatter?: unknown };
+
+            // 4. Validar con Zod
+            const validatedFrontmatter = moduleFrontmatterSchema.parse(
+                frontmatter ?? {},
+            );
+
+            // 5. Saltar borradores
+            if (validatedFrontmatter.draft) continue;
+
+            // 6. Extraer slug: eliminar "./" y ".mdx"
+            const slug = filePath.replace("./", "").replace(".mdx", "");
+            if (!slug) continue;
+
+            // 7. Agregar ruta
+            paths.push({
+                params: { slug },
+                props: {
+                    Content: module.default,
+                    frontmatter: validatedFrontmatter,
+                },
+            });
+        } catch (error) {
+            console.error(`❌ Error procesando ${filePath}:`, error);
+        }
+    }
+
+    // 8. Mostrar rutas generadas
+    console.log(
+        "Rutas generadas:",
+        paths.map((p) => p.params.slug),
+    );
+
+    return paths;
+}
+
+// 9. Recibir props de la ruta
+const { Content, frontmatter } = Astro.props;
+---
+
+<ModuleLayout
+    title={frontmatter.title}
+    description={frontmatter.description}
+    padre="fundamentos"
+    padreHref="/fundamentos"
+    titulo={frontmatter.title}
+    subtitulo={frontmatter.description}
+    dificultad={frontmatter.difficulty}
+    duracion={frontmatter.duration}
+    objetivo={frontmatter.objective}
+    progreso={frontmatter.progress}
+>
+    <Content />
+</ModuleLayout>

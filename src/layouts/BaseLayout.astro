@@ -25,10 +25,6 @@ const {
         <link rel="canonical" href={canonicalURL} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-        <!--
-      Fuentes: Sora + JetBrains Mono
-      Guía Visual v2.0 — UA WG LACNOG
-    -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -39,11 +35,17 @@ const {
 
     <body>
         <slot name="navbar" />
-        <main>
+
+        <main class="site-main">
             <slot />
         </main>
-        <footer>
-            <slot name="footer" />
-        </footer>
+
+        <slot name="footer" />
     </body>
 </html>
+
+<style>
+    .site-main {
+        width: 100%;
+    }
+</style>

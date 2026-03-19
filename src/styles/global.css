@@ -1,44 +1,61 @@
 /* ============================================
    TOKENS DE DISEÑO — Skills UA
-   Fuente: Guía Visual v2.0 — UA WG LACNOG
+   Fuente principal: Guía Visual v2.0 — UA WG LACNOG
    Modo: Claro (Light Mode)
    ============================================ */
 
 :root {
-    /* --- Fondos --- */
-    --bg: #f7f2ea; /* Fondo global — crema cálido            */
-    --card-bg: #ffffff; /* Fondo de cards y modales               */
+    /* --- Fondos base --- */
+    --bg: #f7f2ea;
+    --card-bg: #ffffff;
 
     /* --- Bordes y separadores --- */
-    --border: #ede8df; /* Bordes de cards y divisores            */
+    --border: #ede8df;
 
     /* --- Tipografía --- */
-    --text: #1a1a1a; /* Texto principal — títulos              */
-    --text-secondary: #4b5563; /* Texto de cuerpo y descripciones        */
-    --text-muted: #a0aab4; /* Placeholders y metadatos secundarios   */
+    --text: #1a1a1a;
+    --text-secondary: #4b5563;
+    --text-muted: #a0aab4;
+    --muted-2: #a8a29e;
 
-    /* --- Acento (Naranja) --- */
-    --accent: #e5621a; /* Color principal — botones, íconos      */
-    --accent-soft: rgba(
-        229,
-        98,
-        26,
-        0.08
-    ); /* Fondo tenue — cards seleccionadas  */
+    /* --- Acento principal --- */
+    --accent: #e5621a;
+    --accent-hover: #c45115;
+    --accent-soft: rgba(229, 98, 26, 0.08);
 
-    /* --- Estado de éxito (Verde) --- */
-    --green: #28c840; /* Indicador completado — dot semáforo    */
-    --green-text: #16a34a; /* Texto de éxito sobre fondos claros     */
-    --green-bg: #dcfce7; /* Fondo de badges completado             */
+    /* --- Variantes suaves del acento --- */
+    --accent-bg-soft: #fff7ed;
+    --accent-border-soft: #fdba74;
+    --accent-border-light: #fed7aa;
 
-    /* --- Semáforos (Window Dots) --- */
-    --red: #ff5f57; /* Dot rojo — estado cerrado/inactivo     */
-    --yellow: #febc2e; /* Dot amarillo — estado standby          */
+    /* --- Estado de éxito --- */
+    --green: #28c840;
+    --green-text: #16a34a;
+    --green-bg: #dcfce7;
+    --success-border-light: #86efac;
+
+    /* --- Semáforos (window dots) --- */
+    --red: #ff5f57;
+    --yellow: #febc2e;
+    --neutral-dot: #d6d3d1;
+
+    /* --- Colores utilitarios --- */
+    --white: #ffffff;
+
+    /* --- Sombras reutilizables --- */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.07);
+    --shadow-accent-sm: 0 2px 8px rgba(229, 98, 26, 0.18);
+    --shadow-accent-md: 0 6px 20px rgba(229, 98, 26, 0.35);
+    --shadow-card-hover: 0 6px 24px rgba(234, 88, 12, 0.1);
 
     /* --- Tipografía --- */
     --font-display: "Sora", system-ui, sans-serif;
     --font-body: "Sora", system-ui, sans-serif;
     --font-mono: "JetBrains Mono", "Courier New", monospace;
+
+    /* --- Transiciones base --- */
+    --transition-fast: 0.2s ease;
+    --transition-base: 0.25s ease;
 }
 
 /* ============================================
@@ -85,6 +102,12 @@ h6 {
     color: var(--text);
 }
 
+p,
+li,
+span {
+    color: inherit;
+}
+
 code,
 pre,
 kbd,
@@ -96,15 +119,15 @@ samp {
 a {
     color: var(--accent);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--transition-fast);
 }
 
 a:hover {
-    color: #c45115; /* --accent oscurecido para hover en modo claro */
+    color: var(--accent-hover);
 }
 
 /* ============================================
-   UTILIDADES DE ACCESIBILIDAD
+   ACCESIBILIDAD
    ============================================ */
 
 .sr-only {
@@ -119,7 +142,16 @@ a:hover {
     border-width: 0;
 }
 
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
     *,
     *::before,
     *::after {
@@ -137,13 +169,16 @@ a:hover {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
     background: var(--bg);
 }
+
 ::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
 }
@@ -153,33 +188,30 @@ a:hover {
    Usados en NavBar, DecoCards, Modal, TabsNav
    ============================================ */
 
-.d-r {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--red);
-    flex-shrink: 0;
-}
-.d-y {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--yellow);
-    flex-shrink: 0;
-}
-.d-g {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--green);
-    flex-shrink: 0;
-}
+.d-r,
+.d-y,
+.d-g,
 .d-n {
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: #d6d3d1;
     flex-shrink: 0;
+}
+
+.d-r {
+    background: var(--red);
+}
+
+.d-y {
+    background: var(--yellow);
+}
+
+.d-g {
+    background: var(--green);
+}
+
+.d-n {
+    background: var(--neutral-dot);
 }
 
 /* ============================================
@@ -191,4 +223,47 @@ button {
     font-family: inherit;
     background: none;
     border: none;
+    color: inherit;
+}
+
+/* ============================================
+   MEDIA BASE
+   ============================================ */
+
+img,
+svg,
+video,
+canvas {
+    display: block;
+    max-width: 100%;
+}
+
+/* En global.css */
+.module-wrap h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 2rem 0 1rem;
+    border-left: 3px solid var(--accent);
+    padding-left: 1rem;
+}
+
+.module-wrap pre {
+    background: #1a1d23; /* color oscuro del CodeBlock */
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    margin: 1.5rem 0;
+}
+
+.module-wrap code {
+    font-family: var(--font-mono);
+    background: var(--accent-soft);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
 }

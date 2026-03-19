@@ -1,5 +1,4 @@
 ---
-// Vista principal
 import BaseLayout from "../layouts/BaseLayout.astro";
 import NavBar from "../components/NavBar.astro";
 import HeroSection from "../components/HeroSection.astro";
@@ -13,17 +12,14 @@ import ReadmeCard from "../components/ReadmeCard.astro";
 >
     <NavBar slot="navbar" />
 
-    <!-- Vista Home -->
-    <div id="view-home">
-        <!-- C: Hero con botón CTA -->
+    <div class="view-home">
         <HeroSection />
 
-        <!-- Cards decorativas -->
         <div class="home-cards">
             <DecoCard
                 filename="intro.md"
-                dotColor="yellow"
-                title="Conceptos base de UA."
+                dotColor="green"
+                title="Introducción a la iniciativa"
             >
                 <svg
                     slot="icon"
@@ -33,18 +29,19 @@ import ReadmeCard from "../components/ReadmeCard.astro";
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
+                    aria-hidden="true"
                 >
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <path d="M12 20h9"></path>
+                    <path d="M12 4h9"></path>
+                    <path d="M4 9h16"></path>
+                    <path d="M4 15h16"></path>
                 </svg>
             </DecoCard>
 
             <DecoCard
                 filename="standards.md"
                 dotColor="yellow"
-                title="Normativas RFC actuales."
+                title="Estándares y compatibilidad"
             >
                 <svg
                     slot="icon"
@@ -54,18 +51,19 @@ import ReadmeCard from "../components/ReadmeCard.astro";
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
+                    aria-hidden="true"
                 >
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"></path>
+                    <path d="M12 12l8-4.5"></path>
+                    <path d="M12 12v9"></path>
+                    <path d="M12 12L4 7.5"></path>
                 </svg>
             </DecoCard>
 
             <DecoCard
                 filename="community.md"
                 dotColor="red"
-                title="Recursos de comunidad."
+                title="Recursos y comunidad"
             >
                 <svg
                     slot="icon"
@@ -75,29 +73,37 @@ import ReadmeCard from "../components/ReadmeCard.astro";
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
+                    aria-hidden="true"
                 >
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path
-                        d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
-                    ></path>
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="10" cy="7" r="4"></circle>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
             </DecoCard>
         </div>
 
-        <!-- Readme Card -->
         <ReadmeCard />
     </div>
 </BaseLayout>
 
 <style>
-    /* Grid de tres cards decorativas */
+    .view-home {
+        width: 100%;
+    }
+
     .home-cards {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
         max-width: 860px;
         margin: 0 auto 28px;
         padding: 0 24px;
+    }
+
+    @media (max-width: 900px) {
+        .home-cards {
+            grid-template-columns: 1fr;
+        }
     }
 </style>

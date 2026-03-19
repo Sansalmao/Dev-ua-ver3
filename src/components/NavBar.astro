@@ -1,17 +1,14 @@
 ---
-// Estructura: prototipo ua-skills-demo.html
 // Variables: Guía Visual v2.0
 ---
 
-<nav>
-    <!-- Logo -->
-    <div class="nav-brand">
-        <div class="dot-ready"></div>
+<nav class="site-nav" aria-label="Navegación principal">
+    <a class="nav-brand" href="/" aria-label="Ir al inicio de Skills UA">
+        <div class="dot-ready" aria-hidden="true"></div>
         <span class="lbl">~/skills</span><span class="lbl ua">UA</span>
-    </div>
+    </a>
 
-    <!-- Enlaces con prefijos de terminal -->
-    <div class="nav-links">
+    <div class="nav-links" aria-label="Secciones principales">
         <a class="nav-link" href="/">
             <span class="prefix">$ UA</span>
             <span class="seg">- INICIO</span>
@@ -30,9 +27,8 @@
         </a>
     </div>
 
-    <!-- Botones derecha -->
     <div class="nav-right">
-        <button class="btn-icon" aria-label="Cambiar tema">
+        <button type="button" class="btn-icon" aria-label="Cambiar tema">
             <svg
                 width="14"
                 height="14"
@@ -40,6 +36,7 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                aria-hidden="true"
             >
                 <circle cx="12" cy="12" r="4"></circle>
                 <path
@@ -49,7 +46,7 @@
             </svg>
         </button>
 
-        <button class="btn-lang">
+        <button type="button" class="btn-lang" aria-label="Cambiar idioma">
             <svg
                 width="13"
                 height="13"
@@ -57,6 +54,7 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                aria-hidden="true"
             >
                 <circle cx="12" cy="12" r="10"></circle>
                 <path
@@ -70,10 +68,11 @@
 </nav>
 
 <style>
-    nav {
+    .site-nav {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
         padding: 14px 40px;
         border-bottom: 1px solid var(--border);
         background: var(--bg);
@@ -82,11 +81,16 @@
         z-index: 40;
     }
 
-    /* --- Brand --- */
     .nav-brand {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
+        flex-shrink: 0;
+        color: inherit;
+    }
+
+    .nav-brand:hover {
+        color: inherit;
     }
 
     .nav-brand .lbl {
@@ -105,13 +109,14 @@
         height: 8px;
         border-radius: 50%;
         background: var(--green);
+        flex-shrink: 0;
     }
 
-    /* --- Links --- */
     .nav-links {
         display: flex;
         align-items: center;
         gap: 2px;
+        min-width: 0;
     }
 
     .nav-link {
@@ -121,8 +126,11 @@
         padding: 6px 12px;
         border-radius: 8px;
         font-size: 13px;
-        transition: background 0.15s;
         color: inherit;
+        white-space: nowrap;
+        transition:
+            background var(--transition-fast),
+            color var(--transition-fast);
     }
 
     .nav-link:hover {
@@ -140,47 +148,84 @@
         color: var(--text-secondary);
     }
 
-    /* --- Botones derecha --- */
     .nav-right {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .btn-icon,
+    .btn-lang {
+        border: 1px solid var(--border);
+        transition:
+            background var(--transition-fast),
+            color var(--transition-fast),
+            border-color var(--transition-fast);
     }
 
     .btn-icon {
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        border: 1px solid var(--border);
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--text-muted);
-        transition: color 0.15s;
-        cursor: pointer;
-        background: none;
     }
 
     .btn-icon:hover {
         color: var(--text);
+        background: var(--accent-soft);
     }
 
     .btn-lang {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 5px 12px;
         border-radius: 8px;
-        border: 1px solid var(--border);
         font-size: 12px;
         color: var(--text-secondary);
-        transition: background 0.15s;
-        cursor: pointer;
-        background: none;
         font-family: var(--font-body);
+        white-space: nowrap;
     }
 
     .btn-lang:hover {
         background: var(--accent-soft);
+        color: var(--text);
+    }
+
+    @media (max-width: 900px) {
+        .site-nav {
+            padding: 12px 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links {
+            order: 3;
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .site-nav {
+            gap: 12px;
+        }
+
+        .nav-link {
+            padding: 6px 10px;
+        }
+
+        .nav-link .seg {
+            display: none;
+        }
+
+        .btn-lang {
+            padding: 5px 10px;
+        }
     }
 </style>
