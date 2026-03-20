@@ -65,6 +65,7 @@ const { Content, frontmatter } = Astro.props;
     duracion={frontmatter.duration}
     objetivo={frontmatter.objective}
     progreso={frontmatter.progress}
+    filename={frontmatter.title.toLowerCase().replace(/\s+/g, "-") + ".md"}
 >
     <Content />
 </ModuleLayout>

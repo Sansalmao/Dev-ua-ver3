@@ -26,23 +26,42 @@ sections:
         panelId: "apis"
 ---
 
-<h2 id="que-es-ua">Panel: ¿Qué es la Aceptación Universal?</h2>
+<h2 id="que-es-ua">¿Qué es la Aceptación Universal?</h2>
 
-La **Aceptación Universal (UA)** es un principio técnico que garantiza que todos los nombres de dominio y direcciones de correo electrónico, independientemente de su escritura, puedan ser utilizados por las aplicaciones y sistemas de forma consistente.
+La **Aceptación Universal (UA)** es un principio técnico que garantiza que todos
+los nombres de dominio y direcciones de correo electrónico, independientemente
+de su escritura, puedan ser utilizados por las aplicaciones y sistemas de forma
+consistente.
 
-UA no es un estándar único, sino un conjunto de prácticas y requisitos que aseguran la interoperabilidad global.
+UA no es un estándar único, sino un conjunto de prácticas y requisitos que
+aseguran la interoperabilidad global. Para que un sistema cumpla con UA debe
+ser capaz de:
+
+- **Aceptar** cualquier dominio o dirección de correo válidos como entrada de usuario.
+- **Validar** esos valores sin rechazarlos por contener caracteres no ASCII.
+- **Procesar** la información correctamente en todos los niveles del sistema.
+- **Mostrar** los valores al usuario de forma legible y sin corrupción de caracteres.
+
+<blockquote>
+Una aplicación que solo acepta dominios en caracteres latinos excluye a cientos
+de millones de usuarios cuyo idioma nativo utiliza otros sistemas de escritura:
+árabe, chino, devanagari, cirílico, entre muchos otros.
+</blockquote>
 
 ---
 
-<h2 id="historia">Panel: Historia y contexto</h2>
+<h2 id="historia">Historia y contexto</h2>
 
-El concepto de UA surge con la expansión de internet hacia regiones no angloparlantes. Inicialmente, los dominios solo permitían caracteres ASCII, lo que excluía a usuarios de otros alfabetos y sistemas de escritura.
+El concepto de UA surge con la expansión de internet hacia regiones no
+angloparlantes. Inicialmente, los dominios solo permitían caracteres ASCII,
+lo que excluía a usuarios de otros alfabetos y sistemas de escritura.
 
 ```python
-# Ejemplo: validación básica de dominio ASCII vs Unicode
+# Ejemplo: decodificación de dominio Punycode a Unicode
 import idna
 
-dominio_ascii = "xn--maana-pta.com"
+dominio_ascii   = "xn--maana-pta.com"
 dominio_unicode = idna.decode(dominio_ascii)
 
-print(f"Dominio decodificado: {dominio_unicode}")
+print(f"ASCII   : {dominio_ascii}")
+print(f"Unicode : {dominio_unicode}")

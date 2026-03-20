@@ -39,9 +39,6 @@
     --yellow: #febc2e;
     --neutral-dot: #d6d3d1;
 
-    /* --- Colores utilitarios --- */
-    --white: #ffffff;
-
     /* --- Sombras reutilizables --- */
     --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.07);
     --shadow-accent-sm: 0 2px 8px rgba(229, 98, 26, 0.18);

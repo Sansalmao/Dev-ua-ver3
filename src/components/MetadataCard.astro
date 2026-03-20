@@ -4,9 +4,10 @@ interface Props {
     tiempo: string; // Por ejemplo: "1h 30min"
     objetivo: string; // Descripción breve del objetivo
     progreso: number; // 0-100
+    filename?: string;
 }
 
-const { dificultad, tiempo, objetivo, progreso } = Astro.props;
+const { dificultad, tiempo, objetivo, progreso, filename } = Astro.props;
 const safeProgress = Math.max(0, Math.min(100, progreso));
 ---
 
@@ -16,7 +17,9 @@ const safeProgress = Math.max(0, Math.min(100, progreso));
             <div class="d-r" aria-hidden="true"></div>
             <div class="d-y" aria-hidden="true"></div>
             <div class="d-g" aria-hidden="true"></div>
-            <span class="metadata-card__filename">modulo.md</span>
+            <span class="metadata-card__filename"
+                >{filename ?? "modulo.md"}</span
+            >
         </div>
 
         <div class="metadata-card__progress">

@@ -16,6 +16,7 @@ interface Props {
     duracion: string;
     objetivo: string;
     progreso?: number;
+    filename: string;
 }
 
 const {
@@ -29,6 +30,7 @@ const {
     duracion,
     objetivo,
     progreso = 0,
+    filename,
 } = Astro.props;
 ---
 
@@ -45,6 +47,7 @@ const {
             tiempo={duracion}
             objetivo={objetivo}
             progreso={progreso}
+            filename={filename}
         />
 
         <slot />

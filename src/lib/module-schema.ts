@@ -5,6 +5,7 @@ export const sectionItemSchema = z.object({
   panelId: z.string(),
 });
 
+// sectionSchema solo tiene title e items — sin referencia a sí mismo
 export const sectionSchema = z.object({
   title: z.string(),
   items: z.array(sectionItemSchema),
@@ -17,7 +18,7 @@ export const moduleFrontmatterSchema = z.object({
   duration: z.string(),
   objective: z.string(),
   progress: z.number().min(0).max(100).default(0),
-  sections: z.array(sectionSchema),
+  sections: z.array(sectionSchema).default([]), // ← sections aquí
   pubDate: z.coerce.date().optional(),
   draft: z.boolean().default(false),
 });

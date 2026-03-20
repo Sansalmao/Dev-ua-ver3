@@ -7,18 +7,19 @@ import ReadmeCard from "../components/ReadmeCard.astro";
 ---
 
 <BaseLayout
-    title="Inicio"
+    title="~/skills UA — Aceptación Universal"
     description="Plataforma de aprendizaje en Aceptación Universal — UA Working Group LACNOG"
 >
     <NavBar slot="navbar" />
 
-    <div class="view-home">
+    <!-- VISTA A: Home — visible al cargar -->
+    <div id="view-home" class="view-home">
         <HeroSection />
 
         <div class="home-cards">
             <DecoCard
                 filename="intro.md"
-                dotColor="green"
+                dotColor="yellow"
                 title="Introducción a la iniciativa"
             >
                 <svg
@@ -85,11 +86,21 @@ import ReadmeCard from "../components/ReadmeCard.astro";
 
         <ReadmeCard />
     </div>
+
+    <!-- VISTA B: Grid de temas — oculto por defecto. Hasta la semana 3 -->
+    <div id="view-grid" class="view-grid-placeholder"></div>
 </BaseLayout>
 
 <style>
-    .view-home {
+    /* VISTA HOME */
+    #view-home {
         width: 100%;
+        opacity: 1;
+    }
+
+    /* Clase que JS añade para ocultar el home del flujo */
+    #view-home.oculto {
+        display: none;
     }
 
     .home-cards {
@@ -99,6 +110,17 @@ import ReadmeCard from "../components/ReadmeCard.astro";
         max-width: 860px;
         margin: 0 auto 28px;
         padding: 0 24px;
+    }
+
+    /* VISTA GRID — oculta por defecto */
+    #view-grid {
+        display: none;
+        opacity: 1;
+    }
+
+    /* Clase que JS añade para revelar el grid */
+    #view-grid.visible {
+        display: block;
     }
 
     @media (max-width: 900px) {
