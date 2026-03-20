@@ -4,7 +4,9 @@ import { moduleFrontmatterSchema } from "../../lib/module-schema";
 
 export async function getStaticPaths() {
     // 1. Importar todos los MDX de la MISMA carpeta (./*.mdx)
-    const modules = import.meta.glob("./*.mdx", { eager: true });
+    const modules = import.meta.glob("../../data/modulos/*.mdx", {
+        eager: true,
+    });
 
     const paths = [];
 
@@ -25,7 +27,7 @@ export async function getStaticPaths() {
             if (validatedFrontmatter.draft) continue;
 
             // 6. Extraer slug: eliminar "./" y ".mdx"
-            const slug = filePath.replace("./", "").replace(".mdx", "");
+            const slug = filePath.split("/").pop()?.replace(".mdx", "");
             if (!slug) continue;
 
             // 7. Agregar ruta
