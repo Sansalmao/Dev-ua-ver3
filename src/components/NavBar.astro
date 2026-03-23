@@ -3,13 +3,18 @@
 ---
 
 <nav class="site-nav" aria-label="Navegación principal">
-    <a class="nav-brand" href="/" aria-label="Ir al inicio de Skills UA">
+    <a
+        class="nav-brand"
+        href="/"
+        aria-label="Ir al inicio de Skills UA"
+        data-nav-home
+    >
         <div class="dot-ready" aria-hidden="true"></div>
         <span class="lbl">~/skills</span><span class="lbl ua">UA</span>
     </a>
 
     <div class="nav-links" aria-label="Secciones principales">
-        <a class="nav-link" href="/">
+        <a class="nav-link" href="/" data-nav-home>
             <span class="prefix">$ UA</span>
             <span class="seg">- INICIO</span>
         </a>
@@ -66,6 +71,14 @@
         </button>
     </div>
 </nav>
+
+<script>
+    document.querySelectorAll("[data-nav-home]").forEach((el) => {
+        el.addEventListener("click", () => {
+            sessionStorage.setItem("ua_force_home", "1");
+        });
+    });
+</script>
 
 <style>
     .site-nav {

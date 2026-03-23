@@ -1,0 +1,961 @@
+<div
+    class="modal-overlay"
+    id="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+>
+    <div class="modal-panel">
+        <!-- CABECERA -->
+        <div class="m-head">
+            <h2 id="modal-title">Selecciona tu Perfil</h2>
+            <div class="m-head-r">
+                <span class="step-badge" id="step-lbl">Paso 1 de 2</span>
+                <button
+                    type="button"
+                    class="btn-close"
+                    id="btn-close"
+                    aria-label="Cerrar modal"
+                >
+                    <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        aria-hidden="true"
+                    >
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="m-divider"></div>
+
+        <!-- BARRA DE PROGRESO DEL MODAL -->
+        <div class="modal-progress-wrap">
+            <div class="modal-progress-track">
+                <div class="modal-progress-fill" id="modal-prog-fill"></div>
+            </div>
+        </div>
+
+        <!-- PASO 1: Selección de rol -->
+        <div class="m-body step" id="step-1">
+            <div class="sel-grid">
+                <button type="button" class="sel-card" data-rol="educator">
+                    <div class="win-bar">
+                        <div class="d-r" aria-hidden="true"></div>
+                        <div class="d-y" aria-hidden="true"></div>
+                        <div class="d-g" aria-hidden="true"></div>
+                    </div>
+                    <div class="sel-inner">
+                        <div class="sel-icon" aria-hidden="true">
+                            <svg
+                                width="22"
+                                height="22"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            >
+                                <rect x="3" y="3" width="7" height="7" rx="1"
+                                ></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1"
+                                ></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1"
+                                ></rect>
+                                <circle cx="17.5" cy="17.5" r="3.5"></circle>
+                            </svg>
+                        </div>
+                        <div class="sel-export">
+                            export const role = "educator";
+                        </div>
+                        <h3>Profesor / Instructor</h3>
+                        <p>
+                            Diseña laboratorios y gestiona el progreso de los
+                            estudiantes.
+                        </p>
+                    </div>
+                </button>
+
+                <button type="button" class="sel-card" data-rol="learner">
+                    <div class="win-bar">
+                        <div class="d-n" aria-hidden="true"></div>
+                        <div class="d-n" aria-hidden="true"></div>
+                        <div class="d-n" aria-hidden="true"></div>
+                    </div>
+                    <div class="sel-inner">
+                        <div class="sel-icon" aria-hidden="true">
+                            <svg
+                                width="22"
+                                height="22"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            >
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                            </svg>
+                        </div>
+                        <div class="sel-export">
+                            export const role = "learner";
+                        </div>
+                        <h3>Estudiante / Profesional</h3>
+                        <p>
+                            Accede a rutas de aprendizaje y certifica tus
+                            conocimientos.
+                        </p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PASO 2: Selección de ruta -->
+        <div class="m-body step hidden" id="step-2">
+            <div class="sel-grid">
+                <!-- Ruta Básica: textos inyectados por irAPaso2(rol) -->
+                <button type="button" class="sel-card" data-ruta="basica">
+                    <div class="win-bar">
+                        <div class="d-r" aria-hidden="true"></div>
+                        <div class="d-y" aria-hidden="true"></div>
+                        <div class="d-g" aria-hidden="true"></div>
+                        <span class="wname">fundamentos.md</span>
+                    </div>
+                    <div class="sel-inner">
+                        <div class="sel-top">
+                            <div
+                                class="sel-icon"
+                                style="margin-bottom:0;width:40px;height:40px"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <span class="lv-badge">NIVEL 01</span>
+                        </div>
+                        <div class="tag-rec" style="margin-top:12px">
+                            RECOMENDADO PARA INICIAR
+                        </div>
+                        <div class="sel-export" id="basica-export"></div>
+                        <h3 id="basica-titulo"></h3>
+                        <p id="basica-desc"></p>
+                    </div>
+                </button>
+
+                <!-- Ruta Avanzada: contenido fijo -->
+                <button type="button" class="sel-card" data-ruta="avanzada">
+                    <div class="win-bar">
+                        <div class="d-n" aria-hidden="true"></div>
+                        <div class="d-n" aria-hidden="true"></div>
+                        <div class="d-n" aria-hidden="true"></div>
+                        <span class="wname">ingenieria.md</span>
+                    </div>
+                    <div class="sel-inner">
+                        <div class="sel-top">
+                            <div
+                                class="sel-icon"
+                                style="margin-bottom:0;width:40px;height:40px"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <polyline points="4 17 10 11 4 5"
+                                    ></polyline>
+                                    <line x1="12" y1="19" x2="20" y2="19"
+                                    ></line>
+                                </svg>
+                            </div>
+                            <span class="lv-badge">NIVEL 02</span>
+                        </div>
+                        <div class="tag-adv" style="margin-top:12px">
+                            ✦ NIVEL AVANZADO<br />REQUIERE CONCEPTOS CLAVE
+                        </div>
+                        <div class="sel-export">export default 'SysAdmins'</div>
+                        <h3>Implementación Técnica</h3>
+                        <p>
+                            Para sysadmins y devs. Profundiza en configuraciones
+                            de servidores y código.
+                        </p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PIE DEL MODAL -->
+        <div class="m-foot">
+            <p class="foot-hint" id="foot-hint">
+                Selecciona una opción para continuar
+            </p>
+            <div class="foot-s2" id="foot-s2">
+                <button type="button" class="btn-back" id="btn-volver">
+                    <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        aria-hidden="true"
+                    >
+                        <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                    </svg>
+                    VOLVER
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ── Overlay ── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.32);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* ── Panel ── */
+    .modal-panel {
+        width: 100%;
+        max-width: 620px;
+        background: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+        transform: translateY(16px);
+        opacity: 0;
+        transition:
+            transform 0.3s ease,
+            opacity 0.3s ease;
+        overflow: hidden;
+    }
+
+    .modal-overlay.open .modal-panel {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    /* ── Cabecera ── */
+    .m-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 32px 16px;
+    }
+
+    .m-head h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.01em;
+    }
+
+    .m-head-r {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .step-badge {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+        background: var(--bg);
+        padding: 4px 12px;
+        border-radius: 100px;
+    }
+
+    .btn-close {
+        color: var(--text-muted);
+        padding: 4px;
+        border-radius: 6px;
+        transition: color var(--transition-fast);
+    }
+
+    .btn-close:hover {
+        color: var(--text);
+    }
+
+    .m-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0 32px;
+    }
+
+    /* ── Barra de progreso del modal ── */
+    .modal-progress-wrap {
+        padding: 12px 32px 0;
+    }
+
+    .modal-progress-track {
+        width: 100%;
+        height: 3px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+
+    .modal-progress-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        width: 50%;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Cuerpo ── */
+    .m-body {
+        padding: 24px 32px;
+    }
+
+    .sel-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* ── Cards de selección ── */
+    .sel-card {
+        text-align: left;
+        border-radius: 14px;
+        border: 2px solid var(--border);
+        overflow: hidden;
+        transition: all 0.2s;
+        background: var(--card-bg);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sel-card:hover {
+        border-color: var(--accent-border-soft);
+        box-shadow: 0 4px 16px rgba(234, 88, 12, 0.1);
+    }
+
+    .sel-card.chosen {
+        border-color: var(--accent);
+        background: #fffbf8;
+    }
+
+    .win-bar {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .wname {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-left: 4px;
+    }
+
+    .sel-inner {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex: 1;
+    }
+
+    .sel-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: var(--accent-bg-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+        color: var(--accent);
+    }
+
+    .sel-export {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        margin-bottom: 9px;
+    }
+
+    .sel-inner h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 6px;
+        line-height: 1.3;
+    }
+
+    .sel-inner p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .sel-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .lv-badge {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        background: var(--bg);
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+
+    .tag-rec {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        background: var(--accent-bg-soft);
+        border: 1px solid var(--accent-border-light);
+        padding: 3px 8px;
+        border-radius: 4px;
+        margin-bottom: 9px;
+    }
+
+    .tag-adv {
+        display: block;
+        width: 100%;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        background: var(--accent-bg-soft);
+        border: 1px solid var(--accent-border-light);
+        padding: 5px 8px;
+        border-radius: 4px;
+        margin-bottom: 9px;
+        text-align: center;
+        line-height: 1.7;
+    }
+
+    /* ── Pie del modal ── */
+    .m-foot {
+        padding: 14px 32px;
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+    }
+
+    .foot-hint {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        width: 100%;
+        text-align: center;
+    }
+
+    .foot-s2 {
+        display: none;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .btn-back {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        transition: color var(--transition-fast);
+    }
+
+    .btn-back:hover {
+        color: var(--accent-hover);
+    }
+
+    /* ── Estados de paso ── */
+    .step.hidden {
+        display: none;
+    }
+
+    /* ── Animaciones ── */
+    @keyframes stepIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .step-enter {
+        animation: stepIn 0.25s ease both;
+    }
+
+    @keyframes pulseOnce {
+        0% {
+            box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 8px rgba(234, 88, 12, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
+        }
+    }
+
+    .pulse {
+        animation: pulseOnce 0.6s ease;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+        .m-head {
+            padding: 20px 20px 14px;
+        }
+        .m-divider {
+            margin: 0 20px;
+        }
+        .modal-progress-wrap {
+            padding: 12px 20px 0;
+        }
+        .m-body {
+            padding: 20px;
+        }
+        .sel-grid {
+            grid-template-columns: 1fr;
+        }
+        .m-foot {
+            padding: 14px 20px;
+        }
+    }
+</style>
+
+<script>
+    import { RUTAS, BASICA_POR_ROL, ICONS, resolverRuta } from "../lib/rutas";
+
+    // ── STORAGE ──────────────────────────────────────────────────────────────────
+
+    const STORAGE_KEY = "ua_skills_v2";
+
+    function cargarEstado() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const p = JSON.parse(raw);
+                if (p && typeof p === "object")
+                    return {
+                        rol: p.rol ?? null,
+                        ruta: p.ruta ?? null,
+                        temas: p.temas ?? {},
+                    };
+            }
+        } catch (e) {}
+        return { rol: null, ruta: null, temas: {} };
+    }
+
+    const store = cargarEstado();
+
+    function guardar() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+        } catch (e) {}
+    }
+
+    function setStore(cambios: Record<string, unknown>) {
+        Object.assign(store, cambios);
+        guardar();
+    }
+
+    function setTema(id: string, cambios: Record<string, unknown>) {
+        store.temas[id] = {
+            ...(store.temas[id] ?? { visitado: false, completado: false }),
+            ...cambios,
+        };
+        guardar();
+    }
+
+    // ── REFERENCIAS AL DOM ───────────────────────────────────────────────────────
+
+    const overlay = document.getElementById("modal-overlay")!;
+    const step1El = document.getElementById("step-1")!;
+    const step2El = document.getElementById("step-2")!;
+    const stepLbl = document.getElementById("step-lbl")!;
+    const modalTitle = document.getElementById("modal-title")!;
+    const footHint = document.getElementById("foot-hint")!;
+    const footS2 = document.getElementById("foot-s2")!;
+    const progFill = document.getElementById("modal-prog-fill")!;
+    const viewHome = document.getElementById("view-home")!;
+    const viewGrid = document.getElementById("view-grid")!;
+    const topicsCont = document.getElementById("topics-container")!;
+    const toastEl = document.getElementById("toast")!;
+
+    let rolActual: string | null = null;
+    let toastTimer: ReturnType<typeof setTimeout>;
+
+    // ── TOAST ────────────────────────────────────────────────────────────────────
+
+    function toast(msg: string) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2800);
+    }
+
+    // ── ANIMACIONES ──────────────────────────────────────────────────────────────
+
+    function runAnim(
+        el: HTMLElement,
+        keyframeName: string,
+        duration: number,
+    ): Promise<void> {
+        return new Promise((resolve) => {
+            el.style.animation = `${keyframeName} ${duration}ms ease forwards`;
+            el.addEventListener(
+                "animationend",
+                () => {
+                    el.style.animation = "";
+                    resolve();
+                },
+                { once: true },
+            );
+        });
+    }
+
+    // ── MODAL ────────────────────────────────────────────────────────────────────
+
+    function abrirModal() {
+        overlay.classList.add("open");
+        document.body.style.overflow = "hidden";
+
+        // Foco al primer elemento interactivo para accesibilidad
+        const primerBoton = overlay.querySelector<HTMLElement>("[data-rol]");
+        primerBoton?.focus();
+    }
+
+    function cerrarModal() {
+        overlay.classList.remove("open");
+        document.body.style.overflow = "";
+        setTimeout(irAPaso1, 300);
+    }
+
+    function irAPaso1() {
+        step1El.classList.remove("hidden");
+        step1El.classList.add("step-enter");
+        step2El.classList.add("hidden");
+        footHint.style.display = "block";
+        footS2.style.display = "none";
+        stepLbl.textContent = "Paso 1 de 2";
+        modalTitle.textContent = "Selecciona tu Perfil";
+        progFill.style.width = "50%";
+        document
+            .querySelectorAll(".sel-card")
+            .forEach((c) => c.classList.remove("chosen", "pulse"));
+        rolActual = null;
+        setTimeout(() => step1El.classList.remove("step-enter"), 300);
+    }
+
+    function irAPaso2(rol: string) {
+        // Inyectar textos ANTES de mostrar el paso
+        const d = BASICA_POR_ROL[rol];
+        document.getElementById("basica-export")!.textContent = d.export;
+        document.getElementById("basica-titulo")!.textContent = d.titulo;
+        document.getElementById("basica-desc")!.textContent = d.desc;
+
+        step1El.classList.add("hidden");
+        step2El.classList.remove("hidden");
+        step2El.classList.add("step-enter");
+        footHint.style.display = "none";
+        footS2.style.display = "flex";
+        stepLbl.textContent = "Paso 2 de 2";
+        modalTitle.textContent = "Configura tu Ruta de Skills";
+        progFill.style.width = "100%";
+        setTimeout(() => step2El.classList.remove("step-enter"), 300);
+    }
+
+    // ── GRID ─────────────────────────────────────────────────────────────────────
+
+    function construirCard(t: (typeof RUTAS)[string]["temas"][number]): string {
+        const est = store.temas[t.id] ?? { visitado: false, completado: false };
+        const nivelClass = t.nivel === "Avanzado" ? "avanzado" : "basico";
+        const btnLabel = est.completado
+            ? "$ revisar"
+            : est.visitado
+              ? "$ continuar"
+              : "$ iniciar";
+        const cardClass = est.completado
+            ? "completed"
+            : est.visitado
+              ? "visited"
+              : "";
+
+        const sbadge = est.completado
+            ? `<span class="tc-sbadge done">✓ completado</span>`
+            : est.visitado
+              ? `<span class="tc-sbadge prog">en progreso</span>`
+              : "";
+
+        const progHtml = est.visitado
+            ? `
+        <div class="tc-prog">
+            <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
+            <div class="tc-prog-bg">
+                <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
+                     style="width:${est.completado ? 100 : 60}%"></div>
+            </div>
+        </div>`
+            : "";
+
+        return `
+        <div class="topic-card ${cardClass}" data-id="${t.id}" style="opacity:0;transform:translateY(14px)">
+            <div class="tc-top">
+                <div class="tc-icon-box">${ICONS[t.icon] ?? ICONS["doc"]}</div>
+                <div class="tc-info">
+                    <div class="tc-title">${t.titulo}${sbadge}</div>
+                    <div class="tc-badges">
+                        <span class="tc-nivel ${nivelClass}">${t.nivel}</span>
+                        <span class="tc-dur">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            ${t.dur ?? t.duracion}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <p class="tc-desc">${t.descripcion}</p>
+            <div class="tc-foot">
+                <button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>
+                ${progHtml}
+            </div>
+        </div>`;
+    }
+
+    function actualizarProgreso(temas: (typeof RUTAS)[string]["temas"]) {
+        const total = temas.length;
+        const completados = temas.filter(
+            (t) => store.temas[t.id]?.completado,
+        ).length;
+        const pct = total > 0 ? Math.round((completados / total) * 100) : 0;
+
+        document.getElementById("prog-num")!.textContent = String(completados);
+        document.getElementById("prog-tot")!.textContent = `/${total}`;
+        document.getElementById("prog-bar")!.style.width = `${pct}%`;
+        document.getElementById("prog-pct")!.textContent = `${pct}% COMPLETADO`;
+    }
+
+    async function mostrarGrid(
+        claveRuta: string,
+        sinTransicion = false,
+        soloRefresh = false,
+    ) {
+        const ruta = RUTAS[claveRuta];
+        if (!ruta) return;
+
+        document.getElementById("grid-titulo")!.textContent = ruta.titulo;
+        document.getElementById("grid-badge")!.textContent =
+            `✦ ${ruta.subtitulo}`;
+        document.getElementById("grid-desc")!.textContent = ruta.desc;
+        topicsCont.innerHTML = ruta.temas.map(construirCard).join("");
+        actualizarProgreso(ruta.temas);
+
+        if (soloRefresh) {
+            topicsCont
+                .querySelectorAll<HTMLElement>(".topic-card")
+                .forEach((card, i) => {
+                    setTimeout(() => {
+                        card.style.transition = `opacity .35s ease ${i * 60}ms, transform .35s ease ${i * 60}ms`;
+                        card.style.opacity = "1";
+                        card.style.transform = "translateY(0)";
+                    }, 40);
+                });
+            registrarBotones(ruta.temas);
+            return; // ← salir sin tocar las vistas
+        }
+
+        if (sinTransicion) {
+            viewHome.classList.add("oculto");
+            viewGrid.classList.add("visible");
+        } else {
+            await runAnim(viewHome, "homeExit", 210);
+            viewHome.classList.add("oculto");
+            viewGrid.classList.add("visible");
+            await runAnim(viewGrid, "gridEnter", 360);
+        }
+
+        // Stagger de cards
+        const delay = sinTransicion ? 80 : 40;
+        topicsCont
+            .querySelectorAll<HTMLElement>(".topic-card")
+            .forEach((card, i) => {
+                setTimeout(() => {
+                    card.style.transition = `opacity .35s ease ${i * 60}ms, transform .35s ease ${i * 60}ms`;
+                    card.style.opacity = "1";
+                    card.style.transform = "translateY(0)";
+                }, delay);
+            });
+
+        registrarBotones(ruta.temas);
+    }
+
+    async function volverAlHome() {
+        await runAnim(viewGrid, "gridExit", 210);
+        viewGrid.classList.remove("visible");
+        viewHome.classList.remove("oculto");
+        await runAnim(viewHome, "homeEnter", 320);
+    }
+
+    // ── BOTONES DE CARDS ─────────────────────────────────────────────────────────
+
+    function registrarBotones(temas: (typeof RUTAS)[string]["temas"]) {
+        topicsCont
+            .querySelectorAll<HTMLButtonElement>(".btn-iniciar")
+            .forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id!;
+                    const est = store.temas[id] ?? {};
+
+                    if (!est.completado) {
+                        setTema(id, { visitado: true });
+                        toast("Módulo iniciado — progreso guardado");
+
+                        setTimeout(() => {
+                            setTema(id, { completado: true });
+                            toast("✓ Módulo completado");
+
+                            mostrarGrid(
+                                resolverRuta(store.rol ?? "", store.ruta ?? ""),
+                                false,
+                                true,
+                            );
+                        }, 1500);
+                    } else {
+                        toast("Módulo completado — revisando contenido");
+                    }
+                });
+            });
+    }
+
+    // ── EVENT LISTENERS ──────────────────────────────────────────────────────────
+
+    // Abrir modal desde el botón CTA del hero
+    document.addEventListener("click", (e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest("[data-open-profile-modal]")) {
+            abrirModal();
+        }
+    });
+
+    // Cerrar modal
+    document
+        .getElementById("btn-close")!
+        .addEventListener("click", cerrarModal);
+
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) cerrarModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && overlay.classList.contains("open"))
+            cerrarModal();
+    });
+
+    // Paso 1: selección de rol
+    document.querySelectorAll<HTMLElement>("[data-rol]").forEach((card) => {
+        card.addEventListener("click", () => {
+            document
+                .querySelectorAll("[data-rol]")
+                .forEach((c) => c.classList.remove("chosen", "pulse"));
+            card.classList.add("chosen", "pulse");
+            rolActual = card.dataset.rol!;
+            setStore({ rol: rolActual });
+            setTimeout(() => irAPaso2(rolActual!), 300);
+        });
+    });
+
+    // Paso 2: selección de ruta
+    document.querySelectorAll<HTMLElement>("[data-ruta]").forEach((card) => {
+        card.addEventListener("click", () => {
+            const ruta = card.dataset.ruta!;
+            setStore({ ruta });
+            cerrarModal();
+            setTimeout(
+                () => mostrarGrid(resolverRuta(store.rol ?? "", ruta)),
+                320,
+            );
+        });
+    });
+
+    // Volver al paso 1
+    document.getElementById("btn-volver")!.addEventListener("click", irAPaso1);
+
+    // Volver al home desde el grid
+    document.getElementById("btn-cambiar")!.addEventListener("click", () => {
+        setStore({ rol: null, ruta: null });
+        volverAlHome(); // ← sin .then(() => abrirModal)
+    });
+
+    // ── RESTAURACIÓN DESDE LOCALSTORAGE ─────────────────────────────────────────
+
+    document.addEventListener("DOMContentLoaded", () => {
+        overlay.classList.remove("open");
+        document.body.style.overflow = "";
+        const forceHome = sessionStorage.getItem("ua_force_home");
+
+        if (forceHome) {
+            sessionStorage.removeItem("ua_force_home");
+            setStore({ rol: null, ruta: null });
+            return;
+        }
+
+        if (store.rol && store.ruta) {
+            mostrarGrid(resolverRuta(store.rol, store.ruta), true);
+        }
+    });
+</script>
