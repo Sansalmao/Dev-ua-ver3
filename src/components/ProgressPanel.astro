@@ -13,15 +13,21 @@ const safePct = Math.max(0, Math.min(100, pct));
     <div class="prog-lbl">Tu Progreso</div>
 
     <div class="prog-count">
-        <span class="num">{completados}</span>
-        <span class="tot">/{total}</span>
+        <!--
+            data-prog-num y data-prog-tot: selectores semánticos para JS.
+            Evitamos buscar por clase porque .num y .tot son nombres
+            demasiado genéricos que podrían colisionar con otros componentes.
+        -->
+        <span class="num" data-prog-num>{completados}</span>
+        <span class="tot" data-prog-tot>/{total}</span>
     </div>
 
     <div class="prog-bwrap" aria-hidden="true">
-        <div class="prog-bfill" style={`width: ${safePct}%;`}></div>
+        <div class="prog-bfill" data-prog-bar style={`width: ${safePct}%;`}>
+        </div>
     </div>
 
-    <div class="prog-pct">{safePct}% COMPLETADO</div>
+    <div class="prog-pct" data-prog-pct>{safePct}% COMPLETADO</div>
 
     <div class="prog-tip">
         <span class="prog-bolt" aria-hidden="true">⚡</span>

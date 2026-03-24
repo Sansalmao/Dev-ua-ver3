@@ -1,37 +1,31 @@
 ---
-// Por ahora, esta página se genera como HTML estático con los datos de educator_basica
-// como ruta por defecto
-
 import BaseLayout from "../layouts/BaseLayout.astro";
 import NavBar from "../components/NavBar.astro";
 import ProgressPanel from "../components/ProgressPanel.astro";
 import TopicCard from "../components/TopicCard.astro";
+import Toast from "../components/Toast.astro";
 import { RUTAS, ICONS } from "../lib/rutas";
 
-// Ruta por defecto para el build estático.
-// El cliente sobreescribirá esto desde localStorage en Semana 3.
+/*
+ * SSG con ruta por defecto educator_basica.
+ */
 const RUTA_DEFAULT = "educator_basica";
 const ruta = RUTAS[RUTA_DEFAULT];
-
-// En SSG todos los temas comienzan como "nuevo".
-// El estado real (progreso / completado) lo gestiona JS desde localStorage.
 const total = ruta.temas.length;
-const completados = 0;
-const pct = 0;
 ---
 
 <BaseLayout title={`${ruta.titulo} — Skills UA`} description={ruta.desc}>
     <NavBar slot="navbar" />
 
     <div id="view-grid" class="grid-view">
-        <header class="grid-head" id="grid-head">
+        <header class="grid-head">
             <div class="grid-title-row">
                 <div class="grid-title-group">
                     <span class="grid-prefix">›_</span>
                     <h1 class="grid-title" id="grid-titulo">{ruta.titulo}</h1>
-                    <span class="grid-badge" id="grid-badge"
-                        >✦ {ruta.subtitulo}</span
-                    >
+                    <span class="grid-badge" id="grid-badge">
+                        ✦ {ruta.subtitulo}
+                    </span>
                 </div>
                 <button type="button" class="btn-change" id="btn-cambiar">
                     <svg
@@ -55,11 +49,7 @@ const pct = 0;
 
         <div class="grid-layout">
             <aside class="grid-side">
-                <ProgressPanel
-                    completados={completados}
-                    total={total}
-                    pct={pct}
-                />
+                <ProgressPanel completados={0} total={total} pct={0} />
             </aside>
 
             <div class="grid-topics" id="topics-container">
@@ -73,7 +63,6 @@ const pct = 0;
                             descripcion={tema.descripcion}
                             estado="nuevo"
                         >
-                            {/* set:html inyecta el SVG como HTML directamente en el slot */}
                             <span
                                 slot="icon"
                                 set:html={ICONS[tema.icon] ?? ICONS["doc"]}
@@ -84,6 +73,10 @@ const pct = 0;
             </div>
         </div>
     </div>
+
+    <!-- Toast singleton: debe estar en el DOM antes de que cualquier
+         script intente disparar "toast:show" -->
+    <Toast />
 </BaseLayout>
 
 <style>
@@ -93,7 +86,6 @@ const pct = 0;
         padding: 36px 40px 80px;
     }
 
-    /* ── Encabezado ── */
     .grid-head {
         margin-bottom: 24px;
     }
@@ -147,7 +139,6 @@ const pct = 0;
         max-width: 660px;
     }
 
-    /* ── Botón volver ── */
     .btn-change {
         display: inline-flex;
         align-items: center;
@@ -172,11 +163,11 @@ const pct = 0;
         background: var(--accent-hover);
         transform: translateX(-2px);
     }
+
     .btn-change:active {
         transform: translateX(0);
     }
 
-    /* ── Layout principal ── */
     .grid-layout {
         display: flex;
         gap: 20px;
@@ -189,7 +180,6 @@ const pct = 0;
         top: 88px;
     }
 
-    /* ── Grid de cards ── */
     .grid-topics {
         flex: 1;
         display: grid;
@@ -197,7 +187,6 @@ const pct = 0;
         gap: 16px;
     }
 
-    /* ── Responsive ── */
     @media (max-width: 900px) {
         .grid-view {
             padding: 24px 20px 60px;
@@ -224,3 +213,261 @@ const pct = 0;
         }
     }
 </style>
+
+<script>
+    const STORAGE_KEY = "ua_skills_v2";
+
+    interface TemaEstado {
+        visitado: boolean;
+        completado: boolean;
+    }
+
+    interface StoreShape {
+        rol: string | null;
+        ruta: string | null;
+        temas: Record<string, TemaEstado>;
+    }
+
+    function cargarEstado(): StoreShape {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const p = JSON.parse(raw);
+                if (p && typeof p === "object") {
+                    return {
+                        rol: p.rol ?? null,
+                        ruta: p.ruta ?? null,
+                        temas: p.temas ?? {},
+                    };
+                }
+            }
+        } catch {}
+        return { rol: null, ruta: null, temas: {} };
+    }
+
+    function guardarEstado(store: StoreShape) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+        } catch {}
+    }
+
+    // ── IMPORTACIONES ESTÁTICAS ───────────────────────────────────────────────
+    // Sin await import(): Astro resuelve estas importaciones en build time,
+    import { RUTAS, resolverRuta } from "../lib/rutas";
+
+    // ── TOAST ─────────────────────────────────────────────────────────────────
+    function toast(message: string, duration = 2800) {
+        document.dispatchEvent(
+            new CustomEvent("toast:show", {
+                detail: { message, duration },
+            }),
+        );
+    }
+
+    // ── PROGRESS PANEL ────────────────────────────────────────────────────────
+    function actualizarPanel(completados: number, total: number) {
+        const pct = total > 0 ? Math.round((completados / total) * 100) : 0;
+
+        const numEl = document.querySelector<HTMLElement>("[data-prog-num]");
+        const totEl = document.querySelector<HTMLElement>("[data-prog-tot]");
+        const barEl = document.querySelector<HTMLElement>("[data-prog-bar]");
+        const pctEl = document.querySelector<HTMLElement>("[data-prog-pct]");
+
+        if (numEl) numEl.textContent = String(completados);
+        if (totEl) totEl.textContent = `/${total}`;
+        if (barEl) barEl.style.width = `${pct}%`;
+        if (pctEl) pctEl.textContent = `${pct}% COMPLETADO`;
+    }
+
+    // ── CARD DOM ──────────────────────────────────────────────────────────────
+    function actualizarCardDOM(
+        id: string,
+        estado: "nuevo" | "progreso" | "completado",
+    ) {
+        const card = document.querySelector<HTMLElement>(
+            `.topic-card[data-id="${id}"]`,
+        );
+        if (!card) return;
+
+        card.classList.remove("visited", "completed");
+        if (estado === "progreso") card.classList.add("visited");
+        if (estado === "completado") card.classList.add("completed");
+
+        const titleEl = card.querySelector<HTMLElement>(".tc-title");
+        if (titleEl) {
+            titleEl.querySelectorAll(".tc-sbadge").forEach((b) => b.remove());
+            if (estado === "progreso") {
+                const badge = document.createElement("span");
+                badge.className = "tc-sbadge prog";
+                badge.textContent = "en progreso";
+                titleEl.appendChild(badge);
+            } else if (estado === "completado") {
+                const badge = document.createElement("span");
+                badge.className = "tc-sbadge done";
+                badge.textContent = "✓ completado";
+                titleEl.appendChild(badge);
+            }
+        }
+
+        const btn = card.querySelector<HTMLButtonElement>(".btn-iniciar");
+        if (btn) {
+            btn.textContent =
+                estado === "completado"
+                    ? "$ revisar"
+                    : estado === "progreso"
+                      ? "$ continuar"
+                      : "$ iniciar";
+        }
+
+        const foot = card.querySelector<HTMLElement>(".tc-foot");
+        if (!foot) return;
+
+        let progEl = card.querySelector<HTMLElement>(".tc-prog");
+
+        if (estado === "nuevo") {
+            progEl?.remove();
+        } else {
+            const pct = estado === "completado" ? 100 : 60;
+            const colorClass = estado === "completado" ? "green" : "orange";
+            const label = `Progreso: ${pct}%`;
+
+            if (!progEl) {
+                progEl = document.createElement("div");
+                progEl.className = "tc-prog";
+                progEl.innerHTML = `
+                    <div class="tc-prog-lbl">${label}</div>
+                    <div class="tc-prog-bg">
+                        <div class="tc-prog-fill ${colorClass}"
+                             style="width: 0%"></div>
+                    </div>
+                `;
+                foot.appendChild(progEl);
+
+                requestAnimationFrame(() => {
+                    const fill =
+                        progEl!.querySelector<HTMLElement>(".tc-prog-fill");
+                    if (fill) fill.style.width = `${pct}%`;
+                });
+            } else {
+                const lbl = progEl.querySelector<HTMLElement>(".tc-prog-lbl");
+                const fill = progEl.querySelector<HTMLElement>(".tc-prog-fill");
+                if (lbl) lbl.textContent = label;
+                if (fill) {
+                    fill.classList.remove("orange", "green");
+                    fill.classList.add(colorClass);
+                    fill.style.width = `${pct}%`;
+                }
+            }
+        }
+    }
+
+    // ── BOTONES ───────────────────────────────────────────────────────────────
+    function registrarBotones(
+        store: StoreShape,
+        temas: (typeof RUTAS)[string]["temas"],
+    ) {
+        const container = document.getElementById("topics-container");
+        if (!container) return;
+
+        container.addEventListener("click", (e) => {
+            const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+                ".btn-iniciar",
+            );
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            if (!id) return;
+
+            const est = store.temas[id] ?? {
+                visitado: false,
+                completado: false,
+            };
+
+            if (est.completado) {
+                toast("Módulo completado — revisando contenido");
+                return;
+            }
+
+            store.temas[id] = { visitado: true, completado: false };
+            guardarEstado(store);
+            actualizarCardDOM(id, "progreso");
+
+            const completadosActuales = temas.filter(
+                (t) => store.temas[t.id]?.completado,
+            ).length;
+            actualizarPanel(completadosActuales, temas.length);
+            toast("Módulo iniciado — progreso guardado");
+
+            setTimeout(() => {
+                store.temas[id] = { visitado: true, completado: true };
+                guardarEstado(store);
+                actualizarCardDOM(id, "completado");
+
+                const completadosFinal = temas.filter(
+                    (t) => store.temas[t.id]?.completado,
+                ).length;
+                actualizarPanel(completadosFinal, temas.length);
+                toast("✓ Módulo completado");
+            }, 1500);
+        });
+    }
+
+    // ── RESTAURAR CARDS ───────────────────────────────────────────────────────
+    function restaurarCards(
+        store: StoreShape,
+        temas: (typeof RUTAS)[string]["temas"],
+    ) {
+        temas.forEach((tema) => {
+            const est = store.temas[tema.id];
+            if (!est) return;
+
+            const estado: "progreso" | "completado" | "nuevo" = est.completado
+                ? "completado"
+                : est.visitado
+                  ? "progreso"
+                  : "nuevo";
+
+            if (estado !== "nuevo") actualizarCardDOM(tema.id, estado);
+        });
+
+        const completados = temas.filter(
+            (t) => store.temas[t.id]?.completado,
+        ).length;
+        actualizarPanel(completados, temas.length);
+    }
+
+    // ── ENCABEZADO ────────────────────────────────────────────────────────────
+    function actualizarEncabezado(rutaData: (typeof RUTAS)[string]) {
+        const tituloEl = document.getElementById("grid-titulo");
+        const badgeEl = document.getElementById("grid-badge");
+        const descEl = document.getElementById("grid-desc");
+
+        if (tituloEl) tituloEl.textContent = rutaData.titulo;
+        if (badgeEl) badgeEl.textContent = `✦ ${rutaData.subtitulo}`;
+        if (descEl) descEl.textContent = rutaData.desc;
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────────────────
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const store = cargarEstado();
+
+        const claveRuta =
+            store.rol && store.ruta
+                ? resolverRuta(store.rol, store.ruta)
+                : "educator_basica";
+
+        const rutaData = RUTAS[claveRuta];
+        if (!rutaData) return;
+
+        actualizarEncabezado(rutaData);
+        restaurarCards(store, rutaData.temas);
+        registrarBotones(store, rutaData.temas);
+
+        document
+            .getElementById("btn-cambiar")
+            ?.addEventListener("click", () => {
+                window.location.href = "/";
+            });
+    });
+</script>

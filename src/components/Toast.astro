@@ -1,0 +1,114 @@
+---
+/**
+ * Toast.astro
+ *
+ * Singleton de notificación temporal. Solo existe uno en el DOM.
+ * Se activa mediante el evento personalizado "toast:show" desde
+ * cualquier parte de la página, sin necesidad de props en build time.
+ *
+ * Uso desde cualquier script:
+ *   document.dispatchEvent(new CustomEvent("toast:show", {
+ *       detail: { message: "Texto aquí", duration: 2800 }
+ *   }));
+ */
+---
+
+<div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+>
+</div>
+
+<style>
+    .toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+
+        /*
+         * Estado inicial: invisible y desplazado 70px hacia abajo.
+         * La clase .toast--show lo sube a translateY(0) con la
+         * transición de deslizamiento vertical del prototipo.
+         */
+        transform: translateX(-50%) translateY(70px);
+        opacity: 0;
+        pointer-events: none;
+
+        background: #1c1917;
+        color: #fafaf9;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        padding: 10px 22px;
+        border-radius: 100px;
+        white-space: nowrap;
+        z-index: 200;
+
+        /*
+         * cubic-bezier(.34,1.56,.64,1): curva con ligero rebote al final.
+         * Replica exactamente la transición del prototipo HTML original.
+         */
+        transition:
+            transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+            opacity 0.35s ease;
+    }
+
+    .toast--show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .toast {
+            transition: opacity 0.2s ease;
+        }
+
+        .toast--show {
+            /* Sin deslizamiento, solo fade */
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+</style>
+
+<script>
+    function initToast() {
+        const el = document.getElementById("toast");
+        if (!el) return;
+
+        let hideTimer: ReturnType<typeof setTimeout>;
+
+        /**
+         * showToast(message, duration)
+         *
+         * Muestra el toast con el mensaje dado y lo oculta automáticamente
+         * tras `duration` ms. Si se llama mientras hay un toast visible,
+         * cancela el timer anterior y reinicia la cuenta — evita que el
+         * toast desaparezca antes de que el usuario lea el nuevo mensaje.
+         */
+        function showToast(message: string, duration = 2800) {
+            el.textContent = message;
+            el.classList.add("toast--show");
+
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                el.classList.remove("toast--show");
+            }, duration);
+        }
+
+        // Escuchar el evento global "toast:show"
+        document.addEventListener("toast:show", (e: Event) => {
+            const { message, duration } = (
+                e as CustomEvent<{ message: string; duration?: number }>
+            ).detail;
+            showToast(message, duration);
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initToast);
+    } else {
+        initToast();
+    }
+</script>
