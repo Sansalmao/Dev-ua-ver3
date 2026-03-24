@@ -65,3 +65,7 @@ dominio_unicode = idna.decode(dominio_ascii)
 
 print(f"ASCII   : {dominio_ascii}")
 print(f"Unicode : {dominio_unicode}")
+const firstActive = nav.querySelector<HTMLButtonElement>(".tnav-item.active");
+if (firstActive) {
+    activateItem(firstActive);
+}

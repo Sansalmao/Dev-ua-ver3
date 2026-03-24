@@ -1,0 +1,139 @@
+---
+interface Props {
+    /** panelId activo al cargar la página*/
+    defaultPanel?: string;
+}
+
+const { defaultPanel = "" } = Astro.props;
+---
+
+<div class="tabs-panels" id="tabs-panels" data-default-panel={defaultPanel}>
+    {/* El MDX se renderiza aquí y JS lo segmenta en paneles. */}
+    <slot />
+</div>
+
+<style>
+    .tabs-panels {
+        width: 100%;
+    }
+
+    /* Panel oculto por defecto */
+    :global(.tab-panel) {
+        display: none;
+    }
+
+    /* Panel activo - visible con animación de entrada */
+    :global(.tab-panel.panel-active) {
+        display: block;
+        animation: panelIn 0.22s ease both;
+    }
+
+    @keyframes panelIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        :global(.tab-panel.panel-active) {
+            animation: none;
+        }
+    }
+</style>
+
+<script>
+    function initTabsPanel() {
+        const container = document.getElementById("tabs-panels");
+        if (!container) return;
+
+        // Recopilar todos los <h2 id="..."> del MDX renderizado ──
+        //
+        const headings = Array.from(
+            container.querySelectorAll<HTMLHeadingElement>("h2[id]"),
+        );
+
+        if (headings.length === 0) return;
+
+        const allNodes = Array.from(container.childNodes);
+
+        //Agrupar nodos por panel ──
+        const panelMap = new Map<string, Node[]>();
+        let currentId: string | null = null;
+
+        for (const node of allNodes) {
+            // ¿Es un h2 con id? → nuevo panel
+            if (
+                node.nodeType === Node.ELEMENT_NODE &&
+                (node as Element).tagName === "H2" &&
+                (node as HTMLElement).id
+            ) {
+                currentId = (node as HTMLElement).id;
+                if (!panelMap.has(currentId)) {
+                    panelMap.set(currentId, []);
+                }
+            }
+
+            // Acumular nodo en el panel actual
+            if (currentId) {
+                panelMap.get(currentId)!.push(node);
+            }
+        }
+
+        //Reemplazar el contenido del contenedor con los paneles ──
+        container.innerHTML = "";
+
+        panelMap.forEach((nodes, panelId) => {
+            const panel = document.createElement("div");
+            panel.className = "tab-panel";
+            panel.id = panelId;
+            panel.setAttribute("role", "tabpanel");
+            panel.setAttribute("aria-labelledby", `tab-${panelId}`);
+
+            // Mover los nodos al panel
+            nodes.forEach((node) => panel.appendChild(node));
+
+            container.appendChild(panel);
+        });
+
+        //Activar el panel por defecto ──
+
+        const defaultPanel = container.dataset.defaultPanel ?? "";
+        activatePanel(defaultPanel || headings[0]?.id || "");
+
+        //Escuchar cambios de pestaña desde TabsNav ──
+
+        document.addEventListener("tabchange", (e: Event) => {
+            const { panelId } = (e as CustomEvent<{ panelId: string }>).detail;
+            activatePanel(panelId);
+        });
+
+        // Función auxiliar para activar un panel
+
+        function activatePanel(panelId: string) {
+            if (!panelId) return;
+
+            // Desactivar todos
+            container
+                .querySelectorAll<HTMLElement>(".tab-panel.panel-active")
+                .forEach((p) => p.classList.remove("panel-active"));
+
+            // Activar el objetivo
+            const target = container.querySelector<HTMLElement>(`#${panelId}`);
+            if (target) {
+                target.classList.add("panel-active");
+            }
+        }
+    }
+
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTabsPanel);
+    } else {
+        initTabsPanel();
+    }
+</script>

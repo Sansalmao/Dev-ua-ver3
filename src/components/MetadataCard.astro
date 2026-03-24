@@ -27,7 +27,8 @@ const safeProgress = Math.max(0, Math.min(100, progreso));
             <div class="metadata-card__progress-track" aria-hidden="true">
                 <div
                     class="metadata-card__progress-fill"
-                    style={`width: ${safeProgress}%;`}
+                    style="width: 0%;"
+                    data-initial={safeProgress}
                 >
                 </div>
             </div>
@@ -170,3 +171,50 @@ const safeProgress = Math.max(0, Math.min(100, progreso));
         }
     }
 </style>
+
+<script>
+    function initProgressBar() {
+        const fill = document.querySelector<HTMLElement>(
+            ".metadata-card__progress-fill",
+        );
+        const label = document.querySelector<HTMLElement>(
+            ".metadata-card__percentage",
+        );
+
+        if (!fill) return;
+
+        // Leer el valor inicial que Astro escribió en el data-attribute
+        const initial = Number(fill.dataset.initial ?? 0);
+
+        // Delay de 300ms → la barra "carga" visualmente al abrir el módulo.
+        setTimeout(() => {
+            setProgress(initial, fill, label);
+        }, 300);
+
+        // Cada vez que el usuario visita un ítem, TabsNav emite tnav:progress.
+        document.addEventListener("tnav:progress", (e: Event) => {
+            const { pct } = (
+                e as CustomEvent<{ done: number; total: number; pct: number }>
+            ).detail;
+            setProgress(pct, fill, label);
+        });
+    }
+
+    /**
+     * Actualiza el ancho del fill y el texto del label.
+     */
+    function setProgress(
+        pct: number,
+        fill: HTMLElement,
+        label: HTMLElement | null,
+    ) {
+        fill.style.width = `${pct}%`;
+        if (label) label.textContent = `${pct}%`;
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initProgressBar);
+    } else {
+        initProgressBar();
+    }
+</script>

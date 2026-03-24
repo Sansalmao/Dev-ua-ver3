@@ -1,0 +1,575 @@
+---
+
+interface SectionItem {
+    title: string;
+    panelId: string;
+}
+
+interface Section {
+    title: string;
+    items: SectionItem[];
+}
+
+interface Props {
+    sections: Section[];
+    activePanel?: string; // panelId activo por defecto
+}
+
+const { sections, activePanel } = Astro.props;
+
+// Contar totales para el contador del file-header
+const totalSecciones = sections.length;
+const totalTemas = sections.reduce((acc, s) => acc + s.items.length, 0);
+
+// Por ahora el primer ítem es el activo por defecto
+const defaultActive = activePanel ?? sections[0]?.items[0]?.panelId ?? "";
+---
+
+<nav
+    class="tabs-nav"
+    id="tabs-nav"
+    aria-label="Índice del módulo"
+    role="tablist"
+>
+    <!-- File header: dot amarillo + filename + contador -->
+    <div class="tabs-nav__bar">
+        <div class="tabs-nav__bar-top">
+            <div class="d-y" aria-hidden="true"></div>
+            <span class="tabs-nav__filename">table_of_contents.md</span>
+        </div>
+        <span class="tabs-nav__counter" id="tnav-counter">
+            {totalSecciones} secciones · {totalTemas} temas
+        </span>
+    </div>
+
+    <!-- Input de búsqueda -->
+    <div class="tabs-nav__search">
+        <svg
+            class="tabs-nav__search-icon"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+        >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input
+            type="search"
+            class="tabs-nav__input"
+            id="tnav-search"
+            placeholder="Buscar tema..."
+            aria-label="Filtrar temas del módulo"
+        />
+    </div>
+
+    <!-- Árbol de secciones -->
+    <div class="tabs-nav__tree" id="tnav-tree" role="tablist">
+        {sections.map((section, sIdx) => (
+            <div
+                class="tnav-section is-open"
+                data-section={sIdx}
+                id={`tnav-section-${sIdx}`}
+            >
+                <!-- Cabecera de sección colapsable -->
+                <button
+                    type="button"
+                    class="tnav-section__header"
+                    aria-expanded="true"
+                    aria-controls={`tnav-body-${sIdx}`}
+                    data-section-toggle={sIdx}
+                >
+                    <span class="tnav-section__chevron" aria-hidden="true">
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </span>
+                    <span class="tnav-section__title">{section.title}</span>
+                    <span
+                        class="tnav-section__count"
+                        id={`tnav-count-${sIdx}`}
+                        aria-label={`${section.items.length} temas`}
+                    >
+                        {section.items.length}
+                    </span>
+                </button>
+
+                <!-- Cuerpo colapsable con los ítems -->
+                <div
+                    class="tnav-section__body"
+                    id={`tnav-body-${sIdx}`}
+                    role="group"
+                >
+                    {section.items.map((item) => (
+                        <button
+                            type="button"
+                            class={`tnav-item${item.panelId === defaultActive ? " active" : ""}`}
+                            role="tab"
+                            aria-selected={item.panelId === defaultActive ? "true" : "false"}
+                            aria-controls={item.panelId}
+                            data-target={item.panelId}
+                            data-title={item.title}
+                        >
+                            <span
+                                class="tnav-item__check"
+                                aria-hidden="true"
+                            >✓</span>
+                            <span class="tnav-item__label">{item.title}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        ))}
+    </div>
+</nav>
+
+<style>
+    /* ── Contenedor principal ── */
+    .tabs-nav {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        width: 100%;
+    }
+
+    /* ── File header ── */
+    .tabs-nav__bar {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 12px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .tabs-nav__bar-top {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tabs-nav__filename {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tabs-nav__counter {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        padding-left: 18px;
+    }
+
+    /* ── Búsqueda ── */
+    .tabs-nav__search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+    }
+
+    .tabs-nav__search-icon {
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+
+    .tabs-nav__input {
+        flex: 1;
+        background: none;
+        border: none;
+        outline: none;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text);
+        min-width: 0;
+    }
+
+    .tabs-nav__input::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* ── Árbol scrolleable ── */
+    .tabs-nav__tree {
+        max-height: 380px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .tabs-nav__tree::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .tabs-nav__tree::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .tabs-nav__tree::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+    }
+
+    /* ── Sección ── */
+    .tnav-section {
+        border-left: 2px solid transparent;
+        transition: border-color var(--transition-fast);
+    }
+
+    .tnav-section.has-active {
+        border-left-color: var(--accent);
+    }
+
+    /* Cabecera de sección */
+    .tnav-section__header {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        text-align: left;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+
+    .tnav-section__header:hover {
+        background: var(--accent-soft);
+    }
+
+    /* Chevron — rota 180° cuando la sección está abierta */
+    .tnav-section__chevron {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        color: var(--text-muted);
+        transition: transform 0.25s ease;
+    }
+
+    .tnav-section.is-open .tnav-section__chevron {
+        transform: rotate(180deg);
+    }
+
+    .tnav-section__title {
+        flex: 1;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-family: var(--font-mono);
+    }
+
+    /* Badge contador de ítems */
+    .tnav-section__count {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 100px;
+        background: var(--bg);
+        color: var(--text-muted);
+        flex-shrink: 0;
+        transition:
+            background var(--transition-fast),
+            color var(--transition-fast);
+    }
+
+    .tnav-section.has-active .tnav-section__count {
+        background: var(--accent-bg-soft);
+        color: var(--accent);
+    }
+
+    .tnav-section.all-done .tnav-section__count {
+        background: var(--green-bg);
+        color: var(--green-text);
+    }
+
+    /* ── Cuerpo colapsable ── */
+    .tnav-section__body {
+        overflow: hidden;
+        /* La altura real se controla por JS con max-height */
+        max-height: 1000px;
+        transition: max-height 0.25s ease;
+    }
+
+    .tnav-section__body.collapsed {
+        max-height: 0;
+    }
+
+    /* ── Ítems hoja ── */
+    .tnav-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px 9px 3.1rem;
+        text-align: left;
+        background: none;
+        border: none;
+        border-left: 2px solid transparent;
+        cursor: pointer;
+        position: relative;
+        transition:
+            background var(--transition-fast),
+            border-color var(--transition-fast);
+        margin-left: -2px; /* compensa el border-left de la sección */
+    }
+
+    .tnav-item:hover {
+        background: rgba(229, 98, 26, 0.04);
+        border-left-color: rgba(229, 98, 26, 0.3);
+    }
+
+    /* Estado activo */
+    .tnav-item.active {
+        background: var(--accent-soft);
+        border-left-color: var(--accent);
+    }
+
+    /* Estado visitado */
+    .tnav-item.visited .tnav-item__label {
+        opacity: 0.6;
+    }
+
+    .tnav-item.visited .tnav-item__check {
+        opacity: 1;
+    }
+
+    /* Check verde — invisible hasta .visited */
+    .tnav-item__check {
+        position: absolute;
+        left: 1.55rem;
+        font-size: 10px;
+        color: var(--green-text);
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+        pointer-events: none;
+    }
+
+    /* Label del ítem */
+    .tnav-item__label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        transition:
+            color var(--transition-fast),
+            opacity var(--transition-fast);
+    }
+
+    .tnav-item.active .tnav-item__label {
+        color: var(--accent);
+        font-weight: 600;
+    }
+
+    /* Ítem oculto por el filtro de búsqueda */
+    .tnav-item.hidden-by-filter {
+        display: none;
+    }
+
+    /* Sección oculta por el filtro (todos sus ítems filtrados) */
+    .tnav-section.hidden-by-filter {
+        display: none;
+    }
+</style>
+
+<script>
+    // ── INIT ──────────────────────────────────────────────────────────────────
+
+    function initTabsNav() {
+        const nav = document.getElementById("tabs-nav");
+        if (!nav) return;
+
+        // ── COLAPSO / EXPANSIÓN ───────────────────────────────────────────────
+
+        nav.querySelectorAll<HTMLButtonElement>(
+            "[data-section-toggle]"
+        ).forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const sIdx = btn.dataset.sectionToggle!;
+                const section = document.getElementById(
+                    `tnav-section-${sIdx}`
+                )!;
+                const body = document.getElementById(`tnav-body-${sIdx}`)!;
+                const isOpen = section.classList.contains("is-open");
+
+                if (isOpen) {
+                    // Cerrar: fijar altura actual → colapsar a 0
+                    body.style.maxHeight = body.scrollHeight + "px";
+                    // Forzar reflow para que la transición funcione
+                    body.getBoundingClientRect();
+                    body.style.maxHeight = "0px";
+                    section.classList.remove("is-open");
+                    btn.setAttribute("aria-expanded", "false");
+                } else {
+                    // Abrir: expandir a altura real
+                    body.style.maxHeight = body.scrollHeight + "px";
+                    section.classList.add("is-open");
+                    btn.setAttribute("aria-expanded", "true");
+
+                    // Limpiar maxHeight inline cuando termina la transición
+                    body.addEventListener(
+                        "transitionend",
+                        () => {
+                            if (section.classList.contains("is-open")) {
+                                body.style.maxHeight = "";
+                            }
+                        },
+                        { once: true }
+                    );
+                }
+            });
+        });
+
+        // ── ACTIVACIÓN DE ÍTEM ────────────────────────────────────────────────
+
+        function activateItem(btn: HTMLButtonElement) {
+            // Quitar .active del ítem anterior
+            nav.querySelectorAll(".tnav-item.active").forEach((el) => {
+                el.classList.remove("active");
+                el.setAttribute("aria-selected", "false");
+            });
+
+            // Quitar .has-active de todas las secciones
+            nav.querySelectorAll(".tnav-section.has-active").forEach((el) => {
+                el.classList.remove("has-active");
+            });
+
+            // Activar el ítem clickeado
+            btn.classList.add("active", "visited");
+            btn.setAttribute("aria-selected", "true");
+
+            // Marcar su sección padre como has-active
+            const section = btn.closest(".tnav-section");
+            if (section) {
+                section.classList.add("has-active");
+                refreshSectionState(section as HTMLElement);
+            }
+
+            // Emitir evento DOM para que TabsPanel lo escuche
+            const panelId = btn.dataset.target!;
+            nav.dispatchEvent(
+                new CustomEvent("tabchange", {
+                    bubbles: true,
+                    detail: { panelId },
+                })
+            );
+        }
+
+        nav.querySelectorAll<HTMLButtonElement>(".tnav-item").forEach((btn) => {
+            btn.addEventListener("click", () => activateItem(btn));
+        });
+
+        // Activar el primero por defecto si ninguno está activo
+        const firstActive = nav.querySelector<HTMLButtonElement>(".tnav-item.active");
+        if (firstActive) {
+            activateItem(firstActive);
+        }
+
+        // ── ESTADO DE SECCIÓN ─────────────────────────────────────────────────
+
+        function refreshSectionState(section: HTMLElement) {
+            const items = section.querySelectorAll(".tnav-item");
+            const allDone = Array.from(items).every((i) =>
+                i.classList.contains("visited")
+            );
+            if (allDone) {
+                section.classList.add("all-done");
+            }
+            // Recalcular progreso global cada vez que cambia una sección
+            emitProgress();
+        }
+
+        function emitProgress() {
+            const allItems = nav.querySelectorAll(".tnav-item");
+            const visited  = nav.querySelectorAll(".tnav-item.visited");
+            const total    = allItems.length;
+            const done     = visited.length;
+            const pct      = total > 0 ? Math.round((done / total) * 100) : 0;
+
+            document.dispatchEvent(
+                new CustomEvent("tnav:progress", {
+                    detail: { done, total, pct },
+                })
+            );
+        }
+
+        // ── FILTRO DE BÚSQUEDA ────────────────────────────────────────────────
+
+        const searchInput = document.getElementById(
+            "tnav-search"
+        ) as HTMLInputElement;
+
+        let debounceTimer: ReturnType<typeof setTimeout>;
+
+        searchInput?.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const query = searchInput.value.trim().toLowerCase();
+                filterTree(query);
+            }, 120);
+        });
+
+        function filterTree(query: string) {
+            nav.querySelectorAll<HTMLElement>(".tnav-section").forEach(
+                (section) => {
+                    const items =
+                        section.querySelectorAll<HTMLElement>(".tnav-item");
+                    let anyVisible = false;
+
+                    items.forEach((item) => {
+                        const title = (
+                            item.dataset.title ?? ""
+                        ).toLowerCase();
+                        const matches = !query || title.includes(query);
+
+                        item.classList.toggle("hidden-by-filter", !matches);
+                        if (matches) anyVisible = true;
+                    });
+
+                    // Ocultar sección si ninguno de sus ítems coincide
+                    section.classList.toggle(
+                        "hidden-by-filter",
+                        !anyVisible && query !== ""
+                    );
+
+                    // Expandir secciones con resultados automáticamente
+                    if (anyVisible && query !== "") {
+                        const body = section.querySelector<HTMLElement>(
+                            ".tnav-section__body"
+                        )!;
+                        const btn = section.querySelector<HTMLButtonElement>(
+                            "[data-section-toggle]"
+                        )!;
+                        section.classList.add("is-open");
+                        btn?.setAttribute("aria-expanded", "true");
+                        body.style.maxHeight = "";
+                    }
+                }
+            );
+        }
+    }
+
+    // Ejecutar cuando el componente entra en el viewport (client:visible)
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTabsNav);
+    } else {
+        initTabsNav();
+    }
+</script>
