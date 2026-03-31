@@ -17,7 +17,7 @@ const total = ruta.temas.length;
 <BaseLayout title={`${ruta.titulo} — Skills UA`} description={ruta.desc}>
     <NavBar slot="navbar" />
 
-    <div id="view-grid" class="grid-view">
+    <div id="view-grid" class="grid-view" style="opacity:0">
         <header class="grid-head">
             <div class="grid-title-row">
                 <div class="grid-title-group">
@@ -62,6 +62,7 @@ const total = ruta.temas.length;
                             duracion={tema.duracion}
                             descripcion={tema.descripcion}
                             estado="nuevo"
+                            slug={tema.slug}
                         >
                             <span
                                 slot="icon"
@@ -252,7 +253,9 @@ const total = ruta.temas.length;
     }
 
     // ── IMPORTACIONES ESTÁTICAS ───────────────────────────────────────────────
-    // Sin await import(): Astro resuelve estas importaciones en build time,
+    // Astro/Vite procesa este import estático en build time y lo incluye
+    // en el bundle del cliente. La ruta "../lib/rutas" resuelve correctamente
+    // desde src/pages/ → src/lib/rutas.ts.
     import { RUTAS, resolverRuta } from "../lib/rutas";
 
     // ── TOAST ─────────────────────────────────────────────────────────────────
@@ -309,14 +312,19 @@ const total = ruta.temas.length;
             }
         }
 
-        const btn = card.querySelector<HTMLButtonElement>(".btn-iniciar");
+        // Actualizar solo el texto del botón/enlace, sin reemplazar el nodo.
+        // Así se conserva el <a href> si el tema tiene slug.
+        const btn = card.querySelector<HTMLElement>(".btn-iniciar");
         if (btn) {
-            btn.textContent =
+            const nuevoTexto =
                 estado === "completado"
                     ? "$ revisar"
                     : estado === "progreso"
                       ? "$ continuar"
                       : "$ iniciar";
+
+            // Limpiar hijos de texto sin tocar atributos del elemento
+            btn.textContent = nuevoTexto;
         }
 
         const foot = card.querySelector<HTMLElement>(".tc-foot");
@@ -370,19 +378,36 @@ const total = ruta.temas.length;
         if (!container) return;
 
         container.addEventListener("click", (e) => {
-            const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
-                ".btn-iniciar",
-            );
+            const btn = (e.target as HTMLElement).closest(".btn-iniciar");
             if (!btn) return;
 
-            const id = btn.dataset.id;
+            const id = (btn as HTMLElement).dataset.id;
             if (!id) return;
+
+            // Si el elemento es un <a> con href real, dejar que el
+            // navegador maneje el click normalmente. Solo actualizamos
+            // el estado en localStorage antes de salir.
+            const esEnlace =
+                btn.tagName === "A" &&
+                (btn as HTMLAnchorElement).getAttribute("href") !== "#";
 
             const est = store.temas[id] ?? {
                 visitado: false,
                 completado: false,
             };
 
+            if (esEnlace) {
+                // Guardar progreso como visitado antes de navegar
+                // para que al volver con el breadcrumb el estado sea correcto.
+                if (!est.visitado && !est.completado) {
+                    store.temas[id] = { visitado: true, completado: false };
+                    guardarEstado(store);
+                }
+                // No llamar e.preventDefault(): el <a> navega normalmente.
+                return;
+            }
+
+            // A partir de aquí: botones sin slug (sin módulo todavía)
             if (est.completado) {
                 toast("Módulo completado — revisando contenido");
                 return;
@@ -411,7 +436,6 @@ const total = ruta.temas.length;
             }, 1500);
         });
     }
-
     // ── RESTAURAR CARDS ───────────────────────────────────────────────────────
     function restaurarCards(
         store: StoreShape,
@@ -464,10 +488,33 @@ const total = ruta.temas.length;
         restaurarCards(store, rutaData.temas);
         registrarBotones(store, rutaData.temas);
 
+        // Revelar el grid después de restaurar el estado correcto
+        // para evitar el flash del contenido estático por defecto
+        const grid = document.getElementById("view-grid");
+        if (grid) {
+            grid.style.transition = "opacity 0.2s ease";
+            grid.style.opacity = "1";
+        }
+
         document
             .getElementById("btn-cambiar")
             ?.addEventListener("click", () => {
-                window.location.href = "/";
+                // Animación de salida antes de navegar al home.
+                // grid.astro no tiene view-home, así que en lugar de
+                // volverAlHome() hacemos un fade-out del contenedor y
+                // luego navegamos.
+                const gridEl = document.getElementById("view-grid");
+                if (gridEl) {
+                    gridEl.style.transition =
+                        "opacity 0.2s ease, transform 0.2s ease";
+                    gridEl.style.opacity = "0";
+                    gridEl.style.transform = "translateY(12px)";
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 220);
+                } else {
+                    window.location.href = "/";
+                }
             });
     });
 </script>

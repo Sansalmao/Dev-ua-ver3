@@ -5,6 +5,7 @@ export interface Tema {
   duracion: string;
   descripcion: string;
   icon: string;
+  slug?: string;
 }
 
 export interface RutaData {
@@ -83,39 +84,43 @@ export const RUTAS: Record<string, RutaData> = {
     temas: [
       {
         id: "lb-01",
-        titulo: "¿Qué es la Aceptación Universal?",
+        titulo: "Module 1 - Unicode Programming Fundamentals",
         nivel: "Básico",
-        duracion: "1h 00min",
+        duracion: "87 min",
         descripcion:
-          "Visión general de UA: qué significa para la web global y por qué tu organización debe adoptarla.",
+          "Provide the basic understanding of Unicode and its applications.",
         icon: "globe",
+        slug: "lb-01-unicode-fundamentals",
       },
       {
         id: "lb-02",
-        titulo: "Impacto de IDN en Productos Digitales",
+        titulo: "Module 2 - Unicode Advanced Programming",
         nivel: "Básico",
-        duracion: "1h 30min",
+        duracion: "287 min",
         descripcion:
-          "Casos prácticos de dominios internacionalizados y cómo afectan la experiencia del usuario.",
-        icon: "network",
+          "Designed to expand your understanding and proficiency in working with Unicode by covering key aspects such as the character-glyph model, Unicode normalization, accessing the Unicode character database, and comparing Unicode strings.",
+        icon: "code",
+        slug: "lb-02-unicode-advanced",
       },
       {
         id: "lb-03",
-        titulo: "EAI para No Técnicos",
+        titulo: "Module 3 - Unicode in Data Structures and Algorithms",
         nivel: "Básico",
-        duracion: "1h 15min",
+        duracion: "169 min",
         descripcion:
-          "Comprende el estándar EAI sin código: casos de uso, barreras y oportunidades.",
-        icon: "mail",
+          "Comprehensive introduction to leveraging the power of Unicode in data structures and algorithms.",
+        icon: "network",
+        slug: "lb-03-unicode-data-structures",
       },
       {
         id: "lb-04",
-        titulo: "Hoja de Ruta para Implementar UA",
+        titulo: "Module 4 - Unicode in Database Systems",
         nivel: "Básico",
-        duracion: "2h 00min",
+        duracion: "108 min",
         descripcion:
-          "Cómo planificar y priorizar la adopción de UA en tu stack tecnológico organizacional.",
-        icon: "map",
+          "Concise introduction to the essential concepts and considerations when working with Unicode character data in the context of database systems.",
+        icon: "server",
+        slug: "lb-04-unicode-databases",
       },
     ],
   },

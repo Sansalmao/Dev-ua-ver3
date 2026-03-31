@@ -483,6 +483,9 @@ canvas {
     font-size: 13px;
     color: var(--text-secondary);
     line-height: 1.55;
+    flex: 1;
+    display: flex;
+    align-items: center;
 }
 
 .tc-foot {

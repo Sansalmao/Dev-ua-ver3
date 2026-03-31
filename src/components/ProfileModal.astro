@@ -618,31 +618,37 @@
         guardar();
     }
 
-    // ── REFERENCIAS AL DOM ───────────────────────────────────────────────────────
+    // ── GUARD: solo ejecutar en index.astro ──────────────────────────────────────
 
-    const overlay = document.getElementById("modal-overlay")!;
-    const step1El = document.getElementById("step-1")!;
-    const step2El = document.getElementById("step-2")!;
-    const stepLbl = document.getElementById("step-lbl")!;
-    const modalTitle = document.getElementById("modal-title")!;
-    const footHint = document.getElementById("foot-hint")!;
-    const footS2 = document.getElementById("foot-s2")!;
-    const progFill = document.getElementById("modal-prog-fill")!;
-    const viewHome = document.getElementById("view-home")!;
-    const viewGrid = document.getElementById("view-grid")!;
-    const topicsCont = document.getElementById("topics-container")!;
-    const toastEl = document.getElementById("toast")!;
+    const overlay = document.getElementById("modal-overlay");
+    const viewHome = document.getElementById("view-home");
+    const viewGrid = document.getElementById("view-grid");
+    const topicsCont = document.getElementById("topics-container");
 
+    if (!overlay || !viewHome || !viewGrid || !topicsCont) {
+        throw new Error(
+            "[ProfileModal] Elementos requeridos no encontrados en el DOM. ¿Estás en index.astro?",
+        );
+    }
+
+    // A partir de aquí todos los elementos están garantizados como no-nulos.
+    const step1El = document.getElementById("step-1") as HTMLElement;
+    const step2El = document.getElementById("step-2") as HTMLElement;
+    const stepLbl = document.getElementById("step-lbl") as HTMLElement;
+    const modalTitle = document.getElementById("modal-title") as HTMLElement;
+    const footHint = document.getElementById("foot-hint") as HTMLElement;
+    const footS2 = document.getElementById("foot-s2") as HTMLElement;
+    const progFill = document.getElementById("modal-prog-fill") as HTMLElement;
     let rolActual: string | null = null;
-    let toastTimer: ReturnType<typeof setTimeout>;
 
     // ── TOAST ────────────────────────────────────────────────────────────────────
 
-    function toast(msg: string) {
-        toastEl.textContent = msg;
-        toastEl.classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2800);
+    function toast(msg: string, duration = 2800) {
+        document.dispatchEvent(
+            new CustomEvent("toast:show", {
+                detail: { message: msg, duration },
+            }),
+        );
     }
 
     // ── ANIMACIONES ──────────────────────────────────────────────────────────────
@@ -739,15 +745,19 @@
               : "";
 
         const progHtml = est.visitado
-            ? `
-        <div class="tc-prog">
-            <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
-            <div class="tc-prog-bg">
-                <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
-                     style="width:${est.completado ? 100 : 60}%"></div>
-            </div>
-        </div>`
+            ? `<div class="tc-prog">
+                   <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
+                   <div class="tc-prog-bg">
+                       <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
+                            style="width:${est.completado ? 100 : 60}%"></div>
+                   </div>
+               </div>`
             : "";
+
+        const botonHtml = t.slug
+            ? `<a href="/modulos/${t.slug}" class="btn-iniciar" data-id="${t.id}"
+                  data-slug="${t.slug}">${btnLabel}</a>`
+            : `<button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>`;
 
         return `
         <div class="topic-card ${cardClass}" data-id="${t.id}" style="opacity:0;transform:translateY(14px)">
@@ -763,14 +773,14 @@
                                 <circle cx="12" cy="12" r="10"/>
                                 <polyline points="12 6 12 12 16 14"/>
                             </svg>
-                            ${t.dur ?? t.duracion}
+                            ${t.duracion}
                         </span>
                     </div>
                 </div>
             </div>
             <p class="tc-desc">${t.descripcion}</p>
             <div class="tc-foot">
-                <button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>
+                ${botonHtml}
                 ${progHtml}
             </div>
         </div>`;
@@ -783,10 +793,15 @@
         ).length;
         const pct = total > 0 ? Math.round((completados / total) * 100) : 0;
 
-        document.getElementById("prog-num")!.textContent = String(completados);
-        document.getElementById("prog-tot")!.textContent = `/${total}`;
-        document.getElementById("prog-bar")!.style.width = `${pct}%`;
-        document.getElementById("prog-pct")!.textContent = `${pct}% COMPLETADO`;
+        const numEl = document.querySelector<HTMLElement>("[data-prog-num]");
+        const totEl = document.querySelector<HTMLElement>("[data-prog-tot]");
+        const barEl = document.querySelector<HTMLElement>("[data-prog-bar]");
+        const pctEl = document.querySelector<HTMLElement>("[data-prog-pct]");
+
+        if (numEl) numEl.textContent = String(completados);
+        if (totEl) totEl.textContent = `/${total}`;
+        if (barEl) barEl.style.width = `${pct}%`;
+        if (pctEl) pctEl.textContent = `${pct}% COMPLETADO`;
     }
 
     async function mostrarGrid(
@@ -854,7 +869,7 @@
 
     function registrarBotones(temas: (typeof RUTAS)[string]["temas"]) {
         topicsCont
-            .querySelectorAll<HTMLButtonElement>(".btn-iniciar")
+            .querySelectorAll<HTMLButtonElement>("button.btn-iniciar")
             .forEach((btn) => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -868,7 +883,6 @@
                         setTimeout(() => {
                             setTema(id, { completado: true });
                             toast("✓ Módulo completado");
-
                             mostrarGrid(
                                 resolverRuta(store.rol ?? "", store.ruta ?? ""),
                                 false,
@@ -877,6 +891,21 @@
                         }, 1500);
                     } else {
                         toast("Módulo completado — revisando contenido");
+                    }
+                });
+            });
+
+        topicsCont
+            .querySelectorAll<HTMLAnchorElement>("a.btn-iniciar")
+            .forEach((enlace) => {
+                enlace.addEventListener("click", () => {
+                    const id = enlace.dataset.id!;
+                    const est = store.temas[id] ?? {
+                        visitado: false,
+                        completado: false,
+                    };
+                    if (!est.visitado && !est.completado) {
+                        setTema(id, { visitado: true });
                     }
                 });
             });
@@ -938,7 +967,7 @@
     // Volver al home desde el grid
     document.getElementById("btn-cambiar")!.addEventListener("click", () => {
         setStore({ rol: null, ruta: null });
-        volverAlHome(); // ← sin .then(() => abrirModal)
+        volverAlHome();
     });
 
     // ── RESTAURACIÓN DESDE LOCALSTORAGE ─────────────────────────────────────────

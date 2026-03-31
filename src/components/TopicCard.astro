@@ -8,9 +8,10 @@ interface Props {
     duracion: string;
     descripcion: string;
     estado: TopicState;
+    slug?: string; // ← opcional: si existe, el botón navega al módulo
 }
 
-const { id, titulo, nivel, duracion, descripcion, estado } = Astro.props;
+const { id, titulo, nivel, duracion, descripcion, estado, slug } = Astro.props;
 
 const nivelClass = nivel === "Avanzado" ? "avanzado" : "basico";
 const cardClass =
@@ -26,6 +27,11 @@ const botonTexto =
         : estado === "progreso"
           ? "$ continuar"
           : "$ iniciar";
+
+// Si el tema tiene slug, el destino es la página del módulo.
+// Si no, es "#" y el JS del grid maneja el click (marcar progreso).
+const href = slug ? `/modulos/${slug}` : "#";
+const esEnlace = !!slug;
 ---
 
 <div class={`topic-card ${cardClass}`} data-id={id}>
@@ -74,9 +80,24 @@ const botonTexto =
     <p class="tc-desc">{descripcion}</p>
 
     <div class="tc-foot">
-        <button type="button" class="btn-iniciar" data-id={id}>
-            {botonTexto}
-        </button>
+        <!--
+            Si el tema tiene slug: renderiza <a> para navegar al módulo.
+            Si no tiene slug: renderiza <button> para que el JS del grid
+            maneje el evento (marcar progreso en localStorage).
+            Ambos comparten la clase btn-iniciar y data-id para que
+            los estilos y el JS existente sigan funcionando sin cambios.
+        -->
+        {
+            esEnlace ? (
+                <a href={href} class="btn-iniciar" data-id={id}>
+                    {botonTexto}
+                </a>
+            ) : (
+                <button type="button" class="btn-iniciar" data-id={id}>
+                    {botonTexto}
+                </button>
+            )
+        }
 
         {
             estado !== "nuevo" && (
