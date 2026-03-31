@@ -7,7 +7,255 @@ objective: "Understand the foundational concepts of Unicode and how to apply the
 progress: 0
 pubDate: 2026-03-17
 draft: false
-sections: []
+sections:
+  - title: "Overview"
+    items:
+      - title: "Introduction"
+        panelId: "introduction"
+      - title: "Objectives"
+        panelId: "objectives"
+  - title: "Encoding Schemes"
+    items:
+      - title: "Overview of Encoding Schemes"
+        panelId: "overview-of-encoding-schemes"
+      - title: "Why do we need Unicode?"
+        panelId: "why-do-we-need-unicode"
+  - title: "Unicode in Depth"
+    items:
+      - title: "Basic Unicode Terminologies"
+        panelId: "basic-unicode-terminologies-and-understanding-unicode-encoding-schemes"
+      - title: "What is Surrogate Pair?"
+        panelId: "what-is-surrogate-pair"
+      - title: "Character Data Type"
+        panelId: "character-data-type-for-unicode-code-points"
+  - title: "References"
+    items:
+      - title: "References & Author"
+        panelId: "references--author"
 ---
 
-Content coming soon.
+## Introduction
+
+Welcome to this module dedicated to the essential concepts and techniques of Unicode programming.
+
+In the field of modern software development, knowledge of Unicode is essential as it serves as the foundation for effectively representing and manipulating characters from diverse languages, scripts, and symbol systems.
+
+Mastery of Unicode is not only critical for building robust applications but is also pivotal in the pursuit of Internationalization which extends to Universal Acceptance, where software systems can embrace and accommodate the richness of linguistic diversity.
+
+In this module, we will discuss the fundamental principles of Unicode, covering key areas such as encoding, decoding, character manipulation, and the effective handling of various Unicode transformation formats.
+
+By the conclusion of this module, you will have acquired a solid foundation in Unicode programming. With this newfound knowledge, you will gain the confidence to write Java and Python codes that effortlessly meets the demands of Unicode requirements, allowing for seamless handling of Unicode in your programming tasks.
+
+## Objectives
+
+Upon completion of this micro-learning UA module, students will be able to:
+
+- Understand the concept of Unicode;
+- Comprehend Unicode encoding and its advantages;
+- Acquire a solid grasp of Unicode code points and code units;
+- Understand the concept of surrogate pairs and their usage;
+- Develop a comprehensive understanding of key Unicode terminologies;
+- Work with Unicode in programming:
+  - How to represent Unicode characters in a character data type
+  - How to create, input, and concatenate Unicode strings
+  - How to display Unicode strings.
+- Appreciate the significance of Unicode in promoting linguistic diversity and cultural exchange.
+
+---
+
+## Overview of Encoding Schemes
+
+Character encoding schemes play a fundamental role in representing characters within digital systems, making a solid understanding of them vital for working with text. In digital systems, three prominent character encoding schemes are commonly employed: <span class="hl">ASCII</span>, <span class="hl">ISO 8859</span>, and <span class="hl">Unicode</span>.
+
+<span class="hl">ASCII</span> is a widely used character encoding scheme that represents text in digital systems. It uses 7 bits to encode characters, allowing for a total of 128 characters. Originally designed for the English language, ASCII includes control characters and printable characters commonly used in English text, such as letters, numbers, punctuation marks, and special symbols. ASCII enjoys wide compatibility across systems and programming languages, serving as a foundational encoding scheme. However, it has limitations in supporting non-English languages and lacks the comprehensive character set found in more modern encoding schemes like Unicode.
+
+It is compatible with many systems but lacks support for non-English languages. <span class="hl">ISO 8859</span> extends ASCII by adding variations that cover specific regions and languages, providing limited multilingual support. However, <span class="hl">Unicode</span> surpasses both ASCII and ISO 8859 by offering a comprehensive encoding standard for characters from all writing systems worldwide. Unicode ensures compatibility across languages, scripts, and symbols, enabling multilingual communication and global software development.
+
+<span class="hl">ISO 8859</span> is a set of character encoding schemes that extend the ASCII encoding scheme to support additional languages. Each ISO 8859 variation, such as ISO 8859-1, ISO 8859-2, etc., covers specific regions or languages. These variations introduce additional characters beyond the ASCII set, allowing for better language support. ISO 8859 is generally backward compatible with ASCII, preserving the ASCII character set in the lower 7 bits while incorporating additional characters in the higher bits.
+
+<span class="hl">Unicode</span> is a comprehensive character encoding scheme that represents characters from a vast array of writing systems worldwide. It provides a unified standard for character representation across languages, scripts, and symbols. The Unicode standard currently supports over 143,000 characters, which are represented by code points ranging from **U+0000** to **U+10FFFF**.
+
+While they all serve the purpose of character representation in digital systems, there are significant differences among them. The following is a summary highlighting the comparative differences among the three encoding schemes.
+
+<details>
+<summary>Range of character set support</summary>
+
+- <span class="hl">ASCII</span> uses a 7-bit character set, providing codes for 128 characters. It primarily focuses on the English language and includes control characters and printable characters commonly used in English text.
+- <span class="hl">ISO 8859:</span> ISO 8859 extends the character set beyond ASCII, providing several variations (such as ISO 8859-1, ISO 8859-2, etc.) to support additional languages. Each variation covers a specific region or language, expanding the range of characters available. The ISO 8859 standard defines a series of character sets for various languages and regions. However, ISO 8859 specifies a total of 15 character sets, numbered as ISO 8859-1 to ISO 8859-15. Each ISO 8859 character set within the ISO 8859 standard can represent 256 different characters.
+- <span class="hl">Unicode</span> is a comprehensive encoding scheme designed to represent characters from a vast array of writing systems worldwide. It includes a vast range of characters, symbols, scripts, and emojis, with each character assigned a unique code point. The Unicode standard currently supports over 143,000 characters, which are represented by code points ranging from U+0000 to U+10FFFF.
+
+</details>
+
+<details>
+<summary>Language Support</summary>
+
+- <span class="hl">ASCII</span> is primarily designed for the English language. It does not have dedicated support for characters from non-English languages or special characters commonly used in other languages.
+- <span class="hl">ISO 8859</span> variations provide limited support for non-English languages by incorporating additional characters specific to different regions. However, the language coverage varies across the ISO 8859 variations, and it may not fully cater to all languages and writing systems.
+- <span class="hl">Unicode</span> provides extensive multilingual support, accommodating characters from various languages and scripts globally. It aims to ensure comprehensive representation and communication across different languages.
+
+</details>
+
+<details>
+<summary>Compatibility</summary>
+
+- <span class="hl">ASCII</span> is widely compatible across different systems and programming languages. It serves as a foundational encoding scheme and is supported by almost all modern computing environments.
+- <span class="hl">ISO 8859</span> variations are generally backward compatible with ASCII. They preserve the ASCII character set in the lower 7 bits while introducing additional characters in the higher bits. This compatibility allows systems and software designed for ASCII to handle ISO 8859-encoded text without significant issues.
+- <span class="hl">Unicode</span> is designed to be compatible with ASCII, ensuring a smooth transition and backward compatibility. It allows systems and software designed for ASCII to handle Unicode-encoded text without significant issues.
+
+</details>
+
+<details>
+<summary>Scope and Purpose</summary>
+
+- <span class="hl">ASCII</span> is a basic encoding scheme suitable for English text and simple digital communication.
+- <span class="hl">ISO 8859</span> variations expand the character set to support additional languages but still have limitations in terms of comprehensive multilingual coverage.
+- <span class="hl">Unicode</span> is the most comprehensive encoding scheme, addressing the limitations of ASCII and ISO 8859. It provides a unified standard for character representation, enabling global compatibility and multilingual communication.
+
+</details>
+
+<div class="obs-card">
+
+**Observation:** The principles of representing plain text and the Unicode character-glyph model are covered in Module 2 (Unicode Advanced Programming).
+
+</div>
+
+---
+
+## Why do we need Unicode?
+
+<div class="info-card">
+
+<span class="hl">Unicode</span> has gained significant popularity and is increasingly used as the standard for character encoding in modern software development. It addresses the limitations of ASCII and ISO 8859, offering comprehensive multilingual support and enabling globalization and localization efforts in software systems.
+
+While ASCII focuses on the English language, ISO 8859 extends the character set to support additional languages. Unicode surpasses both ASCII and ISO 8859, providing a unified standard for character representation across all languages and scripts globally.
+
+</div>
+
+---
+
+## Basic Unicode Terminologies and Understanding Unicode Encoding Schemes
+
+Unicode provides various encoding schemes to represent characters from different writing systems and languages. Below is a summary of the prevalent Unicode encoding schemes:
+
+<details>
+<summary>Basic Unicode Terminologies</summary>
+
+- <span class="hl">Unicode Scalar Value:</span> refers to the numerical representation of individual characters within the Unicode character set. It represents a unique and standardized code point assigned to each character. These values are represented in hexadecimal notation and range from 0 to 10FFFF (hexadecimal).
+- <span class="hl">Code Unit:</span> refers to the basic unit of storage or representation for encoded characters. It is the smallest individually addressable element within a given encoding scheme.
+- <span class="hl">Code Unit Sequence:</span> refers to a consecutive series or sequence of code units within a character encoding. It represents a sequence of individual units that collectively encode characters or textual data.
+
+</details>
+
+<details>
+<summary>Understanding Unicode Encoding Schemes</summary>
+
+<details>
+<summary>UTF-8</summary>
+
+- UTF-8 is a widely used variable-length encoding scheme.
+- It uses one to four bytes to represent characters, with ASCII characters represented by a single byte.
+- UTF-8 is backward compatible with ASCII and offers efficient storage and transmission of commonly used characters.
+- In UTF-8, a code unit is typically 8 bits (1 byte) and represents a single Unicode character. However, it can be larger for characters outside the Basic Multilingual Plane (BMP).
+
+</details>
+
+<details>
+<summary>UTF-16</summary>
+
+- UTF-16 is a fixed-length encoding scheme that uses 16-bit code units.
+- It can handle the entire Unicode character set, including characters outside the Basic Multilingual Plane (BMP).
+- UTF-16 is commonly used in programming languages and platforms that internally represent characters as 16-bit code units.
+- In UTF-16, a code unit is 16 bits (2 bytes) and can represent either a single Unicode character within the BMP or a surrogate pair that encodes characters beyond the BMP.
+
+</details>
+
+<details>
+<summary>UTF-32</summary>
+
+- UTF-32 is a fixed-length encoding scheme where each character is represented by a four-byte code unit.
+- UTF-32 has big-endian and little-endian variants based on the order of bytes within the code unit, known as **UTF-32BE** and **UTF-32LE** respectively.
+- It provides a direct one-to-one mapping between code points and code units.
+- In UTF-32, a code unit is 32 bits (4 bytes) and directly corresponds to a single Unicode character, regardless of its code point value.
+
+</details>
+
+</details>
+
+Choosing the appropriate Unicode encoding scheme depends on factors such as storage efficiency, compatibility requirements, and the specific context or platform being used. Understanding the characteristics and differences between these encoding schemes is crucial for accurately representing and manipulating characters from diverse writing systems in a consistent manner.
+
+UTF-8 is a widely used character encoding scheme that allows the representation of all Unicode code points. It offers efficient storage and transmission of Unicode characters by utilizing variable-length encoding. Key points:
+
+- UTF-8 uses variable-length encoding, where different Unicode characters require different numbers of bytes for representation.
+- ASCII characters are represented using a single byte, maintaining compatibility with the ASCII character set.
+- Characters outside the ASCII range use multiple bytes, allowing for the representation of diverse characters from different writing systems.
+- Each Unicode code point is represented by a sequence of bytes, with the number of bytes determined by the code point value.
+- UTF-8 follows specific encoding rules to ensure self-synchronization and proper decoding of byte sequences.
+- ASCII characters (0 to 127) are encoded using a single byte, while higher code points require multiple bytes.
+- UTF-8 is backward compatible with ASCII and provides efficient storage and transmission of commonly used characters.
+- It is widely supported by modern systems, programming languages, and web standards.
+
+---
+
+## What is Surrogate Pair?
+
+A surrogate pair is a UTF-16 encoding mechanism used to represent supplementary characters outside the Basic Multilingual Plane (BMP). It involves using a combination of two 16-bit values, known as **high surrogates** and **low surrogates**, to represent characters in the supplementary planes. Surrogate pairs are important for accurately encoding and handling characters from less commonly used scripts and specialized symbols.
+
+<div class="info-card">
+
+<span class="hl">Example:</span> Examples of surrogate pairs used to represent emojis.
+
+- <span class="hl">Grinning Face with Smiling Eyes Emoji:</span>
+  - Emoji: 😄
+  - Unicode Code Point: U+1F604
+  - Surrogate Pair: U+D83D U+DE04
+
+- <span class="hl">Thumbs Up Emoji:</span>
+  - Emoji: 👍
+  - Unicode Code Point: U+1F44D
+  - Surrogate Pair: U+D83D U+DC4D
+
+</div>
+
+---
+
+## Character Data Type for Unicode Code Points
+
+The character data type commonly used for representing Unicode code points is `char`. In many programming languages, including Java, C++, C#, and Python, the `char` data type is used to store a single Unicode character.
+
+<div class="info-card">
+
+**Note:**
+
+- The `char` data type typically uses a fixed number of bits to represent the Unicode code unit, allowing for the storage of a wide range of characters.
+- Unicode code points can be assigned to a `char` variable, allowing for character manipulation, comparison, and other applicable operations.
+- It is important to note that the specific implementation and size of the `char` data type may vary across programming languages and platforms.
+- Throughout this module, we delve into the basics and nuances of utilizing the `char` data type for handling Unicode code points specifically within the **Java** and **Python** programming environments.
+
+</div>
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. Unicode Consortium. (n.d.). *Home*. Retrieved October 3, 2023, from [https://home.unicode.org/](https://home.unicode.org/).
+2. Stack Overflow. (n.d.). *Where Developers Learn, Share, & Build Careers*. Retrieved October 3, 2023, from [https://stackoverflow.com/](https://stackoverflow.com/).
+3. Python Software Foundation. (n.d.). *Unicode HOWTO*. Retrieved October 3, 2023, from [https://docs.python.org/3/howto/unicode.html](https://docs.python.org/3/howto/unicode.html).
+4. Programming with Unicode. (n.d.). Victor Stinner. Retrieved February 16, 2024, from [https://unicodebook.readthedocs.io/](https://unicodebook.readthedocs.io/).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a>.</p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License — Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

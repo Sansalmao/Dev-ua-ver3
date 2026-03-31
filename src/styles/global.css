@@ -240,9 +240,22 @@ canvas {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--accent);
-    margin: 2rem 0 1rem;
+    margin: 0 0 1.5rem;
     border-left: 3px solid var(--accent);
     padding-left: 1rem;
+}
+
+.module-content h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 1.75rem 0 1rem;
+}
+
+.module-content .tab-panel h3:first-child,
+.module-content h3:first-child {
+    margin-top: 0;
 }
 
 .module-wrap pre {
@@ -555,4 +568,221 @@ canvas {
         flex-direction: column;
         align-items: stretch;
     }
+}
+
+/* ============================================
+   DETAILS / SUMMARY — secciones colapsables MDX
+   ============================================ */
+
+.module-content details {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.module-content summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    list-style: none;
+    user-select: none;
+    transition: background var(--transition-fast);
+}
+
+.module-content summary::-webkit-details-marker {
+    display: none;
+}
+
+.module-content summary::before {
+    content: "▶";
+    font-size: 10px;
+    color: var(--accent);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.module-content details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.module-content summary:hover {
+    background: var(--accent-soft);
+}
+
+/* Padding para el contenido directo de details de primer nivel */
+.module-content details > *:not(summary) {
+    padding: 4px 20px 20px 20px;
+}
+
+/* Details anidado: fondo ligeramente distinto para diferenciarlo */
+.module-content details details {
+    background: var(--card-bg);
+    margin: 0.5rem 0;
+}
+
+/* Padding para el contenido directo de details anidado */
+.module-content details details > *:not(summary) {
+    padding: 4px 24px 20px 24px;
+}
+
+/* ── Listas dentro de details (cualquier nivel) ── */
+.module-content details ul,
+.module-content details ol {
+    padding-left: 2.5rem;
+    margin: 1rem 0 0.75rem;
+    list-style: disc;
+}
+
+.module-content details li {
+    font-size: 0.93rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    list-style-type: disc;
+}
+
+.module-content details li li {
+    list-style-type: circle;
+    margin-top: 0.2rem;
+}
+
+/* ============================================
+   INFO CARD — bloques destacados en MDX
+   ============================================ */
+
+.module-content .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 1.25rem 0;
+}
+
+.module-content .info-card p {
+    margin-bottom: 0.5rem;
+}
+
+.module-content .info-card p:last-child {
+    margin-bottom: 0;
+}
+
+.module-content .info-card ul,
+.module-content .info-card ol {
+    padding-left: 1.5rem;
+    margin: 0.75rem 0 0.25rem;
+}
+
+.module-content .info-card li {
+    font-size: 0.93rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.4rem;
+    list-style-type: disc;
+}
+
+.module-content .info-card li li {
+    list-style-type: circle;
+    margin-top: 0.2rem;
+}
+
+/* ============================================
+   OBSERVATION CARD — nota especial naranja
+   ============================================ */
+
+.module-content .obs-card {
+    background: var(--accent-bg-soft);
+    border: 1px solid var(--accent-border-light);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 1.25rem 0;
+}
+
+.module-content .obs-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+}
+
+.module-content .obs-card strong {
+    color: var(--accent);
+}
+
+.module-content .obs-card ul,
+.module-content .obs-card ol {
+    padding-left: 1.5rem;
+    margin: 0.75rem 0 0.25rem;
+}
+
+.module-content .obs-card li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.35rem;
+    list-style-type: disc;
+}
+
+/* ============================================
+   HIGHLIGHT TERM — términos clave naranja inline
+   ============================================ */
+
+.module-content .hl {
+    color: var(--accent);
+    font-weight: 700;
+    background: var(--accent-bg-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+/* ============================================
+   META CARD — referencias, autor y licencia
+   ============================================ */
+
+.module-content .meta-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 1.25rem 0;
+}
+
+.module-content .meta-card ol {
+    padding-left: 1.25rem;
+    margin: 0.75rem 0 0;
+}
+
+.module-content .meta-card li {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+    list-style-type: decimal;
+}
+
+.module-content .meta-card li:last-child {
+    margin-bottom: 0;
+}
+
+.module-content .meta-card .meta-author {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+}
+
+.module-content .meta-card .meta-author strong {
+    color: var(--text);
+}
+
+.module-content .meta-card .meta-license {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent);
+    margin-bottom: 0;
 }
