@@ -50,7 +50,25 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
     <NavBar slot="navbar" />
 
     <div class="module-wrap">
-        <BreadCrumb padre={padre} padreHref={padreHref} actual={titulo} />
+        <div class="module-topbar">
+            <BreadCrumb padre={padre} padreHref={padreHref} actual={titulo} />
+            <a href="/" class="btn-back-ruta" id="btn-back-ruta">
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+                Volver a la ruta
+            </a>
+        </div>
         <PageHeader titulo={titulo} descripcion={subtitulo} />
         <MetadataCard
             dificultad={dificultad}
@@ -97,24 +115,35 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
     </div>
 
     <script>
+        // Botón "Volver a la ruta" — animación de salida antes de navegar
+        const btnRuta = document.getElementById("btn-back-ruta");
+        if (btnRuta) {
+            btnRuta.addEventListener("click", (e) => {
+                e.preventDefault();
+                const wrap = document.querySelector(
+                    ".module-wrap",
+                ) as HTMLElement;
+                if (wrap) {
+                    wrap.style.transition =
+                        "opacity 0.2s ease, transform 0.2s ease";
+                    wrap.style.opacity = "0";
+                    wrap.style.transform = "translateY(8px)";
+                }
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 220);
+            });
+        }
+
         // Botón copiar en bloques de código MDX
         function initCopyButtons() {
             const codeBlocks = document.querySelectorAll(".module-content pre");
-
             codeBlocks.forEach((pre) => {
                 const btn = document.createElement("button");
                 btn.type = "button";
                 btn.className = "copy-btn";
                 btn.setAttribute("aria-label", "Copiar código");
-                btn.innerHTML = `
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <rect x="9" y="9" width="13" height="13" rx="2"/>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                    </svg>
-                    <span>Copiar</span>
-                `;
-
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span>`;
                 btn.addEventListener("click", async () => {
                     const code = pre.querySelector("code");
                     const text = code?.textContent ?? pre.textContent ?? "";
@@ -136,15 +165,50 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                         document.body.removeChild(ta);
                     }
                 });
-
                 pre.appendChild(btn);
             });
         }
 
+        // Inicializar selectores de lenguaje (Python/Java switchers)
+        function initSwitchers() {
+            document.querySelectorAll(".lang-switcher").forEach((switcher) => {
+                const btns = switcher.querySelectorAll(".lang-btn");
+                const group = btns[0]?.dataset.target;
+                if (!group) return;
+                btns.forEach((btn) => {
+                    btn.addEventListener("click", function () {
+                        const lang = this.dataset.lang;
+                        const target = this.dataset.target;
+                        btns.forEach((b) =>
+                            b.classList.toggle(
+                                "active",
+                                b.dataset.lang === lang,
+                            ),
+                        );
+                        document
+                            .querySelectorAll(
+                                `.lang-block[data-group="${target}"]`,
+                            )
+                            .forEach((block) => {
+                                block.classList.toggle(
+                                    "active",
+                                    block.dataset.lang === lang,
+                                );
+                            });
+                    });
+                });
+            });
+        }
+
+        // Ejecutar cuando el DOM esté listo
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initCopyButtons);
+            document.addEventListener("DOMContentLoaded", () => {
+                initCopyButtons();
+                initSwitchers();
+            });
         } else {
             initCopyButtons();
+            initSwitchers();
         }
     </script>
 </BaseLayout>
@@ -154,6 +218,54 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
         max-width: 1100px;
         margin: 0 auto;
         padding: 2rem 1.5rem;
+    }
+
+    /* Fila superior: breadcrumb a la izquierda, botón a la derecha */
+    .module-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    /* Anular el margin-bottom del breadcrumb porque ahora lo controla el topbar */
+    .module-topbar :global(.breadcrumb) {
+        margin-bottom: 0;
+    }
+
+    /* Botón "Volver a la ruta" — mismo estilo que btn-change en grid.astro */
+    .btn-back-ruta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--card-bg);
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        text-decoration: none;
+        transition:
+            background var(--transition-fast),
+            transform var(--transition-fast),
+            opacity var(--transition-fast);
+    }
+
+    .btn-back-ruta:hover {
+        background: var(--accent-hover);
+        color: var(--card-bg);
+        transform: translateX(-2px);
+    }
+
+    .btn-back-ruta:active {
+        transform: translateX(0);
     }
 
     .module-body {
