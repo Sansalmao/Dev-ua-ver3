@@ -3,11 +3,1748 @@ title: "Module 3 - Unicode in Data Structures and Algorithms"
 description: "Comprehensive introduction to leveraging the power of Unicode in data structures and algorithms."
 difficulty: "Básico"
 duration: "169 min"
-objective: "Apply Unicode-aware techniques to common data structures and algorithmic problems involving multilingual text."
+objective: "Learn how to store, manipulate, search, and sort Unicode data within data structures, and apply Unicode-aware algorithms for text processing."
 progress: 0
-pubDate: 2026-03-17
+pubDate: 2026-03-27
 draft: false
-sections: []
+sections:
+  - title: "Overview"
+    items:
+      - title: "Introduction"
+        panelId: "introduction"
+      - title: "Objetives"
+        panelId: "objetives"
+  - title: "Data Structures"
+    items:
+      - title: "Implementing Data Structures with Local Language Strings"
+        panelId: "implementing-data-structures-with-local-language-strings-in-unicode"
+  - title: "Unicode Collation Algorithm"
+    items:
+      - title: "UCA for Sorting"
+        panelId: "unicode-collation-algorithm-for-sorting-of-unicode-strings"
+  - title: "Sorting & Searching Techniques"
+    items:
+      - title: "Techniques for Sorting and Searching"
+        panelId: "techniques-for-sorting-and-searching-local-language-strings-within-data-structures"
+      - title: "Sorting Algorithms"
+        panelId: "some-of-commonly-used-sorting-algorithms-in-data-structures-and-algorithms"
+  - title: "Binary Search & Text Search"
+    items:
+      - title: "Binary Searches in Unicode Strings"
+        panelId: "binary-searches-in-unicode-strings"
+      - title: "Searching Through Unicode Text"
+        panelId: "searching-through-unicode-text-normalization--collation"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "references--author"
 ---
 
-Content coming soon.
+## Introduction
+
+Unicode is a comprehensive character encoding system that has revolutionized the handling of text and data in our interconnected digital landscape. It is essential for modern data structures and algorithms, as it allows programmers to work with text in a consistent and reliable way, regardless of the language or writing system being used.
+
+This module serves as a comprehensive introduction to leveraging the power of Unicode in data structures and algorithms. By exploring this module, students will develop a deep understanding of how Unicode enhances our abilities in developing software systems. You will learn how to utilize Unicode to manipulate and process text data effectively. Through practical examples and hands-on exercises, you will gain the skills needed to apply Unicode knowledge to solve real-world problems.
+
+---
+
+## Objetives
+
+Upon completion of this UA module, students will be able to:
+
+- Understand the fundamentals of Unicode and its significance in data structures and algorithms;
+- Learn how to effectively store and manipulate Unicode data within data structures;
+- Develop techniques to perform searching and sorting operations on Unicode strings; and
+- Acquire knowledge of Unicode-aware algorithms for text parsing, matching, and comparison.
+
+---
+
+## Implementing Data Structures with Local Language Strings in Unicode:
+
+Unicode is a character encoding standard that aims to provide a universal representation for all characters used in writing systems worldwide. It supports a vast range of languages, scripts, symbols, and emojis. With Unicode, you can create data structures that incorporate local language strings, allowing you to manipulate, store, and process data in different languages.
+
+<details>
+<summary>Lists:</summary>
+
+<div class="meta-card">
+
+Lists are ordered collections of elements. You can include local language strings as elements in a list. This is useful when you need to maintain a sequence of items in various languages. For example, you might have a list of phrases or sentences in different languages.
+
+</div>
+
+<span class="hl">Example: Creating Lists with Unicode Strings in Python.</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ds1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ds1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ds1">
+
+```python
+# Create a list of Unicode strings in different languages
+unicode_list = [
+    u'ሰላም',           # 'Selam' in Ethiopic(Amharic), hello in English.
+    u'مرحبا',          # 'Marhaba' in Arabic, hello in English.
+    u'සුබ උදෑසනක්',   # 'Suba Udaesank' in Sinhala, hello in English.
+    u'你好'             # 'nǐ hǎo' in Chinese, hello in English.
+]
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ds1">
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+// Create a list of Unicode strings
+List<String> unicodeList = new ArrayList<>();
+unicodeList.add("ሰላም");          // Ethiopic (Amharic)
+unicodeList.add("مرحبا");         // 'Marhaba' in Arabic, hello or welcome in English
+unicodeList.add("සුබ උදෑසනක්");  // Suba Udaesank' in Sinhala
+unicodeList.add("你好");           // 'nǐ hǎo' in Chinese
+```
+
+  </div>
+</div>
+
+In the above example, we create a list unicode_list that contains Unicode strings representing greetings in Ethiopic (Amharic), Arabic, Sinhala, and Chinese.
+
+In the above code snippet, we import the necessary classes (ArrayList and List) from the java.util package. We create an ArrayList object called unicodeList, which stores Unicode strings. We finally add Unicode strings in different languages using the add method.
+
+</details>
+
+<details>
+<summary>Dictionaries:</summary>
+
+<div class="meta-card">
+
+Dictionaries store key-value pairs. With Unicode, you can use local language strings as keys or values in dictionaries. This is beneficial when you need to associate information in different languages. For instance, you might have a dictionary where the keys represent words in one language and the values represent their translations in another language.
+
+</div>
+
+<span class="hl">Example: Creating Dictionaries with Unicode strings in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ds2"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ds2"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ds2">
+
+```python
+# Create a dictionary with Unicode strings in different languages
+unicode_dict = {
+    u'ethiopic': u'ሰላም',
+    u'arabic':   u'مرحبا',
+    u'sinhala':  u'සුබ උදෑසනක්',
+    u'chinese':  u'你好'
+}
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ds2">
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+// Create a dictionary (map) with Unicode strings
+Map<String, String> unicodeDictionary = new HashMap<>();
+unicodeDictionary.put("ሰላም",        "Hello");        // Ethiopic (Amharic)
+unicodeDictionary.put("مرحبا",        "Bonjour");     // Arabic
+unicodeDictionary.put("සුබ උදෑසනක්", "Good morning"); // Sinhala
+unicodeDictionary.put("你好",          "Ni hao");      // Chinese
+```
+
+  </div>
+</div>
+
+In the above code snippet, we create a dictionary unicode_dict that contains key-value pairs representing translations of greetings in different languages.
+
+In the above code snippet, we import the necessary classes (<span class="hl">HashMap</span> and <span class="hl">Map</span>) from the <span class="hl">java.util</span> package. We create a <span class="hl">HashMap</span> object called unicodeDictionary, which stores Unicode strings as keys and values. We add key-value pairs of Unicode strings in different languages using the put method.
+
+</details>
+
+<details>
+<summary>Sets:</summary>
+
+<div class="meta-card">
+
+Sets are unordered collections of unique elements. You can include local language strings in sets to represent a collection of distinct items from various languages.
+
+</div>
+
+<span class="hl">Example: Creating Sets with Unicode Strings in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ds3"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ds3"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ds3">
+
+```python
+# Create a set of Unicode strings in different languages
+unicode_set = {
+    u'ሰላም',
+    u'مرحبا',
+    u'සුබ උදෑසනක්',
+    u'你好'
+}
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ds3">
+
+```java
+import java.util.HashSet;
+import java.util.Set;
+// Create a set of Unicode strings
+Set<String> unicodeSet = new HashSet<>();
+unicodeSet.add("ሰላም");          // Ethiopic (Amharic)
+unicodeSet.add("مرحبا");         // Arabic
+unicodeSet.add("සුබ උදෑසනක්");  // Sinhala
+unicodeSet.add("你好");           // Chinese
+```
+
+  </div>
+</div>
+
+The above code snippet demonstrates how you can use sets to store and manipulate Unicode strings in different languages, ensuring uniqueness and efficient membership testing.
+
+In the above code snippet, we import the necessary classes (ArrayList and List) from the <span class="hl">ava.util</span> package. We create an <span class="hl">ArrayList</span> object called <span class="hl">unicodeList</span>, which stores Unicode strings. We add Unicode strings in different languages using the add method as we would any strings.
+
+</details>
+
+<details>
+<summary>Trees:</summary>
+
+<div class="meta-card">
+
+Trees are hierarchical data structures where each node can have child nodes. Unicode enables you to use local language strings as labels for nodes in a tree.
+
+</div>
+
+<span class="hl">Example: Creating Trees with Unicode Strings in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ds4"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ds4"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ds4">
+
+```python
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+def insert(root, value):
+    if root is None:
+        return Node(value)
+    if value < root.value:
+        root.left = insert(root.left, value)
+    elif value > root.value:
+        root.right = insert(root.right, value)
+    return root
+
+# Create a binary search tree with Unicode strings in different languages
+root = None
+root = insert(root, u'ሰላም')
+root = insert(root, u'مرحبا')
+root = insert(root, u'සුබ උදෑසනක්')
+root = insert(root, u'你好')
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ds4">
+
+```java
+public static class TreeNode {
+    String data;
+    TreeNode left;
+    TreeNode right;
+
+    public TreeNode(String data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+    }
+}
+// Create a tree with Unicode strings
+TreeNode root = new TreeNode("ሰላም");         // Ethiopic (Amharic)
+root.left = new TreeNode("مرحبا");           // Arabic
+root.right = new TreeNode("සුබ උදෑසනක්");  // Sinhala
+root.left.left = new TreeNode("你好");        // Chinese
+```
+
+  </div>
+</div>
+
+In the above code snippet, we define a Node class to represent each node in the binary search tree. Each node contains a Unicode string value, as well as references to its left and right child nodes.
+
+The insert function is responsible for inserting new nodes into the tree based on the string's comparison with the current node's value. If the value is less than the current node, it goes to the left subtree; if it's greater, it goes to the right subtree. The function returns the root of the modified tree.
+
+In this example, we define a TreeNode class within the UnicodeStringTreeExample class to represent a node in the tree. Each node contains a data field of type String to store the Unicode string value. Additionally, each node has left and right references to its left and right child nodes.
+
+We create a tree by instantiating TreeNode objects and setting their data values to Unicode strings in different languages. We construct the tree structure by assigning the appropriate child nodes to each node.
+
+<div class="info-card">
+
+<span class="hl">Note:</span>
+
+It's important for learners to understand that the example presented in this micro-learning module is only intended to demonstrate how Trees data structure can be used to manipulate and process text data with Unicode strings. It may not be a realistic example of how the Trees data structure is typically used.
+
+In fact, the Trees data structure is often used to represent hierarchical relationships between data elements, such as the parent-child relationship in a file system or the structure of a web page.
+
+</div>
+
+</details>
+
+<details>
+<summary>Graphs:</summary>
+
+<div class="meta-card">
+
+Graphs consist of vertices and edges that represent relationships or connections. Unicode supports local language strings as labels for vertices and edges in a graph. This enables you to represent relationships or connections labeled in multiple languages. For example, you might create a social network graph where the vertices represent individuals with names in different languages.
+
+</div>
+
+<span class="hl">Example: Creating Graphs with Unicode Strings in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ds5"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ds5"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ds5">
+
+```python
+class Graph:
+    def __init__(self):
+        self.vertices = {}
+
+    def add_vertex(self, vertex):
+        self.vertices[vertex] = []
+
+    def add_edge(self, source, destination):
+        self.vertices[source].append(destination)
+
+# Create a graph with Unicode strings in different languages
+graph = Graph()
+graph.add_vertex(u'ሰላም')
+graph.add_vertex(u'مرحبا')
+graph.add_vertex(u'සුබ උදෑසනක්')
+graph.add_vertex(u'你好')
+
+graph.add_edge(u'ሰላም',        u'مرحبا')
+graph.add_edge(u'مرحبا',       u'සුබ උදෑසනක්')
+graph.add_edge(u'مرحبا',       u'你好')
+graph.add_edge(u'සුබ උදෑසනක්', u'你好')
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ds5">
+
+```java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+// Create a graph with Unicode strings
+Map<String, List<String>> graph = new HashMap<>();
+// Add vertices
+addVertex(graph, "ሰላም");          // Ethiopic (Amharic)
+addVertex(graph, "مرحبا");         // Arabic
+addVertex(graph, "සුබ උදෑසනක්");  // Sinhala
+addVertex(graph, "你好");           // Chinese
+// Add edges
+addEdge(graph, "ሰላም",  "مرحبا");
+addEdge(graph, "مرحبا", "සුබ උදෑසනක්");
+addEdge(graph, "مرحبا", "你好");
+```
+
+  </div>
+</div>
+
+In the above code snippet, we define a Graph class that represents a graph using an adjacency list. The Graph class contains a dictionary vertices, where each vertex (Unicode string) maps to a list of neighboring vertices.
+
+The add_vertex method adds a new vertex to the graph by creating a new key-value pair in the vertices dictionary, where the key is the vertex (Unicode string), and the value is an empty list of neighbors. The add_edge method adds an edge between two vertices by appending the destination vertex to the list of neighbors for the source vertex.
+
+In this example, we use a HashMap called graph to represent the graph. The keys in the map are Unicode strings representing the vertices, and the values are lists of neighbor vertices.
+
+We add vertices using the addVertex method. It creates an entry in the graph map with an empty list of neighbors for the given vertex. Edges are added using the addEdge method. It retrieves the lists of neighbors for the source and destination vertices and adds each vertex to the other's list.
+
+<div class="info-card">
+
+<span class="hl">Note:</span>
+
+It's important for learners to note that the example presented in this micro-learning module is only intended to demonstrate how the Graphs data structure can be used to manipulate and process text data with Unicode strings.
+
+It may not be a realistic example of how the Graphs data structure is typically used. In fact, the Graphs data structure is often used to represent arbitrary relationships between members of any data set, represented as networks of nodes and edges.
+
+</div>
+
+</details>
+
+---
+
+## Unicode Collation Algorithm for Sorting of Unicode Strings
+
+<div class="info-card">
+
+The Unicode Collation Algorithm (<span class="hl">UCA</span>) is a set of rules defined by the Unicode Consortium for sorting Unicode strings [<span class="hl">1</span>]. It provides a standard way to compare and order strings across different languages, scripts, and character sets.
+
+The UCA defines a set of comparison rules that take into account various aspects of characters, including their code points, diacritics, case sensitivity, and linguistic context. These rules ensure that strings are sorted in a linguistically appropriate manner, respecting the language-specific sorting conventions.
+
+</div>
+
+The following are some key concepts and components of the Unicode Collation Algorithm:
+
+<details>
+<summary>Code Point Comparison:</summary>
+
+The UCA primarily compares characters based on their Unicode code points. Code points are unique numerical values assigned to each character in the Unicode standard.
+
+</details>
+
+<details>
+<summary>Diacritic Sensitivity:</summary>
+
+The UCA considers diacritics (accent marks, tone marks, etc.) when comparing and sorting strings. It can distinguish between characters with and without diacritics, treating them as separate entities for sorting purposes.
+
+</details>
+
+<details>
+<summary>Case Sensitivity:</summary>
+
+The UCA can handle case-sensitive and case-insensitive sorting. It provides options to specify whether uppercase and lowercase letters should be treated as equivalent or distinct during the sorting process.
+
+</details>
+
+<details>
+<summary>Linguistic Context:</summary>
+
+The UCA takes into account the linguistic context of characters when determining their sorting order. Some characters may have different sorting rules depending on their position within a word or their relationship to surrounding characters.
+
+</details>
+
+<details>
+<summary>Collation Elements:</summary>
+
+The UCA breaks down strings into smaller units called collation elements. Collation elements represent individual characters or groups of characters with similar sorting properties. These elements are compared and ordered to determine the overall sorting order of the string.
+
+</details>
+
+<details>
+<summary>Collation Rules:</summary>
+
+The UCA defines a set of collation rules that specify the order of collation elements. These rules are language-independent and cover a wide range of characters, including Latin, non-Latin scripts, symbols, and punctuation.
+
+</details>
+
+Implementing the complete Unicode Collation Algorithm from scratch can be complex. However, most programming languages and frameworks provide built-in functions or libraries that implement the UCA for sorting Unicode strings. These functions typically leverage the Unicode character properties and collation data provided by the Unicode Consortium.
+
+To sort strings using the Unicode Collation Algorithm (UCA), you can leverage the collation functionality provided by various programming languages and libraries.
+
+<details>
+<summary>How to Sort Strings Using the Unicode Collation Algorithm (UCA):</summary>
+
+<details>
+<summary>Choose a UCA-compliant Collation:</summary>
+
+Check if your programming language or library supports UCA-compliant collations. Most modern programming languages have built-in support for Unicode collation. For example, in Java, you can use the Collator class with a UCA-compliant collation and the <span class="hl">pyuca</span> library provides an implementation of the Unicode Collation Algorithm (UCA) for Python.
+
+</details>
+
+<details>
+<summary>Instantiate the Collator:</summary>
+
+Create an instance of the collator for the desired locale or language. Specify the desired collation strength, such as primary, secondary, or tertiary level, depending on your sorting requirements. The collation strength determines the level of differentiation in sorting, such as considering case, accents, or diacritics.
+
+</details>
+
+<span class="hl">Example: Sorting of Strings Using UCA in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="uca1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="uca1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="uca1">
+
+```python
+import pyuca
+# Create a collator object with a UCA-compliant collation
+collator = pyuca.Collator()
+# Array of Unicode strings to be sorted
+strings = [
+    "अनुच्छेद",  # Hindi: Paragraph
+    "Éclair",     # French: Pastry
+    "Österreich", # German: Austria
+    "中国",        # Chinese: China
+    "Россия",     # Russian: Russia
+    "日本",        # Japanese: Japan
+    "ሉሲ"          # Ethiopian: Lucy
+]
+# Sort the strings using UCA-compliant collation
+strings.sort(key=collator.sort_key)
+# Print the sorted strings
+for string in strings:
+    print(string)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="uca1">
+
+```java
+import java.text.Collator;
+import java.util.Arrays;
+import java.util.Locale;
+
+public class UnicodeCollationExample {
+    public static void main(String[] args) {
+        // Create a Collator instance for the desired locale
+        Collator collator = Collator.getInstance(Locale.getDefault());
+        // Array of Unicode strings to be sorted
+        String[] strings = {
+            "अनुच्छेद",  // Hindi: Paragraph
+            "Éclair",     // French: Pastry
+            "Österreich", // German: Austria
+            "中国",        // Chinese: China
+            "Россия",     // Russian: Russia
+            "日本",        // Japanese: Japan
+            "ሉሲ"          // Ethiopian: Lucy
+        };
+        // Sort the strings using the collator
+        Arrays.sort(strings, collator);
+        // Print the sorted strings
+        for (String str : strings) {
+            System.out.println(str);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+In the above example, we create a <span class="hl">Collator</span> instance using <span class="hl">Collator.getInstance(Locale.getDefault())</span>, which retrieves the default collator for the current locale. The <span class="hl">Collator</span> class provides support for the Unicode Collation Algorithm. We define an array of Unicode strings to be sorted, representing text in various languages. We then use <span class="hl">Arrays.sort()</span> to sort the strings using the collator. The collator takes into account the Unicode Collation Algorithm rules and the language-specific sorting conventions provided by the locale.
+
+Finally, we iterate over the sorted strings and print them, demonstrating the correct sorting order based on the Unicode Collation Algorithm.
+
+Note that the sorting result may vary depending on the default locale set in your Java environment. You can explicitly specify a different locale by passing it to <span class="hl">getInstance()</span> if desired.
+
+By utilizing the Collator class in Java, you can achieve Unicode string sorting based on the Unicode Collation Algorithm, ensuring proper linguistic sorting across different languages and scripts.
+
+Both the Python and Java codes above produce the same sorted output as below:
+
+<div class="info-card">
+
+<span class="hl">Éclair</span>
+
+Österreich
+
+Россия
+
+ሉሲ
+
+अनुच्छेद
+
+中国
+
+日本
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">Note:</span>
+
+UCA-based sorting and searching, exemplified by the provided code, showcases a language-independent approach using the Unicode Collation Algorithm to achieve consistent results across platforms. In contrast, Locale-based sorting and searching consider language-specific rules and conventions, offering tailored sorting based on specific linguistic and cultural contexts. The choice between the two approaches depends on the requirements of the application and the desired level of customization.
+
+</div>
+
+</details>
+
+---
+
+## Techniques for Sorting and Searching Local Language Strings within Data Structures
+
+When sorting and searching local language strings within data structures, several techniques can be employed to ensure accurate and efficient operations. Here are some commonly used techniques:
+
+<details>
+<summary>Unicode Collation:</summary>
+
+Utilize Unicode collation algorithms that provide language-specific sorting rules. These algorithms consider linguistic and cultural conventions to determine the correct order of characters and strings. This ensures that sorting is performed in a manner consistent with the expectations of the specific language or locale.
+
+</details>
+
+<details>
+<summary>Normalization:</summary>
+
+Apply Unicode normalization forms, such as Normalization Form C (NFC) or Normalization Form D (NFD), to ensure that strings are represented in a standardized form. Normalization helps eliminate variations in character encoding and composition, allowing for consistent and accurate sorting and searching.
+
+</details>
+
+<details>
+<summary>Comparison Functions:</summary>
+
+Implement custom comparison functions that take into account the specific sorting rules and collation requirements of the language. These functions should consider linguistic factors such as accent marks, diacritics, case sensitivity, and language-specific sorting conventions.
+
+</details>
+
+<details>
+<summary>Indexing and Search Algorithms:</summary>
+
+Utilize indexing techniques like suffix arrays, tries, or ternary search trees to efficiently search for local language strings within data structures. These data structures allow for fast lookup and retrieval of strings based on prefixes, substrings, or complete words.
+
+</details>
+
+<details>
+<summary>Binary Search:</summary>
+
+If the data structure supports random access, employ binary search algorithms to locate specific local language strings efficiently. Binary search takes advantage of sorted order to quickly narrow down the search space and locate the desired string.
+
+</details>
+
+<details>
+<summary>Language-Specific Libraries:</summary>
+
+Make use of specialized libraries or frameworks that provide sorting and searching functionality tailored to specific languages or locales. These libraries often incorporate language-specific collation rules and optimized algorithms for efficient string manipulation.
+
+</details>
+
+<details>
+<summary>Locale Settings:</summary>
+
+Consider the locale settings of the application or system to ensure that appropriate language-specific sorting and searching rules are applied. The locale settings define the language, country, and cultural conventions, which can impact the sorting order of local language strings.
+
+</details>
+
+By employing these techniques, developers can ensure accurate sorting and efficient searching of local language strings within data structures, accommodating the linguistic requirements and cultural conventions specific to each language or locale.
+
+---
+
+## Some of Commonly Used Sorting Algorithms in Data Structures and Algorithms
+
+The following are some of the sorting algorithms commonly used in data structures along with ways they can be tailored for sorting Unicode strings:
+
+<details>
+<summary>Bubble Sort:</summary>
+
+- For Unicode strings, you can use Unicode-aware comparison functions to compare and swap strings correctly based on their Unicode code points or collation order.
+- Additionally, consider using Unicode normalization to ensure consistent handling of composed and decomposed characters during the comparison process.
+
+<span class="hl">Example: Unicode-aware Bubble Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort1">
+
+```python
+import unicodedata
+
+swapped = False
+for j in range(0, n - i - 1):
+    # Compare and swap if necessary using Unicode-aware comparison
+    if compare_strings(strings[j], strings[j + 1]) > 0:
+        strings[j], strings[j + 1] = strings[j + 1], strings[j]
+        swapped = True
+# If no swaps occurred in this pass, the array is already sorted
+if not swapped:
+    break
+
+def compare_strings(str1, str2):
+    ###Compares the given strings using a Unicode-aware comparison algorithm.
+    # Normalize strings to a canonical form
+    str1_norm = unicodedata.normalize('NFC', str1)
+    str2_norm = unicodedata.normalize('NFC', str2)
+    # Compare the normalized strings using the locale-specific collation order
+    return locale.strcoll(str1_norm, str2_norm)
+
+# Example usage
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                  # Bangla (Bengali)
+    "универсальное-принятие-тест.москва",                    # Cyrillic
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                 # Devanagari
+    "უნივერსალური-თავსობადობის-ტესტი.გე",                   # Georgian
+    "καθολική-αποδοχή-δοκιμή.ευ",                           # Greek
+    "تجربة-القبول-الشامل.موريتانيا",                         # Arabic
+    "普遍适用测试.我爱你",                                      # Simplified Chinese
+    "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා"     # Sinhala
+]
+unicode_aware_bubble_sort(strings)
+# Print the sorted strings
+for string in strings:
+    print(string)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort1">
+
+```java
+import java.text.Collator;
+import java.util.Arrays;
+import java.util.Locale;
+
+public class UnicodeAwareBubbleSort {
+    public static void main(String[] args) {
+        String[] strings = {
+            "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                 // Bangla (Bengali)
+            "универсальное-принятие-тест.москва",                   // Cyrillic
+            "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                // Devanagari
+            "უნივერსალური-თავსობადობის-ტესტი.გე",                  // Georgian
+            "καθολική-αποδοχή-δοκιμή.ευ",                          // Greek
+            "تجربة-القبول-الشامل.موريتانيا",                        // Arabic
+            "普遍适用测试.我爱你",                                     // Simplified Chinese
+            "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා"    // Sinhala
+        };
+
+        unicodeAwareBubbleSort(strings);
+
+        // Print the sorted strings
+        for (String string : strings) {
+            System.out.println(string);
+        }
+    }
+
+    public static void unicodeAwareBubbleSort(String[] strings) {
+        int n = strings.length;
+        for (int i = 0; i < n; i++) {
+            boolean swapped = false;
+            for (int j = 0; j < n - i - 1; j++) {
+                if (compareStrings(strings[j], strings[j + 1]) > 0) {
+                    String temp = strings[j];
+                    strings[j] = strings[j + 1];
+                    strings[j + 1] = temp;
+                    swapped = true;
+                }
+            }
+            if (!swapped) { break; }
+        }
+    }
+
+    public static int compareStrings(String str1, String str2) {
+        // Compare the strings using the default locale-specific collator
+        Collator collator = Collator.getInstance(Locale.getDefault());
+        return collator.compare(str1, str2);
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the unicode_aware_bubble_sort() and unicodeAwareBubbleSort functions implement the Bubble Sort algorithm. The compare_strings() function is used as the Unicode-aware comparison function.
+
+It normalizes the strings using Unicode normalization (NFD) to ensure consistent comparison by decomposing any composed characters. The compare_strings() and compareStrings functions use a case-insensitive comparison (<span class="hl">casefold()</span>) based on Unicode code points (<span class="hl">casefold()</span> is more robust than lower() for case-insensitive comparisons with Unicode strings).
+
+</details>
+
+<details>
+<summary>Selection Sort:</summary>
+
+- Similar to Bubble Sort, use Unicode-aware comparison functions to compare and select the appropriate string based on Unicode code points or collation order.
+- Apply Unicode normalization to ensure consistent sorting results.
+
+<span class="hl">Example: Unicode-aware Selection Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort2"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort2"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort2">
+
+```python
+import unicodedata
+def compare_strings(str1, str2):
+    # Normalize strings for consistent comparison
+    str1_norm = unicodedata.normalize('NFD', str1)
+    str2_norm = unicodedata.normalize('NFD', str2)
+    # Use case-insensitive comparison using Unicode code points
+    return ord(str1_norm[0]) - ord(str2_norm[0])
+
+def selection_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        min_idx = i
+        for j in range(i + 1, n):
+            # Compare using Unicode-aware comparison
+            if compare_strings(arr[j], arr[min_idx]) < 0:
+                min_idx = j
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+    return arr
+
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                 # Bangla (Bengali)
+    "универсальное-принятие-тест.москва",                   # Cyrillic
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                # Devanagari
+]
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort2">
+
+```java
+import java.text.Normalizer;
+import java.util.Arrays;
+
+public class UnicodeAwareSelectionSort {
+    public static void main(String[] args) {
+        String[] strings = {
+            "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                 // Bangla (Bengali)
+            "универсальное-принятие-тест.москва",                   // Cyrillic
+            "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                // Devanagari
+            "უნივერსალური-თავსობადობის-ტესტი.გე",                  // Georgian
+            "καθολική-αποδοχή-δοκιμή.ευ",                          // Greek
+            "تجربة-القبول-الشامل.موريتانيا",                        // Arabic
+            "普遍适用测试.我爱你",                                     // Simplified Chinese
+            "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා"    // Sinhala
+        };
+        selectionSort(strings);
+        for (String string : strings) {
+            System.out.println(string);
+        }
+    }
+
+    public static void selectionSort(String[] arr) {
+        int n = arr.length;
+        for (int i = 0; i < n; i++) {
+            int minIndex = i;
+            for (int j = i + 1; j < n; j++) {
+                if (compareStrings(arr[j], arr[minIndex]) < 0) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex != i) {
+                String temp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = temp;
+            }
+        }
+    }
+
+    public static int compareStrings(String str1, String str2) {
+        String str1Norm = Normalizer.normalize(str1, Normalizer.Form.NFD);
+        String str2Norm = Normalizer.normalize(str2, Normalizer.Form.NFD);
+        return str1Norm.compareToIgnoreCase(str2Norm);
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the compare_strings() and compareStrings() functions normalize the input strings using Unicode normalization (NFD). It then performs the comparison between the Unicode strings. These comparisons use the difference between the Unicode code points to determine the sorting order.
+
+The selection_sort() and selectionSort() functions iterate through the list and find the minimum value by comparing strings using the compare_strings() and compareString() functions. It swaps the minimum value with the current element if necessary. Finally, the code sorts the strings list using the selection_sort() and selectionSort() functions and prints the sorted strings.
+
+</details>
+
+<details>
+<summary>Insertion Sort:</summary>
+
+- Utilize Unicode-aware comparison functions to compare and insert strings into their correct positions within the sorted portion of the list.
+- Normalize Unicode strings using Unicode normalization to maintain consistency during the insertion process.
+
+<span class="hl">Example: Unicode-aware Insertion Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort3"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort3"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort3">
+
+```python
+import unicodedata
+def compare_strings(str1, str2):
+    # Normalize strings for consistent comparison
+    str1_norm = unicodedata.normalize('NFD', str1)
+    str2_norm = unicodedata.normalize('NFD', str2)
+    # Use case-insensitive comparison using Unicode code points
+    return ord(str1_norm[0]) - ord(str2_norm[0])
+
+def insertion_sort(arr):
+    n = len(arr)
+    for i in range(1, n):
+        key = arr[i]
+        j = i - 1
+        # Move elements greater than the key to one position ahead
+        while j >= 0 and compare_strings(arr[j], key) > 0:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+    return arr
+
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                 # Bangla (Bengali)
+    "универсальное-принятие-тест.москва",                   # Cyrillic
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                # Devanagari
+    "უნივერსალური-თავსობადობის-ტესტი.გე",                  # Georgian
+    "καθολική-αποδοχή-δοκιμή.ευ",                          # Greek
+    "تجربة-القبول-الشامل.موريتانيا",                        # Arabic
+    "普遍适用测试.我爱你",                                     # Simplified Chinese
+    "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා",   # Sinhala
+]
+sorted_strings = insertion_sort(strings)
+for item in sorted_strings:
+    print(item)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort3">
+
+```java
+import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.Comparator;
+
+public class StringComparator {
+    public static String[] insertionSort(String[] arr) {
+        int n = arr.length;
+        for (int i = 1; i < n; i++) {
+            String key = arr[i];
+            int j = i - 1;
+            while (j >= 0 && compareStrings(arr[j], key) > 0) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = key;
+        }
+        return arr;
+    }
+
+    public static int compareStrings(String str1, String str2) {
+        String str1Norm = Normalizer.normalize(str1, Normalizer.Form.NFD);
+        String str2Norm = Normalizer.normalize(str2, Normalizer.Form.NFD);
+        return Character.codePointAt(str1Norm, 0) - Character.codePointAt(str2Norm, 0);
+    }
+
+    public static void main(String[] args) {
+        String[] strings = {
+            "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                 // Bangla (Bengali)
+            "универсальное-принятие-тест.москва",                   // Cyrillic
+            "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                // Devanagari
+            "უნივერსალური-თავსობადობის-ტესტი.გე",                  // Georgian
+            "καθολική-αποδοχή-δοκιμή.ευ",                          // Greek
+            "تجربة-القبول-الشامل.موريتانيا",                        // Arabic
+            "普遍适用测试.我爱你",                                     // Simplified Chinese
+            "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා"    // Sinhala
+        };
+        Arrays.sort(strings, Comparator.comparing(String::new, (str1, str2) -> compareStrings(str1, str2)));
+        for (String item : strings) {
+            System.out.println(item);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the insertion_sort() and insertionSort() functions implement the Insertion Sort algorithm to sort the strings list. The functions start from the second element (i = 1) and consider each element as the "key". Each of them compares the key with the elements before it and shifts the greater elements one position ahead until a position is found where the key is no longer smaller.
+
+The compare_strings() and compareStrings() functions are used for the Unicode-aware comparison, just like in the previous example. Each of them normalizes the strings using Unicode normalization (NFD) and compares the first character based on their Unicode code points. Finally, the sorted strings are printed to verify the sorting order.
+
+</details>
+
+<details>
+<summary>Merge Sort:</summary>
+
+- When merging Unicode string lists during the merge step, employ Unicode-aware comparison functions to merge the lists based on Unicode code points or collation order.
+- Normalize Unicode strings to ensure consistent results during the merging process.
+
+<span class="hl">Example: Unicode-aware Merge Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort4"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort4"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort4">
+
+```python
+import unicodedata
+def compare_strings(str1, str2):
+    str1_norm = unicodedata.normalize('NFD', str1)
+    str2_norm = unicodedata.normalize('NFD', str2)
+    return ord(str1_norm[0]) - ord(str2_norm[0])
+
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left_half = arr[:mid]
+    right_half = arr[mid:]
+    left_half = merge_sort(left_half)
+    right_half = merge_sort(right_half)
+    return merge(left_half, right_half)
+
+def merge(left, right):
+    merged = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if compare_strings(left[i], right[j]) <= 0:
+            merged.append(left[i])
+            i += 1
+        else:
+            merged.append(right[j])
+            j += 1
+    merged.extend(left[i:])
+    merged.extend(right[j:])
+    return merged
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort4">
+
+```java
+import java.text.Normalizer;
+
+public static String[] mergeSort(String[] arr) {
+    if (arr.length <= 1) { return arr; }
+    int mid = arr.length / 2;
+    String[] leftHalf  = Arrays.copyOfRange(arr, 0, mid);
+    String[] rightHalf = Arrays.copyOfRange(arr, mid, arr.length);
+    leftHalf  = mergeSort(leftHalf);
+    rightHalf = mergeSort(rightHalf);
+    return merge(leftHalf, rightHalf);
+}
+
+public static String[] merge(String[] left, String[] right) {
+    String[] merged = new String[left.length + right.length];
+    int i = 0, j = 0, k = 0;
+    while (i < left.length && j < right.length) {
+        if (compareStrings(left[i], right[j]) <= 0) {
+            merged[k++] = left[i++];
+        } else {
+            merged[k++] = right[j++];
+        }
+    }
+    while (i < left.length)  { merged[k++] = left[i++]; }
+    while (j < right.length) { merged[k++] = right[j++]; }
+    return merged;
+}
+
+public static int compareStrings(String str1, String str2) {
+    String str1Norm = Normalizer.normalize(str1, Normalizer.Form.NFD);
+    String str2Norm = Normalizer.normalize(str2, Normalizer.Form.NFD);
+    return Character.compare(str1Norm.charAt(0), str2Norm.charAt(0));
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the merge_sort() and mergeSort() functions implement the Merge Sort algorithm to sort the strings list. Each of them recursively divides the list into smaller halves until each half contains only one element. Then, it merges the smaller halves back together while maintaining the sorted order.
+
+The compare_strings() and <span class="hl">compareStrings()</span> functions are used for the Unicode-aware comparison, just like in the previous examples. Each of them normalizes the strings using Unicode normalization (<span class="hl">NFD</span>) and compares the first character based on their Unicode code points.
+
+The <span class="hl">merge()</span> function is responsible for merging the two halves in a sorted manner. It compares the strings using the functions designated for performing comparisons and appends the smaller string to the merged list until all elements from both halves are merged. Finally, the sorted strings are printed to verify the sorting order.
+
+</details>
+
+<details>
+<summary>Quick Sort:</summary>
+
+- Customize the partitioning step to handle Unicode strings correctly using Unicode-aware  comparison functions or collation keys.
+- Apply Unicode normalization to ensure consistent partitioning and sorting results.
+
+<span class="hl">Example: Unicode-aware Quick Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort5"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort5"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort5">
+
+```python
+import unicodedata
+def compare_strings(str1, str2):
+    str1_norm = unicodedata.normalize('NFD', str1)
+    str2_norm = unicodedata.normalize('NFD', str2)
+    return ord(str1_norm[0]) - ord(str2_norm[0])
+
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left  = []
+    equal = []
+    right = []
+    for item in arr:
+        if compare_strings(item, pivot) < 0:
+            left.append(item)
+        elif compare_strings(item, pivot) == 0:
+            equal.append(item)
+        else:
+            right.append(item)
+    return quick_sort(left) + equal + quick_sort(right)
+
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",                 # Bangla (Bengali)
+    "универсальное-принятие-тест.москва",                   # Cyrillic
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",                # Devanagari
+    "უნივერსალური-თავსობადობის-ტესტი.გე",                  # Georgian
+    "καθολική-αποδοχή-δοκιμή.ευ",                          # Greek
+    "تجربة-القبول-الشامل.موريتانيا",                        # Arabic
+    "普遍适用测试.我爱你",                                     # Simplified Chinese
+    "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා",   # Sinhala
+]
+sorted_strings = quick_sort(strings)
+for item in sorted_strings:
+    print(item)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort5">
+
+```java
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.List;
+
+public class UStringQuickSorter {
+    public static int compareStrings(String str1, String str2) {
+        String str1Norm = Normalizer.normalize(str1, Normalizer.Form.NFD);
+        String str2Norm = Normalizer.normalize(str2, Normalizer.Form.NFD);
+        return Character.compare(str1Norm.charAt(0), str2Norm.charAt(0));
+    }
+
+    public static List<String> quickSort(List<String> arr) {
+        if (arr.size() <= 1) { return arr; }
+        String pivot = arr.get(arr.size() / 2);
+        List<String> left  = new ArrayList<>();
+        List<String> equal = new ArrayList<>();
+        List<String> right = new ArrayList<>();
+        for (String item : arr) {
+            int comparison = compareStrings(item, pivot);
+            if      (comparison < 0) left.add(item);
+            else if (comparison == 0) equal.add(item);
+            else                     right.add(item);
+        }
+        List<String> sortedList = new ArrayList<>();
+        sortedList.addAll(quickSort(left));
+        sortedList.addAll(equal);
+        sortedList.addAll(quickSort(right));
+        return sortedList;
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the <span class="hl">quick_sort()</span> and <span class="hl">quickSort()</span> functions implement the Quick Sort algorithm to sort the strings list. Each of them selects a pivot element (in this case, the middle element) and partitions the list into three sublists: elements smaller than the pivot, elements equal to the pivot, and elements greater than the pivot.
+
+The functions then recursively sort the smaller and greater sublists and concatenate them with the equal sublist to produce the final sorted list.
+
+The compare_strings() and compareStrings() functions are used for the Unicode-aware comparison, just like in the previous examples. Each of them normalizes the strings using Unicode normalization (NFD) and compares the first character based on their Unicode code points. Finally, the sorted strings are printed to verify the sorting order.
+
+</details>
+
+<details>
+<summary>Heap Sort:</summary>
+
+- Use Unicode-aware comparison functions or collation keys when building the heap and extracting elements to maintain the correct sorting order.
+- Normalize Unicode strings during the heap construction phase to ensure consistent results.
+
+<span class="hl">Example: Unicode-aware Heap Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort6"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort6"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort6">
+
+```python
+import unicodedata
+def compare_strings(str1, str2):
+    str1_norm = unicodedata.normalize('NFD', str1)
+    str2_norm = unicodedata.normalize('NFD', str2)
+    return ord(str1_norm[0]) - ord(str2_norm[0])
+
+def heapify(arr, n, i):
+    largest = i
+    left  = 2 * i + 1
+    right = 2 * i + 2
+    if left < n and compare_strings(arr[left], arr[largest]) > 0:
+        largest = left
+    if right < n and compare_strings(arr[right], arr[largest]) > 0:
+        largest = right
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        heapify(arr, n, largest)
+
+def heap_sort(arr):
+    n = len(arr)
+    # Build a max heap
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(arr, n, i)
+    # Extract elements one by one
+    for i in range(n - 1, 0, -1):
+        arr[i], arr[0] = arr[0], arr[i]
+        heapify(arr, i, 0)
+    return arr
+
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",
+    "универсальное-принятие-тест.москва",
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",
+    "უნივერსალური-თავსობადობის-ტესტი.გე",
+    "καθολική-αποδοχή-δοκιμή.ευ",
+    "تجربة-القبول-الشامل.موريتانيا",
+    "普遍适用测试.我爱你",
+    "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා",
+]
+sorted_strings = heap_sort(strings)
+for item in sorted_strings:
+    print(item)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort6">
+
+```java
+import java.text.Normalizer;
+import java.util.Arrays;
+
+public class UStringHeapSorter {
+    public static int compareStrings(String str1, String str2) {
+        String str1Norm = Normalizer.normalize(str1, Normalizer.Form.NFD);
+        String str2Norm = Normalizer.normalize(str2, Normalizer.Form.NFD);
+        return Character.compare(str1Norm.charAt(0), str2Norm.charAt(0));
+    }
+
+    public static void heapify(String[] arr, int n, int i) {
+        int largest = i, left = 2 * i + 1, right = 2 * i + 2;
+        if (left  < n && compareStrings(arr[left],  arr[largest]) > 0) largest = left;
+        if (right < n && compareStrings(arr[right], arr[largest]) > 0) largest = right;
+        if (largest != i) {
+            String temp = arr[i]; arr[i] = arr[largest]; arr[largest] = temp;
+            heapify(arr, n, largest);
+        }
+    }
+
+    public static String[] heapSort(String[] arr) {
+        int n = arr.length;
+        for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
+        for (int i = n - 1; i > 0; i--) {
+            String temp = arr[0]; arr[0] = arr[i]; arr[i] = temp;
+            heapify(arr, i, 0);
+        }
+        return arr;
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the <span class="hl">heapify()</span> function is used to maintain the heap property of the array. It takes an array, its length n, and an index i as parameters. It compares the element at index i with its left and right child (if they exist) and swaps the element with the largest value. The function then recursively calls itself to ensure the heap property is maintained.
+
+The <span class="hl">heap_sort()</span> and <span class="hl">heapSort()</span> functions build a max heap by calling <span class="hl">heapify()</span> on the array starting from the last non-leaf node and moving up to the root. It then repeatedly extracts the maximum element from the heap and places it at the end of the array, reducing the heap size each time. Finally, it returns the sorted array.
+
+The <span class="hl">compare_strings()</span> and <span class="hl">compareStrings()</span> functions are used for the Unicode-aware comparison, just like in the previous examples. Each of them normalizes the strings using Unicode normalization (<span class="hl">NFD</span>) and compares the first character based on their Unicode code points. Finally, the sorted strings are printed to verify the sorting order.
+
+</details>
+
+<details>
+<summary>Tim Sort:</summary>
+
+- Tim Sort is a hybrid sorting algorithm that works well with various types of data, including Unicode strings.
+- Employ Unicode-aware comparison functions or collation keys during the sorting process to ensure accurate sorting of Unicode strings.
+- Normalize Unicode strings for consistent sorting results.
+
+<span class="hl">Example: Unicode-aware Tim Sort in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="sort7"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="sort7"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="sort7">
+
+```python
+import unicodedata
+def compare_strings(str1, str2):
+    str1_norm = unicodedata.normalize('NFD', str1)
+    str2_norm = unicodedata.normalize('NFD', str2)
+    return ord(str1_norm[0]) - ord(str2_norm[0])
+
+def insertion_sort(arr, left, right):
+    for i in range(left + 1, right + 1):
+        key = arr[i]
+        j = i - 1
+        while j >= left and compare_strings(arr[j], key) > 0:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+
+def merge(arr, left, mid, right):
+    len1 = mid - left + 1
+    len2 = right - mid
+    left_arr  = arr[left:mid + 1]
+    right_arr = arr[mid + 1:right + 1]
+    i = j = 0
+    k = left
+    while i < len1 and j < len2:
+        if compare_strings(left_arr[i], right_arr[j]) <= 0:
+            arr[k] = left_arr[i]; i += 1
+        else:
+            arr[k] = right_arr[j]; j += 1
+        k += 1
+    while i < len1: arr[k] = left_arr[i];  i += 1; k += 1
+    while j < len2: arr[k] = right_arr[j]; j += 1; k += 1
+
+def tim_sort(arr):
+    n = len(arr)
+    min_run = 32
+    for i in range(0, n, min_run):
+        insertion_sort(arr, i, min(i + min_run - 1, n - 1))
+    size = min_run
+    while size < n:
+        for start in range(0, n, size * 2):
+            mid = min(start + size - 1, n - 1)
+            end = min(start + size * 2 - 1, n - 1)
+            merge(arr, start, mid, end)
+        size *= 2
+    return arr
+
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",
+    "универсальное-принятие-тест.москва",
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",
+    "უნივერსალური-თავსობადობის-ტესტი.გე",
+    "καθολική-αποδοχή-δοκιμή.ευ",
+    "تجربة-القبول-الشامل.موريتانيا",
+    "普遍适用测试.我爱你",
+    "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා",
+]
+sorted_strings = tim_sort(strings)
+for item in sorted_strings:
+    print(item)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="sort7">
+
+```java
+import java.text.Normalizer;
+import java.util.Arrays;
+
+public class UStringTimSorter {
+    public static int compareStrings(String str1, String str2) {
+        String str1Norm = Normalizer.normalize(str1, Normalizer.Form.NFD);
+        String str2Norm = Normalizer.normalize(str2, Normalizer.Form.NFD);
+        return Character.compare(str1Norm.charAt(0), str2Norm.charAt(0));
+    }
+
+    public static void insertionSort(String[] arr, int left, int right) {
+        for (int i = left + 1; i <= right; i++) {
+            String key = arr[i];
+            int j = i - 1;
+            while (j >= left && compareStrings(arr[j], key) > 0) {
+                arr[j + 1] = arr[j]; j--;
+            }
+            arr[j + 1] = key;
+        }
+    }
+
+    public static void merge(String[] arr, int left, int mid, int right) {
+        String[] leftArr  = Arrays.copyOfRange(arr, left, mid + 1);
+        String[] rightArr = Arrays.copyOfRange(arr, mid + 1, right + 1);
+        int i = 0, j = 0, k = left;
+        while (i < leftArr.length && j < rightArr.length) {
+            if (compareStrings(leftArr[i], rightArr[j]) <= 0) arr[k++] = leftArr[i++];
+            else arr[k++] = rightArr[j++];
+        }
+        while (i < leftArr.length)  arr[k++] = leftArr[i++];
+        while (j < rightArr.length) arr[k++] = rightArr[j++];
+    }
+
+    public static String[] timSort(String[] arr) {
+        int n = arr.length, minRun = 32;
+        for (int i = 0; i < n; i += minRun)
+            insertionSort(arr, i, Math.min(i + minRun - 1, n - 1));
+        for (int size = minRun; size < n; size *= 2) {
+            for (int start = 0; start < n; start += size * 2) {
+                int mid = Math.min(start + size - 1, n - 1);
+                int end = Math.min(start + size * 2 - 1, n - 1);
+                merge(arr, start, mid, end);
+            }
+        }
+        return arr;
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
+
+κaθολική-αποδοχή-δοκιμή.ευ · универсальное-принятие-тест.москва · تجربة-القبول-الشامل.موريتانيا · सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन · সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি · ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා · უნივერსალური-თავსობადობის-ტესტი.გე · 普遍适用测试.我爱你
+
+</div>
+
+In the Python and Java codes above, the insertion_sort() and insertSort() functions are used to sort small subarrays called "runs" using Insertion Sort. The merge() function is used to merge two sorted runs into a single sorted run.
+
+The tim_sort() and timSort() functions start by sorting small runs of length min_run and minRun using Insertion Sort. It then repeatedly merges adjacent runs until the entire array is sorted. The size of the runs doubles in each iteration until it reaches the size of the array.
+
+The compare_strings() and compareStrings() functions are used for the Unicode-aware comparison, just like in the previous examples. Each of them normalizes the strings using Unicode normalization (<span class="hl">NFD</span>) and compares the first character based on their Unicode code points. Finally, the sorted strings are printed to verify the sorting order.
+
+</details>
+
+<div class="info-card">
+
+<span class="hl">Note:</span>
+
+Please note that the above implementations of sorting algorithms are simplified versions as they compare only the first character of the normalized strings. For a more comprehensive Unicode-aware sort, you may need to modify them or consider using a more robust Unicode collation algorithm (see section 7) or a library specifically designed for Unicode sorting, such as the PyICU library.
+
+</div>
+
+---
+
+## Binary Searches in Unicode Strings
+
+<div class="info-card">
+
+Binary search is a commonly used algorithm for efficiently searching a sorted list or array. It can also be extended to work with Unicode strings. In Python and Java, Unicode strings can be treated like any other string and can be used in binary search implementations.
+
+</div>
+
+<span class="hl">Example: Binary Searches in Unicode Strings in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="bin1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="bin1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="bin1">
+
+```python
+def binary_search_unicode(arr, target):
+    low  = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid     = (low + high) // 2
+        mid_val = arr[mid]
+        if target == mid_val:
+            return mid
+        elif target < mid_val:
+            high = mid - 1
+        else:
+            low = mid + 1
+    return -1  # Target not found
+
+strings = [
+    "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا",         # Arabic Unicode@IDN.IDN email.
+    "Էլփոստ-թեստ@համընդհանուր-ընկալում-թեստ.հայ",               # Armenian Unicode@IDN.IDN email.
+    "ই-মেইল-পরীক্ষা@সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",         # Bangala Unicode@IDN.IDN email.
+    "ფოსტის-ტესტი@უნივერსალური-თავსობადობისტესტი.გე",            # Georgian Unicode@IDN.IDN email.
+    "מבחן-דואר-אלקטרוני@מבחן-קבלה-אוניברסלי.קום",               # Hebrew Unicode@IDN.IDN email.
+    "மின்னஞ்சல்-சோதனை@பொது-ஏற்பு-சோதனை.சிங்கப்பூர்",          # Tamil Unicode@IDN.IDN email.
+    "อีเมลทดสอบ@ยูเอทดสอบ.ไทย",                                  # Thai Unicode@IDN.IDN email.
+    "ኢሜይል-ሙከራ@ሁለንአቀፍ-ተቀባይነት-ሙከራ.com",                       # Ethiopic Unicode@IDN.ASCII
+    "အီးမေးလ်စမ်းသပ်ချက်@အလုံးစုံလက်ခံမှုစမ်းသပ်ချက်.com",   # Myanmar Unicode@IDN.ASCII
+]
+target_string = "ই-মেইল-পরীক্ষা@সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি"  # Target string to search
+sorted_strings = sorted(strings)  # Sorting in lexicographic order
+result = binary_search_unicode(sorted_strings, target_string)
+if result != -1:
+    print(f"{target_string} found at index {result}")
+else:
+    print(f"{target_string} not found")
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="bin1">
+
+```java
+import java.util.Arrays;
+
+public class LexicographicBinarySearch {
+    public static int binarySearchUnicode(String[] arr, String target) {
+        int low  = 0;
+        int high = arr.length - 1;
+        while (low <= high) {
+            int mid    = (low + high) / 2;
+            String midVal = arr[mid];
+            if (target.equals(midVal)) {
+                return mid;
+            } else if (target.compareTo(midVal) < 0) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return -1; // Target not found
+    }
+
+    public static void main(String[] args) {
+        String[] strings = {
+            "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا",       // Arabic Unicode@IDN.IDN email.
+            "Էլփոստ-թեստ@համընդհանուր-ընկալում-թեստ.հայ",             // Armenian Unicode@IDN.IDN email.
+            "ই-মেইল-পরীক্ষা@সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",       // Bangala Unicode@IDN.IDN email.
+            "ფოსტის-ტესტი@უნივერსალური-თავსობადობისტესტი.გე",          // Georgian Unicode@IDN.IDN email.
+            "מבחן-דואר-אלקטרוני@מבחן-קבלה-אוניברסלי.קום",             // Hebrew Unicode@IDN.IDN email.
+            "மின்னஞ்சல்-சோதனை@பொது-ஏற்பு-சோதனை.சிங்கப்பூர்",        // Tamil Unicode@IDN.IDN email.
+            "อีเมลทดสอบ@ยูเอทดสอบ.ไทย",                                // Thai Unicode@IDN.IDN email.
+            "ኢሜይል-ሙከራ@ሁለንአቀፍ-ተቀባይነት-ሙከራ.com",                     // Ethiopic Unicode@IDN.ASCII email.
+            "အီးမေးလ်စမ်းသပ်ချက်@အလုံးစုံလက်ခံမှုစမ်းသပ်ချက်.com"  // Myanmar Unicode@IDN.ASCII email.
+        };
+        String targetString = "ই-মেইল-পরীক্ষা@সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি"; // Target string to search
+        Arrays.sort(strings); // Sorting in lexicographic order
+        int result = binarySearchUnicode(strings, targetString);
+        if (result != -1) {
+            System.out.println(targetString + " found at index " + result);
+        } else {
+            System.out.println(targetString + " not found");
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output:</span>
+
+ই-মেইল-পরীক্ষা@সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি found at index 3
+
+</div>
+
+In the above code, the binary_search_unicode function implements the binary search algorithm for Unicode strings. It takes a sorted list of Unicode strings (arr) and a target string (target) as inputs. It returns the index of the target string if found, and -1 if the target string is not present in the list.
+
+The strings list contains a collection of Unicode strings from various languages, such as Arabic, Armenian, Bangla, Georgian, Hebrew, Tamil, Thai, Ethiopic, and Myanmar. Before performing the binary search, the strings list is sorted using the sorted function. It is now sorted using the default lexicographic order provided by the sorted() function.
+
+The binary_search_unicode function performs the binary search algorithm on the sorted list of Unicode strings. It maintains the low and high indices to define the search range. It repeatedly calculates the mid index and compares the target string with the string at the mid index. Based on the comparison, it updates the low and high indices to narrow down the search range until the target string is found or the search range is exhausted.
+
+Finally, the function returns the index of the target string if found, or -1 if not found. The result is printed to the console indicating whether the target string was found in the list or not. In this example, the target string "ই-মেইল-পরীক্ষা@সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি" is found at index 3 in the sorted list of Unicode strings.
+
+The above Java code performs a binary search on an array of strings in lexicographic order. The binarySearchUnicode method employs a binary search algorithm to find a target string in the array.
+
+The main method initializes an array of strings, sorts it in lexicographic order using Arrays.sort, and then performs the binary search on the sorted array. Finally, it outputs whether the target string was found or not.
+
+---
+
+## Searching Through Unicode Text (Normalization + Collation)
+
+When searching through Unicode data, it's important to consider both normalization and collation to ensure accurate and effective matching. Below is a summary of how normalization and collation can be applied during Unicode data searching:
+
+<details>
+<summary>Normalization:</summary>
+
+- Unicode normalization involves transforming Unicode strings into a standardized form that eliminates any variations in character representation. This helps ensure that equivalent strings are treated as identical during searching. The most commonly used normalization forms are NFC (Normalization Form Canonical Composition) and NFD (Normalization Form Canonical Decomposition).
+- To apply normalization during searching, you need to normalize both the search query and the data being searched. This ensures that any differences in character representation, such as combining characters or different composition forms, are accounted for and matched correctly.
+
+</details>
+
+<details>
+<summary>Collation:</summary>
+
+- Collation is the process of ordering strings based on a predefined set of rules or a collation algorithm. When searching through Unicode data, you want to ensure that the collation order used during sorting is also applied during searching. This ensures consistent and accurate matching based on the linguistic and cultural expectations of the data.
+- To perform collation-based searching, you need to use a collator that supports the desired collation algorithm, such as the Unicode Collation Algorithm (UCA). The collator takes into account language-specific rules, diacritic sensitivity, case sensitivity, and other aspects to determine the correct sorting and matching order.
+
+</details>
+
+<span class="hl">Example: Searching Unicode Text in Python:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="search1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="search1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="search1">
+
+```python
+import unicodedata
+import locale
+
+# Function to normalize and prepare text for comparison
+def normalize_text(text):
+    return unicodedata.normalize('NFC', text).lower()
+
+# Sample data
+strings = [
+    "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",
+    "универсальное-принятие-тест.москва",
+    "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",
+    "უნივერსალური-თავსობადობის-ტესტი.გე",
+    "καθολική-αποδοχή-δοκιμή.ευ",
+    "تجربة-القبول-الشامل.موريتانيا",
+    "普遍适用测试.我爱你",
+    "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා"
+]
+
+# Search query
+search_query = "καθολικη-αποδοχη-δοκιμη.ευ"
+# Normalize the search query
+normalized_query = normalize_text(search_query)
+# Normalize the list of strings
+normalized_strings = [normalize_text(string) for string in strings]
+# Set locale for collation
+locale.setlocale(locale.LC_COLLATE, 'en_US.UTF-8')
+# Perform the search with collation
+found = False
+for string in normalized_strings:
+    if locale.strxfrm(normalized_query) == locale.strxfrm(string):
+        found = True
+        break
+if found:
+    print(f"Search text '{search_query}' is found in the list.")
+else:
+    print(f"Search text '{search_query}' is not found in the list.")
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="search1">
+
+```java
+import java.text.Collator;
+import java.text.Normalizer;
+import java.util.Locale;
+
+public class StringSearchExample {
+    public static void main(String[] args) {
+        String[] strings = {
+            "সর্বজনীন-স্বীকৃ তির-পরীক্ষা.ভারি",    // Bangla (Bengali)
+            "универсальное-принятие-тест.москва",       // Cyrillic
+            "सार्वभौमिक-स्र्ीकृति-परीक्षण.संगठन",    // Devanagari
+            "უნივერსალური-თავსობადობის-ტესტი.გე",      // Georgian
+            "καθολική-αποδοχή-δοκιμή.ευ",              // Greek
+            "تجربة-القبول-الشامل.موريتانيا",            // Arabic
+            "普遍适用测试.我爱你",                         // Simplified Chinese
+            "ඉ-තැපැල්-පිරික්සුම@විශ්ව-සම්මුති-පිරික්සුම.ලංකා" // Sinhala
+        };
+
+        String searchQuery = "καθολικη-αποδοχη-δοκιμη.ευ"; // Designated search query
+        // Normalize the search query using Unicode normalization form NFD
+        String normalizedSearchQuery = Normalizer.normalize(searchQuery, Normalizer.Form.NFD);
+        // Create a Collator instance for the default locale with strength PRIMARY
+        Collator collator = Collator.getInstance(Locale.getDefault());
+        collator.setStrength(Collator.PRIMARY);
+        boolean found = false;
+        for (String str : strings) {
+            String normalizedStr = Normalizer.normalize(str, Normalizer.Form.NFD);
+            if (collator.compare(normalizedSearchQuery, normalizedStr) == 0) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            System.out.println("Search text " + searchQuery + " is found in the array.");
+        } else {
+            System.out.println("Search text " + searchQuery + " is not found in the array.");
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output:</span>
+
+Search text 'καθολικη-αποδοχη-δοκιμη.ευ' is found in the list.
+
+</div>
+
+In the code above, the search text "καθολική-αποδοχή-δοκιμή.ευ" is first normalized using Unicode normalization form NFD. Then, a Collator instance is created with the default locale and a strength of PRIMARY.
+
+The Collator is used to compare the normalized search element with each element in the strings array, after normalizing each element as well. If a match is found, it prints "Element found in the array." Otherwise, it prints "Element not found in the array."
+
+Note that the code assumes the default locale for collation. You can modify the <span class="hl">Locale.getDefault()</span> to use a specific locale if desired.
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">Reference</span>
+
+1. Unicode Consortium. "Glyph Shaping." In The Unicode Standard, Version 15.0. Unicode Consortium. 2022. Retrieved October 21, 2023, from [https://www.unicode.org/versions/Unicode15.0.0/](https://www.unicode.org/versions/Unicode15.0.0/).
+2. Python Software Foundation. (2023). Python 3.12 Documentation. Retrieved October 21, 2023, from [https://docs.python.org/3/](https://docs.python.org/3/).
+3. Stack Overflow. (n.d.). Where Developers Learn, Share, & Build Careers. Retrieved October 21, 2023, from [https://stackoverflow.com/](https://stackoverflow.com/).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>
