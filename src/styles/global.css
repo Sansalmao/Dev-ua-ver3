@@ -629,11 +629,11 @@ canvas {
     color: var(--accent-hover);
 }
 
-/* Contenido desplegado: línea guía izquierda naranja */
+/* Contenido desplegado: línea guía izquierda naranja — 3px para más presencia */
 .module-content details > *:not(summary) {
-    padding: 4px 0 8px 28px;
-    border-left: 2px solid var(--accent-border-light);
-    margin-left: 8px;
+    padding: 4px 0 8px 26px;
+    border-left: 3px solid var(--accent-border-light);
+    margin-left: 6px;
 }
 
 /* Details anidados: línea más suave */
@@ -642,9 +642,9 @@ canvas {
 }
 
 .module-content details details > *:not(summary) {
-    padding: 3px 0 6px 24px;
+    padding: 3px 0 6px 22px;
     border-left: 2px solid var(--border);
-    margin-left: 8px;
+    margin-left: 6px;
 }
 
 /* Listas dentro de details */
@@ -659,25 +659,13 @@ canvas {
     font-size: 0.9rem;
     color: var(--text-secondary);
     line-height: 1.6;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
     list-style-type: disc;
 }
 
 .module-content details li li {
     list-style-type: circle;
-    margin-top: 0.15rem;
-}
-
-/* h3 dentro de details: separación superior respecto al summary */
-.module-content details > h3 {
-    margin-top: 1rem;
-    margin-bottom: 0.75rem;
-}
-
-/* h3 que es el primer hijo directo del contenido del details */
-.module-content details > *:not(summary):first-of-type h3:first-child,
-.module-content details h3:first-child {
-    margin-top: 0.85rem;
+    margin-top: 0.1rem;
 }
 
 /* ============================================
@@ -939,21 +927,176 @@ canvas {
     pointer-events: none;
 }
 
-/* Bloques de código: oculto/visible */
+/* ── Bloques de código: oculto / visible ─────────────────────────────────
+   font-size:0 + line-height:0 en el contenedor colapsa cualquier
+   text-node de whitespace (los
+ que MDX inyecta alrededor del <pre>).
+   El <pre> restaura los valores normales con font-size:inherit en pre.
+   ───────────────────────────────────────────────────────────────────── */
 .lang-block {
     display: none;
 }
 .lang-block.active {
     display: block;
+    /* Colapsar text-nodes de whitespace alrededor del <pre> */
+    font-size: 0;
+    line-height: 0;
 }
 
-/* Pre dentro del switcher: sin márgenes propios,
-   sin esquinas superiores, ocupa todo el ancho */
-.code-switcher pre,
-.code-switcher .lang-block.active pre {
-    border-radius: 0;
-    margin: 0;
-    padding: 1rem 1.25rem;
-    border: none;
-    background: var(--code-bg);
+/* Pre dentro del switcher ─────────────────────────────────────────────── */
+.code-switcher pre {
+    /* Restaurar valores normales después del font-size:0 del padre */
+    font-size: 0.82rem !important;
+    line-height: 1.65 !important;
+    /* Sin ningún margen, padding ni borde propio */
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0.6rem 0 0.75rem !important;
+    border: none !important;
+    background: var(--code-bg) !important;
+    overflow-x: auto;
+    color: var(--code-text);
+    font-family: var(--font-mono);
 }
+
+/* <code> dentro del switcher ─────────────────────────────────────────── */
+.code-switcher pre code {
+    /* display:flex+column elimina los
+ entre .code-line spans */
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--code-text);
+    font-family: var(--font-mono);
+    /* Evitar que .module-wrap code sobreescriba con fondo naranja */
+    white-space: pre;
+}
+
+/* Logo SQL — cilindro de base de datos */
+.lang-icon--sql {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cellipse cx='24' cy='11' rx='16' ry='6' fill='%234479A1'/%3E%3Crect x='8' y='11' width='32' height='4' fill='%234479A1'/%3E%3Cellipse cx='24' cy='15' rx='16' ry='6' fill='%235B9BD5'/%3E%3Crect x='8' y='21' width='32' height='4' fill='%234479A1'/%3E%3Cellipse cx='24' cy='25' rx='16' ry='6' fill='%235B9BD5'/%3E%3Crect x='8' y='31' width='32' height='4' fill='%234479A1'/%3E%3Cellipse cx='24' cy='35' rx='16' ry='6' fill='%235B9BD5'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   LÍNEAS DE CÓDIGO — generadas por JS en ModuleLayout
+   El JS envuelve cada línea en:
+     <span class="code-line">
+       <span class="code-line-content">...</span>
+     </span>
+   Estas reglas dan el aspecto de editor real:
+   número de gutter alineado a la derecha +
+   contenido de la línea con scroll horizontal.
+   ============================================ */
+
+/* Cada línea: flexbox para alinear gutter y contenido.
+   Con <code> en flex-direction:column, los
+ entre spans no generan espacio. */
+.code-switcher .code-line {
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    /* Sin min-height — la altura la da el line-height del contenido */
+}
+
+/* Número de gutter — columna izquierda fija */
+.code-switcher .code-line-num {
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    /* Ancho fijo: suficiente para 3-4 dígitos */
+    width: 3rem;
+    min-width: 3rem;
+    padding-right: 1.25rem;
+    padding-top: 0;
+    color: var(--code-gutter-text);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.65em;
+    user-select: none;
+    flex-shrink: 0;
+    opacity: 0.45;
+}
+
+/* Contenido de la línea — columna derecha elástica */
+.code-switcher .code-line-content {
+    flex: 1;
+    white-space: pre;
+    /* Scroll horizontal del bloque lo gestiona el <pre> padre */
+    overflow: visible;
+    padding-right: 1.5rem;
+    line-height: 1.65em;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--code-text);
+}
+
+/* (regla redundante eliminada — gestionada por .code-switcher pre arriba) */
+
+/* Hover sobre una línea — sutil highlight para facilitar lectura */
+.code-switcher .code-line:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ============================================
+   FOLD — acoplamiento de bloques en el editor
+   El botón ▶ aparece en el gutter de líneas
+   que abren { [ ( y colapsa las hijas al click.
+   ============================================ */
+
+/* Botón de fold: dentro del gutter, antes del número */
+.code-switcher .fold-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    margin-right: 3px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #4b5563;
+    cursor: pointer;
+    border-radius: 2px;
+    vertical-align: middle;
+    flex-shrink: 0;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease;
+    /* Por defecto la flecha apunta ▶ (bloque abierto) */
+}
+
+.code-switcher .fold-btn svg {
+    display: block;
+    /* Flecha apunta ▼ (bloque abierto = expandido) */
+    transform: rotate(90deg);
+    transition: transform 0.18s ease;
+}
+
+/* Cuando el fold-btn tiene clase --open la flecha apunta ▶ (colapsado) */
+.code-switcher .fold-btn.fold-btn--open svg {
+    transform: rotate(0deg);
+}
+
+.code-switcher .fold-btn:hover {
+    color: var(--accent);
+    background: rgba(229, 98, 26, 0.12);
+}
+
+/* Línea que abre un bloque foldable: gutter ligeramente destacado */
+.code-switcher .code-line--foldable > .code-line-num {
+    color: #9ca3af;
+    opacity: 0.7;
+}
+
+/* Línea colapsada: añade "..." indicador en el contenido */
+.code-switcher .code-line--collapsed > .code-line-content::after {
+    content: " …";
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Líneas hijas ocultas al colapsar — gestionadas por JS con display:none */

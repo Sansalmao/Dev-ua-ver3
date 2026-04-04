@@ -41,30 +41,6 @@ const defaultActive = activePanel ?? sections[0]?.items[0]?.panelId ?? "";
         </span>
     </div>
 
-    <!-- Input de búsqueda -->
-    <div class="tabs-nav__search">
-        <svg
-            class="tabs-nav__search-icon"
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-        >
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-        </svg>
-        <input
-            type="search"
-            class="tabs-nav__input"
-            id="tnav-search"
-            placeholder="Buscar tema..."
-            aria-label="Filtrar temas del módulo"
-        />
-    </div>
-
     <!-- Árbol de secciones -->
     <div class="tabs-nav__tree" id="tnav-tree" role="tablist">
         {sections.map((section, sIdx) => (
@@ -173,36 +149,6 @@ const defaultActive = activePanel ?? sections[0]?.items[0]?.panelId ?? "";
         font-size: 10px;
         color: var(--text-muted);
         padding-left: 18px;
-    }
-
-    /* ── Búsqueda ── */
-    .tabs-nav__search {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--border);
-        background: var(--bg);
-    }
-
-    .tabs-nav__search-icon {
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
-
-    .tabs-nav__input {
-        flex: 1;
-        background: none;
-        border: none;
-        outline: none;
-        font-family: var(--font-mono);
-        font-size: 12px;
-        color: var(--text);
-        min-width: 0;
-    }
-
-    .tabs-nav__input::placeholder {
-        color: var(--text-muted);
     }
 
     /* ── Árbol scrolleable ── */
@@ -377,15 +323,6 @@ const defaultActive = activePanel ?? sections[0]?.items[0]?.panelId ?? "";
         font-weight: 600;
     }
 
-    /* Ítem oculto por el filtro de búsqueda */
-    .tnav-item.hidden-by-filter {
-        display: none;
-    }
-
-    /* Sección oculta por el filtro (todos sus ítems filtrados) */
-    .tnav-section.hidden-by-filter {
-        display: none;
-    }
 </style>
 
 <script>
@@ -508,63 +445,7 @@ const defaultActive = activePanel ?? sections[0]?.items[0]?.panelId ?? "";
                 })
             );
         }
-
-        // ── FILTRO DE BÚSQUEDA ────────────────────────────────────────────────
-
-        const searchInput = document.getElementById(
-            "tnav-search"
-        ) as HTMLInputElement;
-
-        let debounceTimer: ReturnType<typeof setTimeout>;
-
-        searchInput?.addEventListener("input", () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const query = searchInput.value.trim().toLowerCase();
-                filterTree(query);
-            }, 120);
-        });
-
-        function filterTree(query: string) {
-            nav.querySelectorAll<HTMLElement>(".tnav-section").forEach(
-                (section) => {
-                    const items =
-                        section.querySelectorAll<HTMLElement>(".tnav-item");
-                    let anyVisible = false;
-
-                    items.forEach((item) => {
-                        const title = (
-                            item.dataset.title ?? ""
-                        ).toLowerCase();
-                        const matches = !query || title.includes(query);
-
-                        item.classList.toggle("hidden-by-filter", !matches);
-                        if (matches) anyVisible = true;
-                    });
-
-                    // Ocultar sección si ninguno de sus ítems coincide
-                    section.classList.toggle(
-                        "hidden-by-filter",
-                        !anyVisible && query !== ""
-                    );
-
-                    // Expandir secciones con resultados automáticamente
-                    if (anyVisible && query !== "") {
-                        const body = section.querySelector<HTMLElement>(
-                            ".tnav-section__body"
-                        )!;
-                        const btn = section.querySelector<HTMLButtonElement>(
-                            "[data-section-toggle]"
-                        )!;
-                        section.classList.add("is-open");
-                        btn?.setAttribute("aria-expanded", "true");
-                        body.style.maxHeight = "";
-                    }
-                }
-            );
-        }
     }
-
     // Ejecutar cuando el componente entra en el viewport (client:visible)
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initTabsNav);
