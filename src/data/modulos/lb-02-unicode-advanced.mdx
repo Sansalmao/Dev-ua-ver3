@@ -199,21 +199,21 @@ By leveraging the character-glyph model in programming languages like Python and
 When it comes to displaying text, several essential components work together to ensure accurate and visually appealing rendering. Text engines, fonts, and glyph shapers play crucial roles in this process.
 
 <details>
-<summary>Text Engines</summary>
+<summary>Text Engines:</summary>
 
 Text engines are responsible for handling the layout and rendering of text, especially when dealing with complex scripts that involve bidirectional text, combining characters, and complex shaping rules. These engines analyze the Unicode text, apply appropriate layout algorithms, and determine the correct positioning and shaping of characters based on the script's rules. Text engines help ensure proper line breaks, text directionality, and contextual shaping, leading to visually pleasing and linguistically correct text rendering.
 
 </details>
 
 <details>
-<summary>Fonts</summary>
+<summary>Fonts:</summary>
 
 Fonts play a crucial role in displaying Unicode text as they provide the necessary glyphs (visual representations) for each character. A font is a collection of glyphs that represent a specific typeface or style. When rendering Unicode text, the font used must support the characters and scripts present in the text. Unicode provides a vast character repertoire, and fonts need to have comprehensive coverage to display characters from various scripts correctly. Choosing the right font ensures that the appropriate glyphs are available for rendering each character in the text.
 
 </details>
 
 <details>
-<summary>Glyph Shapers</summary>
+<summary>Glyph Shapers:</summary>
 
 Glyph shapers are software components that perform the complex task of shaping glyphs to produce visually connected and contextually appropriate representations of characters. In many scripts, such as Arabic, Indic scripts, or Thai, the shape of a character may vary depending on its position within a word or the surrounding characters. Glyph shapers analyze the sequence of characters, apply shaping rules specific to the script, and transform the individual glyphs into their appropriate forms. This process ensures that characters are visually connected and displayed correctly according to the script's requirements.
  
@@ -243,35 +243,35 @@ In summary, the following are key points to keep in mind regarding the utilizati
 Glyph shapers handle the shaping of characters with diacritical marks or vowel signs by applying specific rules and adjustments to ensure the proper positioning and visual integration of these marks. The following bulleted items describe how glyph shapers handle this task[1]:
 
 <details>
-<summary>Base Character and Diacritical Mark Identification</summary>
+<summary>Base Character and Diacritical Mark Identification:</summary>
 
 Glyph shapers identify the base character and the associated diacritical mark or vowel sign. The base character is typically shaped first, and then the diacritical mark or vowel sign is positioned relative to it.
 
 </details>
 
 <details>
-<summary>Positioning and Placement</summary>
+<summary>Positioning and Placement:</summary>
 
 Glyph shapers determine the correct placement and positioning of diacritical marks or vowel signs based on the specific script's rules and requirements. The marks need to align properly with the base character, maintaining appropriate spacing and visual harmony. The positioning may differ depending on whether the mark is above, below, before, or after the base character.
 
 </details>
 
 <details>
-<summary>Mark Positioning Rules</summary>
+<summary>Mark Positioning Rules:</summary>
 
 Different scripts have their own rules for positioning diacritical marks. For example, in Arabic script, diacritical marks are often positioned above or below the base character and may have different forms depending on their placement. Glyph shapers analyze these rules and apply the appropriate adjustments to ensure accurate rendering.
 
 </details>
 
 <details>
-<summary>Contextual Adjustments</summary>
+<summary>Contextual Adjustments:</summary>
 
 Glyph shapers take into account the surrounding characters and adjust the positioning of diacritical marks to maintain proper visual connections and spacing within the word. This includes handling situations where multiple diacritical marks or vowel signs are present in a word and ensuring they are correctly aligned and spaced.
 
 </details>
 
 <details>
-<summary>Ligatures and Special Forms</summary>
+<summary>Ligatures and Special Forms:</summary>
 
 In some cases, glyph shapers may substitute a combination of a base character and diacritical mark with a pre-designed ligature or special form. This helps maintain visual consistency and legibility, especially when dealing with complex combinations of characters and diacritical marks.
 
@@ -284,14 +284,14 @@ In some cases, glyph shapers may substitute a combination of a base character an
 Normalization of Unicode strings refers to the process of transforming different representations of the same text into a standardized form. The standardized form is important for operations like testing two strings for equality, collation, storage, and so on. The Unicode standard defines two commonly used normalization forms: NFC (Normalization Form C) and NFD (Normalization Form D).
 
 <details>
-<summary>NFC (Normalization Form C)</summary>
+<summary>NFC (Normalization Form C):</summary>
 
 NFC is a normalization form where composed characters are used whenever possible. In NFC, characters that can be represented as a combination of a base character and one or more diacritical marks or other combining characters are replaced by their precomposed equivalents. This means that if a character can be represented using a single Unicode code point, it is replaced with that code point. For example, the character "é" (LATIN SMALL LETTER E WITH ACUTE) can be represented as a single precomposed code point (U+00E9) in NFC.
 
 </details>
 
 <details>
-<summary>NFD (Normalization Form D)</summary>
+<summary>NFD (Normalization Form D):</summary>
 
 NFD is a normalization form where characters are decomposed into their base character and combining characters. In NFD, characters that have precomposed forms are decomposed into their constituent parts. This means that if a character can be represented as a combination of a base character and one or more combining characters, it is decomposed into those individual code points. For example, the character "é" (LATIN SMALL LETTER E WITH ACUTE) in NFD is decomposed into the base character "e" (LATIN SMALL LETTER E) with code point U+0065 and the combining character "´" (COMBINING ACUTE ACCENT) with code point U+0301, where as in NFC, it is represented as a single code point U+00E9.
 The purpose of normalization is to ensure text consistency and prevent issues related to canonically equivalent characters. Canonically equivalent characters have different Unicode code points but are considered equivalent in terms of their visual representation. Normalizing text to a specific form helps in comparing, indexing, and searching text accurately.
@@ -300,7 +300,7 @@ Normalization of Unicode strings using NFC (Normalization Form C) and NFD (Norma
 Let us examine the key aspects and applications of NFC (Normalization Form C) and NFD (Normalization Form D) by comparing their distinctive features:
 
 <details>
-<summary>NFC (Normalization Form C)</summary>
+<summary>NFC (Normalization Form C):</summary>
 
 - Composes characters and combining marks whenever possible.
 - Represents characters as precomposed forms, where a single code point represents a composed character.
@@ -312,7 +312,7 @@ Let us examine the key aspects and applications of NFC (Normalization Form C) an
 </details>
 
 <details>
-<summary>NFD (Normalization Form D)</summary>
+<summary>NFD (Normalization Form D):</summary>
 
 - Decomposes characters and combining marks.
 - Represents characters as a sequence of separate code points, with combining marks following their base characters.
@@ -472,49 +472,49 @@ The Unicode Character Database (UCD) is a collection of files that provide essen
 The importance of the UCD in Unicode-aware applications can be summarized with the following features it offers:
 
 <details>
-<summary>Character Properties and Metadata</summary>
+<summary>Character Properties and Metadata:</summary>
 
 The Unicode Database defines a wide range of properties for each character, such as code point, script, category, decomposition, and many others. These properties enable applications to determine the behavior and characteristics of individual characters, allowing for accurate rendering, sorting, searching, and transformation operations.
 
 </details>
 
 <details>
-<summary>Collation and Sorting</summary>
+<summary>Collation and Sorting:</summary>
 
 The Unicode Database provides collation data, which specifies the order in which characters are sorted in different languages and scripts. This enables applications to perform language-specific sorting and searching, ensuring proper collation of text based on the linguistic rules of specific locales.
 
 </details>
 
 <details>
-<summary>Normalization and Composition</summary>
+<summary>Normalization and Composition:</summary>
 
 Unicode defines normalization forms that ensure text is represented in a consistent manner, regardless of the multiple possible ways characters can be encoded. The Unicode Database includes normalization data, allowing applications to normalize and compose text according to the selected normalization form, ensuring compatibility and consistency in text processing.
 
 </details>
 
 <details>
-<summary>Bidirectional Text Handling</summary>
+<summary>Bidirectional Text Handling:</summary>
 
 The Unicode Database provides rules and data for handling bidirectional text, which is essential for languages that mix left-to-right and right-to-left scripts. It enables applications to accurately display and handle bidirectional text, ensuring proper visual rendering and logical ordering of mixed-script content.
 
 </details>
 
 <details>
-<summary>Emoji and Emoji Presentation</summary>
+<summary>Emoji and Emoji Presentation:</summary>
 
 The Unicode Database includes detailed information about emojis, such as their properties, sequences, and metadata. This data allows applications to correctly render and handle emojis, including support for emoji presentation variations and skin tone modifiers.
 
 </details>
 
 <details>
-<summary>Character Set Support and Block Ranges</summary>
+<summary>Character Set Support and Block Ranges:</summary>
 
 The Unicode Database defines the entire Unicode character set and organizes characters into blocks based on their scripts or usage. This information allows applications to determine the supported characters and their ranges, facilitating efficient searching, filtering, and validation of Unicode text.
 
 </details>
 
 <details>
-<summary>Case Mapping</summary>
+<summary>Case Mapping:</summary>
 
 The UCD provides case mapping information, including rules for converting characters to uppercase and lowercase forms. This data is used for case-insensitive text matching and transformation.
 
@@ -533,35 +533,35 @@ There are several methods and tools available for accessing the Unicode Database
 The following are some of the commonly used methods and tools:
 
 <details>
-<summary>Programming Language APIs</summary>
+<summary>Programming Language APIs:</summary>
 
 Many programming languages provide APIs or libraries that offer direct access to Unicode-related functionalities and data. These APIs often include functions or methods to retrieve character properties, perform text normalization, collation, and other Unicode operations. Examples include the unicodedata module in Python, java.text package in Java, and the ICU library for C/C++.
 
 </details>
 
 <details>
-<summary>Web-based APIs</summary>
+<summary>Web-based APIs:</summary>
 
 Online web APIs are available that provide access to Unicode data. These APIs allow developers to make HTTP requests to retrieve character properties, search for specific characters, and access other Unicode-related information. The Unicode Consortium offers a web-based API called "Unicode Character Database API" that provides programmatic access to Unicode data.
 
 </details>
 
 <details>
-<summary>Unicode Database Tools and Utilities</summary>
+<summary>Unicode Database Tools and Utilities:</summary>
 
 There are specialized tools and utilities designed to browse, query, and extract information from the Unicode Database. These tools often provide a graphical user interface (GUI) or a command-line interface (CLI) to interact with the database. Examples of such tools include the Unicode Character Database (UCD) Browser, UniView, and ICU tools like <span class="hl">uconv</span> and <span class="hl">uniset.</span>
 
 </details>
 
 <details>
-<summary>Offline Unicode Database Dumps</summary>
+<summary>Offline Unicode Database Dumps:</summary>
 
 Offline dumps of the Unicode Database are available in various formats, such as SQLite databases or custom file formats. These dumps allow for faster access to Unicode data without relying on online resources. Developers can load these dumps into their applications or use them for offline searches and analysis.
 
 </details>
 
 <details>
-<summary>Unicode Consortium Resources</summary>
+<summary>Unicode Consortium Resources:</summary>
 
 The Unicode Consortium, the organization responsible for maintaining the Unicode Standard, provides resources on their website that allow access to Unicode data.
 
@@ -569,7 +569,7 @@ These resources include the Unicode Character Database online search, code chart
 </details>
 
 <details>
-<summary>Scripts.txt</summary>
+<summary>Scripts.txt:</summary>
 
 Identifying the script from characters used in forming a label using the Scripts.txt file.
 
@@ -580,13 +580,11 @@ It's important to note that the availability of specific tools may vary dependin
 In the subsections that follow examples are given to illustrate how to access the Unicode Database using different methods and programming languages.
 
 <details>
-<summary>Accessing UCD from Programming Languages</summary>
+<summary>Accessing UCD from Programming Languages:</summary>
 
-<span class="hl">Prerequisite for running the code snippets</span>
+**Prerequisite for running the code snippets:** The code snippets(see section 13.1 and 13.2)  written below use the Python unicodedata  and the java.text.Normalizer modules to normalize a Unicode string in NFC (Normalization Form Canonical Composition) and NFD (Normalization Form Canonical Decomposition). There are no specific prerequisites to run this code, but you need to have Python and Java installed on your system.
 
-The code snippets(see section 13.1 and 13.2)  written below use the Python unicodedata  and the java.text.Normalizer modules to normalize a Unicode string in NFC (Normalization Form Canonical Composition) and NFD (Normalization Form Canonical Decomposition). There are no specific prerequisites to run this code, but you need to have Python and Java installed on your system.
-
-- <span class="hl">Example</span>
+<span class="hl">Example</span>
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -627,18 +625,16 @@ public class UCDExample2 {
   </div>
 </div>
 
-Example 8: Examples on illustrating How to Access the Unicode Characters Database Using programming Languages.
+**Example 8:** Examples on illustrating How to Access the Unicode Characters Database Using programming Languages.
 
 <span class="hl">Note: </span>Java using the java.lang.Character package: the Character class is part of the core Java language and no need to import a package
 
 </details>
 
 <details>
-<summary>Using a Command Line Utility or Library</summary>
+<summary>Using a Command Line Utility or Library:</summary>
 
-The curl command as illustrated in the example below can be used to  retrieve valuable information about Unicode characters and their properties from the Unicode character database.
-
-Prerequisite for running the curl command:
+The curl command as illustrated in the example below can be used to  retrieve valuable information about Unicode characters and their properties from the Unicode character database. Prerequisite for running the curl command:
 - You must have the curl command-line tool installed on your system. This tool is commonly available on Linux and macOS by default, but you may need to install it on Windows.
 - You need an active internet connection to make the HTTP GET request to the specified URL:
 
@@ -677,11 +673,9 @@ By using the Unicode CLDR utility in this way, you can quickly obtain detailed i
 </details>
 
 <details>
-<summary>Illustrating the Applications of Resources from the UCD</summary>
+<summary>Illustrating the Applications of Resources from the UCD:</summary>
 
-<span class="hl"> Example Script Detection</span>
-
-The Scripts.txt file can be used for script detection by examining the script property value assigned to each Unicode character. 
+**Example Script:** The Scripts.txt file can be used for script detection by examining the script property value assigned to each Unicode character. 
 Here are a few examples of how the Script.txt file can be utilized:
 
 <div class="meta-card">
@@ -1140,12 +1134,12 @@ The above Java code utilizes the ICU4J library's <span class="hl">com.ibm.icu.te
 </details>
 
 <details>
-<summary>Range of character set support</summary>
+<summary>Range of character set support:</summary>
 
 When storing text in a file in key-press order for bidirectional and shaped scripts, it is important to consider the following aspects:
 
 <details>
-<summary>Character Encoding: </summary>
+<summary>Character Encoding:</summary>
 
 Ensure that the file is encoded using a character encoding that supports the scripts you are working with. Unicode-based encodings like UTF-8, UTF-16, or UTF-32 are commonly used for storing text that includes bidirectional and shaped scripts. These encodings can represent a wide range of characters and ensure compatibility across different platforms and systems.
 
@@ -1177,7 +1171,7 @@ By considering these aspects, you can store text in a file in a way that preserv
 </details>
 
 <details>
-<summary>Glyph Shapers in Bidirectional and Shaped Scripts</summary>
+<summary>Glyph Shapers in Bidirectional and Shaped Scripts:</summary>
 
 Glyph shapers play a crucial role in the correct rendering of text in bidirectional and shaped scripts. They are responsible for transforming individual characters into their appropriate glyph forms, considering the script's specific shaping rules and the context of the characters. Let's explore how glyph shapers work in bidirectional and shaped scripts.
 
@@ -1224,7 +1218,7 @@ Glyph shapers analyze the context of each character, including neighboring chara
 </details>
 
 <details>
-<summary>Ligatures and Substitutions: </summary>
+<summary>Ligatures and Substitutions:</summary>
 
 Shaped scripts often involve ligatures and glyph substitutions to form the desired visual representation. Glyph shapers handle these ligatures and substitutions, replacing individual characters with the appropriate glyph sequences.
 
@@ -1238,7 +1232,7 @@ Shaped scripts have intricate shaping rules that govern how characters join, sub
 </details>
 
 <details>
-<summary>Complex Shaping Rules: </summary>
+<summary>Complex Shaping Rules:</summary>
 
 Shaped scripts have intricate shaping rules that govern how characters join, substitute, and transform based on their position and the surrounding characters. Glyph shapers implement these rules to ensure accurate shaping.
 
@@ -1401,28 +1395,28 @@ Unicode is a character encoding standard that aims to represent all written char
 The following are some considerations for Unicode handling in JSON file handling:
 
 <details>
-<summary>Encoding</summary>
+<summary>Encoding:</summary>
 
 JSON files are typically encoded using UTF-8, which is a widely supported Unicode encoding. UTF-8 can represent any Unicode character, ensuring compatibility across different platforms and systems. When creating or reading JSON files, make sure to specify the UTF-8 encoding to properly handle Unicode characters.
 
 </details>
 
 <details>
-<summary>Escaping Special Characters: </summary>
+<summary>Escaping Special Characters:</summary>
 
 JSON uses backslashes to escape special characters, including Unicode characters that need escaping. For example, characters like newline (\n), tab (\t), or backslash (\) are represented using escape sequences. Unicode characters outside the ASCII range (U+0000 to U+007F) are represented using the "\u" escape sequence followed by the character's Unicode code point in hexadecimal. For example, the character '€' (Euro sign) with code point U+20AC would be represented as "\u20AC" in a JSON string.
 
 </details>
 
 <details>
-<summary>Unicode Support in JSON Libraries: </summary>
+<summary>Unicode Support in JSON Libraries:</summary>
 
 JSON libraries and parsers often provide built-in support for Unicode handling, including proper encoding and decoding of Unicode characters. When working with JSON in different programming languages, make sure to use libraries that have Unicode support and handle encoding and decoding correctly. This ensures that Unicode characters are preserved accurately during JSON file handling operations.
 
 </details>
 
 <details>
-<summary>String Handling: </summary>
+<summary>String Handling:</summary>
 
 When working with strings that contain Unicode characters in JSON, ensure that your code or JSON library supports Unicode string handling. The library should be capable of correctly encoding and decoding Unicode characters to ensure the integrity of the data.
 
