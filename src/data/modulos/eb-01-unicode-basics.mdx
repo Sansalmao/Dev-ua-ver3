@@ -1,6 +1,6 @@
 ---
 title: "Module 1 - Unicode Basics for Programmers"
-description: "Introductory guide on Unicode fundamentals covering encoding schemes, string operations, and practical applications in Python and Java."
+description: "Introductory module on Unicode fundamentals covering encoding schemes, string operations, and practical applications in Python and Java."
 difficulty: "Básico"
 duration: "90 min"
 objective: "Provide learners a basic understanding of Unicode and its applications, emphasizing essential principles and practical coding skills in Python and Java."
@@ -18,8 +18,6 @@ sections:
         panelId: "why-do-we-need-unicode"
       - title: "Basic Unicode Terminologies"
         panelId: "basic-unicode-terminologies"
-      - title: "Understanding Encoding Schemes"
-        panelId: "understanding-unicode-encoding-schemes"
       - title: "Surrogate Pairs"
         panelId: "what-is-surrogate-pair-or-characters-outside-the-bmp"
   - title: "Practical — Python & Java"
@@ -138,6 +136,8 @@ Unicode has gained significant popularity and is increasingly used as the standa
 
 ## Basic Unicode Terminologies
 
+<div class="info-card">
+
 <span class="hl">Unicode Scalar Value:</span> Refers to the numerical representation of individual characters within the Unicode character set.
 
 - It represents a unique and standardized code point assigned to each character.
@@ -151,20 +151,11 @@ Unicode has gained significant popularity and is increasingly used as the standa
 
 - It represents a sequence of individual units that collectively encode characters or textual data.
 
-UTF-8 is a widely used character encoding scheme that allows the representation of all Unicode code points.
+</div>
 
-- It uses variable-length encoding, where different Unicode characters require different numbers of bytes for representation.
-- ASCII characters are represented using a single byte, maintaining compatibility with the ASCII character set.
-- Characters outside the ASCII range use multiple bytes, allowing for the representation of diverse characters from different writing systems.
-- Each Unicode code point is represented by a sequence of bytes, with the number of bytes determined by the code point value.
-- UTF-8 follows specific encoding rules to ensure self-synchronization and proper decoding of byte sequences.
-- ASCII characters (0 to 127) are encoded using a single byte, while higher code points require multiple bytes.
-- UTF-8 is backward compatible with ASCII and provides efficient storage and transmission of commonly used characters.
-- It is widely supported by modern systems, programming languages, and web standards.
+### Understanding Unicode Encoding Schemes
 
----
-
-## Understanding Unicode Encoding Schemes
+<div class="info-card">
 
 <span class="hl">UTF-8</span>
 
@@ -185,6 +176,21 @@ UTF-8 is a widely used character encoding scheme that allows the representation 
 - UTF-32 is a fixed-length encoding scheme where each character is represented by a four-byte code unit.
 - It provides a direct one-to-one mapping between code points and code units.
 - In UTF-32, a code unit is 32 bits (4 bytes) and directly corresponds to a single Unicode character, regardless of its code point value.
+
+</div>
+
+
+### Basic Unicode Terminologies
+
+- UTF-8 is a widely used character encoding scheme that allows the representation of all Unicode code points.
+  - It uses variable-length encoding, where different Unicode characters require different numbers of bytes for representation.
+  - ASCII characters are represented using a single byte, maintaining compatibility with the ASCII character set.
+  - Characters outside the ASCII range use multiple bytes, allowing for the representation of diverse characters from different writing systems.
+  - Each Unicode code point is represented by a sequence of bytes, with the number of bytes determined by the code point value.
+  - UTF-8 follows specific encoding rules to ensure self-synchronization and proper decoding of byte sequences.
+  - ASCII characters (0 to 127) are encoded using a single byte, while higher code points require multiple bytes.
+  - UTF-8 is backward compatible with ASCII and provides efficient storage and transmission of commonly used characters.
+  - It is widely supported by modern systems, programming languages, and web standards.
 
 ---
 
@@ -223,9 +229,8 @@ UTF-8 is a widely used character encoding scheme that allows the representation 
 
 ## Unicode String Operations
 
-**Java Unicode Support:** Uses UTF-16 encoding scheme by default. Surrogate Pairs are represented by escape sequence.
-
-**Python Unicode Support:** Python 3 adopts Unicode as the default encoding for strings.
+- **Java Unicode Support:** Uses UTF-16 encoding scheme by default. Surrogate Pairs are represented by escape sequence.
+- **Python Unicode Support:** Python 3 adopts Unicode as the default encoding for strings.
 
 Commonly used String Operations: String creation, String length, Code point count, Accessing individual code points, Iterating over code points, Concatenation.
 
@@ -357,6 +362,13 @@ print(unicode_str)  # prints Hello,عالم!
 ---
 
 ## String Length and Code Point Count
+
+- <span class="hl">Example (python):</span>
+  - To find the number of Unicode characters in a Unicode string using the len() function.
+  - To find the number of code  points in a Unicode string.
+- <span class="hl">Example (java):</span>
+  - Example: To find the number of code units in plain strings.
+  - Example: To find the number of code units in non-plain strings.
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -497,7 +509,7 @@ public class CodePointIteration {
 
 ## Concatenating Unicode Strings
 
-**Using the + operator:**
+<span class="hl">Using the + operator:</span>
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -528,7 +540,7 @@ System.out.println("Concatenated String is: " + concatenatedStr);
   </div>
 </div>
 
-**Using str.join() / StringBuilder:**
+<span class="hl">Using str.join() / StringBuilder:</span>
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -571,23 +583,30 @@ System.out.println("Concatenated String is: " + concatenatedStr);
 - They aid in character discovery, understanding character properties, and ensuring accurate character representation across different systems and platforms.
 - More detailed explanation about how to access Unicode resources is covered in Module 2 (Unicode Advanced Programming).
 
-**How Unicode Charts can be Utilized:**
+<div class="info-card">
 
-<span class="hl">Scenario:</span>
+### How Unicode Charts can be Utilized:
 
-Let us say you are developing a text processing application, and you want to implement a feature that converts characters from one script to another. To accomplish this, you need to identify the Unicode code points for the characters in both scripts.
+- <span class="hl">Scenario:</span>
+  - Let us say you are developing a text processing application, and you want to implement a feature that converts characters from one script to another. To accomplish this, you need to identify the Unicode code points for the characters in both scripts.
 
-Tasks that you, as a developer, need to perform:
+- <span class="hl">Tasks that you, as a developer, need to perform:</span>
+  - Accessing Unicode Code Charts:
+    - Visit the official Unicode website (unicode.org) and navigate to the "Code Charts" section.
+    - Locate the code chart relevant to the source script you want to convert from and the target script you want to convert to.
+  - Finding Unicode Code Points:
+    - Locate the specific characters you need to convert.
+    - Note down the Unicode code points for the source and target characters you want to convert.
+  - Implementing the Conversion Logic:
+    - Apply the conversion logic to all relevant characters in the input text, replacing the source characters with the corresponding target characters.
 
-- **Accessing Unicode Code Charts:** Visit the official Unicode website (unicode.org) and navigate to the "Code Charts" section. Locate the code chart relevant to the source script you want to convert from and the target script you want to convert to.
-- **Finding Unicode Code Points:** Locate the specific characters you need to convert. Note down the Unicode code points for the source and target characters you want to convert.
-- **Implementing the Conversion Logic:** Apply the conversion logic to all relevant characters in the input text, replacing the source characters with the corresponding target characters.
+</div>
 
 ---
 
 ## Working with Unicode Formats: Storing Unicode Data in UTF-8 Files
 
-**Creating and reading a UTF-8 encoded file:**
+<span class="hl">Creating and reading a UTF-8 encoded file:</span>
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -657,9 +676,7 @@ System.out.println(unicodeText);
 
 <div class="info-card">
 
-**Considerations for Storing Unicode Data in UTF-8 format File:**
-
-When storing Unicode data in UTF-8 format, it is important to take the following considerations into account:
+<span class="hl">Considerations for Storing Unicode Data in UTF-8 format File:</span> When storing Unicode data in UTF-8 format, it is important to take the following considerations into account:
 
 - Ensure that the file is actually saved with UTF-8 encoding by using appropriate settings in your text editor or IDE.
 - Be cautious when manipulating or processing Unicode data, as characters outside the Basic Multilingual Plane (BMP) might require handling surrogate pairs.
