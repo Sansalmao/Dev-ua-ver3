@@ -1,0 +1,695 @@
+---
+title: "Module 1 - Unicode Basics for Programmers"
+description: "Introductory guide on Unicode fundamentals covering encoding schemes, string operations, and practical applications in Python and Java."
+difficulty: "Básico"
+duration: "90 min"
+objective: "Provide learners a basic understanding of Unicode and its applications, emphasizing essential principles and practical coding skills in Python and Java."
+progress: 0
+pubDate: 2026-03-17
+draft: false
+sections:
+  - title: "Theory"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+      - title: "Overview of Encoding Schemes"
+        panelId: "overview-of-encoding-schemes"
+      - title: "Why do we need Unicode?"
+        panelId: "why-do-we-need-unicode"
+      - title: "Basic Unicode Terminologies"
+        panelId: "basic-unicode-terminologies"
+      - title: "Understanding Encoding Schemes"
+        panelId: "understanding-unicode-encoding-schemes"
+      - title: "Surrogate Pairs"
+        panelId: "what-is-surrogate-pair-or-characters-outside-the-bmp"
+  - title: "Practical — Python & Java"
+    items:
+      - title: "Note on Unicode String Literals"
+        panelId: "note-about-the-utilization-of-unicode-string-literals"
+      - title: "Unicode String Operations"
+        panelId: "unicode-string-operations"
+      - title: "String Length & Code Point Count"
+        panelId: "string-length-and-code-point-count"
+      - title: "Accessing & Iterating Code Points"
+        panelId: "accessing-and-iterating-code-points"
+      - title: "Concatenating Unicode Strings"
+        panelId: "concatenating-unicode-strings"
+      - title: "Unicode Charts"
+        panelId: "introduction-to-unicode-charts"
+      - title: "Storing Unicode in UTF-8 Files"
+        panelId: "working-with-unicode-formats-storing-unicode-data-in-utf-8-files"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "references--author"
+---
+
+## Objectives
+
+Provide to learners a basic understanding of Unicode and its applications. Its purpose is to help learners grasp the fundamentals of Unicode by emphasizing essential principles and functionalities.
+
+- Throughout this part of the module, learners will explore various aspects of Unicode, including an overview of encoding schemes, the importance of Unicode, understanding Unicode encoding schemes, and basic terminologies. By the end of this module, learners will have a solid foundation in these topics and be equipped with the necessary knowledge to work with Unicode effectively.
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Understand the concept of Unicode;
+- Comprehend Unicode encoding schemes and their advantages;
+- Acquire a solid grasp of Unicode code points and code units;
+- Develop a comprehensive understanding of key Unicode terminologies;
+- Appreciate the significance of Unicode in promoting linguistic diversity and cultural exchange.
+- Work with Unicode in Python and Java programming:
+  - How to represent Unicode characters in a character data type.
+  - How to create, input, and concatenate Unicode strings.
+  - How to display Unicode strings.
+
+---
+
+## Overview of Encoding Schemes
+
+Encoding Schemes in Computer Systems: In digital systems, three prominent character encoding schemes are commonly employed:
+
+<span class="hl">ASCII</span>
+
+- Widely used character encoding scheme.
+- It uses 7 bits to encode characters, allowing for a total of 128 characters.
+- Originally designed for the English language.
+
+<span class="hl">ISO 8859</span>
+
+- Extends ASCII by adding variations that cover specific regions and languages.
+- Each ISO 8859 variation, such as ISO 8859-1, ISO 8859-2, etc., covers specific regions or languages.
+- These variations introduce additional characters beyond the ASCII set.
+- ISO 8859 extends the range of characters but still has limitations in representing non-English languages effectively.
+
+<span class="hl">Unicode</span>
+
+- Represents characters from a vast array of writing systems worldwide.
+- Supports over 143,000 characters, which are represented by code points ranging from U+0000 to U+10FFFF.
+
+<span class="hl">Comparative Differences Among the Three Encoding Schemes</span>
+
+<details>
+<summary>Range of character set support:</summary>
+
+- ASCII uses a 7-bit character set, providing codes for 128 characters.
+- ISO 8859 specifies a total of 15 character sets, numbered as ISO 8859-1 to ISO 8859-15. Each ISO 8859 character set within the ISO 8859 standard can represent 256 different characters.
+- The Unicode standard currently supports over 143,000 characters, represented by code points ranging from U+0000 to U+10FFFF.
+
+</details>
+
+<details>
+<summary>Language Support:</summary>
+
+- ASCII is primarily designed for the English language.
+- ISO 8859 variations provide limited support for non-English languages.
+- Unicode provides extensive multilingual support, accommodating characters from various languages and scripts globally.
+
+</details>
+
+<details>
+<summary>Compatibility:</summary>
+
+- ASCII is widely compatible across different systems and programming languages.
+- ISO 8859 variations are generally backward compatible with ASCII.
+- Unicode is designed to be compatible with ASCII, ensuring a smooth transition and backward compatibility.
+
+</details>
+
+<details>
+<summary>Scope and Purpose:</summary>
+
+- ASCII is a basic encoding scheme suitable for English text and simple digital communication.
+- ISO 8859 variations expand the character set to support additional languages but still have limitations in terms of comprehensive multilingual coverage.
+- Unicode is the most comprehensive encoding scheme, addressing the limitations of ASCII and ISO 8859.
+
+</details>
+
+---
+
+## Why do we need Unicode?
+
+Unicode has gained significant popularity and is increasingly used as the standard for character encoding in modern software development:
+
+- It addresses the limitations of ASCII and ISO 8859.
+- Offers comprehensive multilingual support and enabling globalization and localization efforts in software systems.
+- Unicode surpasses both ASCII and ISO 8859, providing a unified standard for character representation across all languages and scripts globally.
+
+---
+
+## Basic Unicode Terminologies
+
+<span class="hl">Unicode Scalar Value:</span> Refers to the numerical representation of individual characters within the Unicode character set.
+
+- It represents a unique and standardized code point assigned to each character.
+- These values are represented in hexadecimal notation and range from 0 to 10FFFF (hexadecimal).
+
+<span class="hl">Code Unit:</span> Refers to the basic unit of storage or representation for encoded characters.
+
+- It is the smallest individually addressable element within a given encoding scheme.
+
+<span class="hl">Code Unit Sequence:</span> Refers to a consecutive series or sequence of code units within a character encoding.
+
+- It represents a sequence of individual units that collectively encode characters or textual data.
+
+UTF-8 is a widely used character encoding scheme that allows the representation of all Unicode code points.
+
+- It uses variable-length encoding, where different Unicode characters require different numbers of bytes for representation.
+- ASCII characters are represented using a single byte, maintaining compatibility with the ASCII character set.
+- Characters outside the ASCII range use multiple bytes, allowing for the representation of diverse characters from different writing systems.
+- Each Unicode code point is represented by a sequence of bytes, with the number of bytes determined by the code point value.
+- UTF-8 follows specific encoding rules to ensure self-synchronization and proper decoding of byte sequences.
+- ASCII characters (0 to 127) are encoded using a single byte, while higher code points require multiple bytes.
+- UTF-8 is backward compatible with ASCII and provides efficient storage and transmission of commonly used characters.
+- It is widely supported by modern systems, programming languages, and web standards.
+
+---
+
+## Understanding Unicode Encoding Schemes
+
+<span class="hl">UTF-8</span>
+
+- UTF-8 is a widely used variable-length encoding scheme.
+- It uses one to four bytes to represent characters, with ASCII characters represented by a single byte.
+- UTF-8 is backward compatible with ASCII and offers efficient storage and transmission of commonly used characters.
+- In UTF-8, a code unit is typically 8 bits (1 byte) and represents a single Unicode character. However, it can be larger for characters outside the Basic Multilingual Plane (BMP).
+
+<span class="hl">UTF-16</span>
+
+- UTF-16 is a fixed-length encoding scheme that uses 16-bit code units.
+- It can handle the entire Unicode character set, including characters outside the Basic Multilingual Plane (BMP).
+- UTF-16 is commonly used in programming languages and platforms that internally represent characters as 16-bit code units.
+- In UTF-16, a code unit is 16 bits (2 bytes) and can represent either a single Unicode character within the BMP or a surrogate pair that encodes characters beyond the BMP.
+
+<span class="hl">UTF-32</span>
+
+- UTF-32 is a fixed-length encoding scheme where each character is represented by a four-byte code unit.
+- It provides a direct one-to-one mapping between code points and code units.
+- In UTF-32, a code unit is 32 bits (4 bytes) and directly corresponds to a single Unicode character, regardless of its code point value.
+
+---
+
+## What is Surrogate Pair or Characters Outside the BMP?
+
+- A surrogate pair is a UTF-16 encoding mechanism used to represent supplementary characters outside the Basic Multilingual Plane (BMP).
+- It involves using a combination of two 16-bit values, known as high surrogates and low surrogates, to represent characters in the supplementary planes.
+- Surrogate pairs are important for accurately encoding and handling characters from less commonly used scripts and specialized symbols.
+
+<div class="info-card">
+
+<span class="hl">Example 1:</span> <span class="hl">Examples of surrogate pairs used to represent emojis.</span>
+
+- **Grinning Face with Smiling Eyes Emoji:**
+  - Emoji: 😄
+  - Unicode Code Point: U+1F604
+  - Surrogate Pair: U+D83D U+DE04
+
+- **Thumbs Up Emoji:**
+  - Emoji: 👍
+  - Unicode Code Point: U+1F44D
+  - Surrogate Pair: U+D83D U+DC4D
+
+</div>
+
+---
+
+## Note About the Utilization of Unicode String Literals
+
+- The Unicode string literals utilized in the code examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
+- Throughout the module, Unicode string literals derived from various scripts have been used in the examples code, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts.
+- The module provides the meanings of Unicode string literals used in the example codes in English, along with their transliterations, to aid learners in accurately pronouncing them.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples code.
+
+---
+
+## Unicode String Operations
+
+**Java Unicode Support:** Uses UTF-16 encoding scheme by default. Surrogate Pairs are represented by escape sequence.
+
+**Python Unicode Support:** Python 3 adopts Unicode as the default encoding for strings.
+
+Commonly used String Operations: String creation, String length, Code point count, Accessing individual code points, Iterating over code points, Concatenation.
+
+<span class="hl">Creating and Displaying Unicode Characters or Strings</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="disp1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="disp1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="disp1">
+
+```python
+# Define Unicode characters
+unicodeChar1 = '\u0627'  # Unicode character for the Arabic letter 'ا' (alef)
+unicodeChar2 = '\u1200'  # Unicode character for the Ethiopic syllable 'ሀ' (ha)
+unicodeChar3 = '\u0411'  # Unicode character for the Cyrillic letter 'Б' (be)
+# Prints the stored Unicode characters or letters
+print("Arabic Letter:", unicodeChar1)         # Output: ا
+print("Ethiopic/Geʽez Letter:", unicodeChar2) # Output: ሀ
+print("Cyrillic Letter:", unicodeChar3)       # Output: Б
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="disp1">
+
+```java
+public class UnicodeExample
+{
+    public static void main(String[] args)
+    {
+        char unicodeChar1 = '\u0627'; // Unicode character for the Arabic letter 'ا' (alef)
+        char unicodeChar2 = '\u1200'; // Unicode character for the Ethiopic syllable 'ሀ' (ha)
+        char unicodeChar3 = '\u0411'; // Unicode character for the Cyrillic letter 'Б' (be)
+        // Printing the stored Unicode characters
+        System.out.println("Arabic Letter:" + unicodeChar1);         // Output: ا
+        System.out.println("Ethiopic/Geʽez Letter:" + unicodeChar2); // Output: ሀ
+        System.out.println("Cyrrilic Letter: " + unicodeChar3);      // Output: Б
+    }
+}
+```
+
+  </div>
+</div>
+
+<span class="hl">String Creation Forms:</span>
+
+- **Characters outside the BMP (Python):**
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="bmp1"><span class="lang-icon lang-icon--python"></span>Python (BMP)</button>
+    <button class="lang-btn" data-lang="java-surr" data-target="bmp1"><span class="lang-icon lang-icon--java"></span>Java (surrogate)</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="bmp1">
+
+```python
+# Define the Unicode character using surrogate pair
+unicode_char_emoji = "\U0001F60A"
+# Prints the smiling face with smiling eyes emoji character
+print(unicode_char_emoji)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java-surr" data-group="bmp1">
+
+```java
+// Surrogate pair for "smiling face with smiling eyes" emoji (😊)
+String emojiString = "\uD83D\uDE0A";
+```
+
+  </div>
+</div>
+
+- **Using Unicode literals (Python) / Unicode escape sequences (Java):**
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="lit1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="lit1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="lit1">
+
+```python
+# Define the Unicode string variables directly with literals
+unicode_str1 = "Hello, 世界!"  # Chinese "shì jiè" — "world"
+unicode_str2 = "Hello, ዓለም!"  # Ethiopic "alem" — "world"
+unicode_str3 = "Hello, عالم!"  # Arabic "ʿālam" — "world"
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="lit1">
+
+```java
+// Unicode escape sequence for Khmer ក:
+String unicodeString = "\U178x";
+
+// Directly using Unicode characters — "World" in Chinese, Ethiopic and Arabic:
+String plainString1 = "Hello, 世界!";  // Chinese ("shi jiè")
+String plainString2 = "Hello, ዓለም!";  // Ethiopic ("alem")
+String plainString3 = "Hello, عالم!";  // Arabic ("ālam")
+```
+
+  </div>
+</div>
+
+- **Using Unicode Escape Sequences and Code Points (Python):**
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="esc1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="esc1">
+
+```python
+# Define Unicode escape sequences for "Hello, ዓለም!"
+unicode_str = "\u0048\u0065\u006C\u006C\u006F,\u12d3\u1208\u121d"
+print(unicode_str)
+
+# Deriving Unicode strings from Unicode code points
+code_points = [72, 101, 108, 108, 111, 44, 1593, 1575, 1604, 1605, 33]
+unicode_str = "".join(chr(code_point) for code_point in code_points)
+print(unicode_str)  # prints Hello,عالم!
+```
+
+  </div>
+</div>
+
+---
+
+## String Length and Code Point Count
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="len1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="len1"><span class="lang-icon lang-icon--java"></span>Java (plain)</button>
+    <button class="lang-btn" data-lang="java-surr" data-target="len1"><span class="lang-icon lang-icon--java"></span>Java (surrogate)</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="len1">
+
+```python
+# String length
+unicode_str = "Hello, عالم!"
+length = len(unicode_str)
+print("Character counts is: ", length)  # Output: 12
+
+# Code point count — same as len() in Python
+length = len(unicode_str)
+print("Code point count is: ", length)  # Output: 12
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="len1">
+
+```java
+// String length — plain string
+String str = "Hello, 世界!";
+int length = str.length();
+System.out.println("The string length is: " + length);
+// Output: The string length is: 10
+
+// Code Point Count
+public class CodePointCount
+{
+    public static void main(String[] args)
+    {
+        String str = "Hello, عالم!";
+        int codePointCount = str.codePointCount(0, str.length());
+        System.out.println(codePointCount); // Output: 12
+    }
+}
+```
+
+  </div>
+  <div class="lang-block" data-lang="java-surr" data-group="len1">
+
+```java
+// String length — non-plain (surrogate pairs)
+String emojiString = "\uD83D\uDE0A";
+int length = emojiString.length();
+System.out.println("The emoji string length is: " + length);
+//Output: The emoji string length is: 2
+```
+
+  </div>
+</div>
+
+---
+
+## Accessing and Iterating Code Points
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="acp1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="acp1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="acp1">
+
+```python
+unicode_str = "Hello, عالم"
+# Accessing code point at index 0
+code_point_0 = ord(unicode_str[0])
+print(code_point_0)  # Output: 72
+# Accessing code point at index 7
+code_point_7 = ord(unicode_str[7])
+print(code_point_7)  # Output: 1593
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="acp1">
+
+```java
+public class CodePointAccess {
+    public static void main(String[] args) {
+        String text = "Hello, عالم!";
+        // Access code point at index 0
+        int codePoint1 = text.codePointAt(0);
+        System.out.println("Code point at index 0: " + codePoint1);
+        //Output: Code point at index 0: 72
+        // Access code point at index 7
+        int codePoint2 = text.codePointAt(7);
+        System.out.println("Code point at index 7: " + codePoint2);
+        //Output: Code point at index 7: 1593
+    }
+}
+```
+
+  </div>
+</div>
+
+<span class="hl">Iterating Over Code Points:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="iter1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="iter1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="iter1">
+
+```python
+unicode_str = "Hello, عالم"
+for character in unicode_str:
+    code_point = ord(character)
+    print(code_point)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="iter1">
+
+```java
+public class CodePointIteration {
+    public static void main(String[] args) {
+        String text = "Hello, عالم!";
+        // Iterate over code points
+        for (int i = 0; i < text.length(); ) {
+            int codePoint = text.codePointAt(i);
+            System.out.println("Code point: " + codePoint);
+            // Increment the index based on the code point
+            i += Character.charCount(codePoint);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Concatenating Unicode Strings
+
+**Using the + operator:**
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="concat1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="concat1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="concat1">
+
+```python
+unicode_str1 = "Hello, "
+unicode_str2 = "عالم"
+concatenated_str = unicode_str1 + unicode_str2
+print(concatenated_str)
+# Output: Hello, عالم
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="concat1">
+
+```java
+String unicodeStr1 = "ආයුබෝවන්, "; // greeting in Sinhala (ayubowan)
+String unicodeStr2 = "ලෝක!";         // in Sinhala (loka), translates to world
+String concatenatedStr = unicodeStr1 + unicodeStr2;
+System.out.println("Concatenated String is: " + concatenatedStr);
+//Output: Concatenated String is: ආයුබෝවන්, ලෝක!
+```
+
+  </div>
+</div>
+
+**Using str.join() / StringBuilder:**
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="concat2"><span class="lang-icon lang-icon--python"></span>Python (str.join)</button>
+    <button class="lang-btn" data-lang="java" data-target="concat2"><span class="lang-icon lang-icon--java"></span>Java (StringBuilder)</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="concat2">
+
+```python
+unicode_strs = ["Hello, ", "عالم, ", "ዓለም"]
+concatenated_str = "".join(unicode_strs)
+print(concatenated_str)
+# Output: Hello, عالم, ዓለም
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="concat2">
+
+```java
+String unicodeStr1 = "ආයුබෝවන්, "; // Sinhala greeting "Ayubowan"
+String unicodeStr2 = "ලෝක!";         // (loka) in Sinhala — "world"
+StringBuilder stringBuilder = new StringBuilder();
+stringBuilder.append(unicodeStr1);
+stringBuilder.append(unicodeStr2);
+String concatenatedStr = stringBuilder.toString();
+System.out.println("Concatenated String is: " + concatenatedStr);
+//Output: Concatenated String is: ආයුබෝවන්, ලෝක!
+```
+
+  </div>
+</div>
+
+---
+
+## Introduction to Unicode Charts
+
+- Unicode code charts provide a comprehensive visual reference for the characters assigned in the Unicode standard.
+- These charts categorize characters by: Script, Block, or other groupings.
+- Unicode code charts serve as a valuable resource for developers, linguists, and anyone working with Unicode characters.
+- They aid in character discovery, understanding character properties, and ensuring accurate character representation across different systems and platforms.
+- More detailed explanation about how to access Unicode resources is covered in Module 2 (Unicode Advanced Programming).
+
+**How Unicode Charts can be Utilized:**
+
+<span class="hl">Scenario:</span>
+
+Let us say you are developing a text processing application, and you want to implement a feature that converts characters from one script to another. To accomplish this, you need to identify the Unicode code points for the characters in both scripts.
+
+Tasks that you, as a developer, need to perform:
+
+- **Accessing Unicode Code Charts:** Visit the official Unicode website (unicode.org) and navigate to the "Code Charts" section. Locate the code chart relevant to the source script you want to convert from and the target script you want to convert to.
+- **Finding Unicode Code Points:** Locate the specific characters you need to convert. Note down the Unicode code points for the source and target characters you want to convert.
+- **Implementing the Conversion Logic:** Apply the conversion logic to all relevant characters in the input text, replacing the source characters with the corresponding target characters.
+
+---
+
+## Working with Unicode Formats: Storing Unicode Data in UTF-8 Files
+
+**Creating and reading a UTF-8 encoded file:**
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python-w" data-target="utf1"><span class="lang-icon lang-icon--python"></span>Python (write)</button>
+    <button class="lang-btn" data-lang="python-r" data-target="utf1"><span class="lang-icon lang-icon--python"></span>Python (read)</button>
+    <button class="lang-btn" data-lang="java-w" data-target="utf1"><span class="lang-icon lang-icon--java"></span>Java (write)</button>
+    <button class="lang-btn" data-lang="java-r" data-target="utf1"><span class="lang-icon lang-icon--java"></span>Java (read)</button>
+  </div>
+  <div class="lang-block active" data-lang="python-w" data-group="utf1">
+
+```python
+unicode_str = "Hello, عالم"
+# Open file in UTF-8 mode for writing
+with open("test_file.txt", "w", encoding="utf-8") as file:
+    file.write(unicode_str)
+```
+
+  </div>
+  <div class="lang-block" data-lang="python-r" data-group="utf1">
+
+```python
+# Open file in UTF-8 mode for reading
+with open("test.txt", "r", encoding="utf-8") as file:
+    file_contents = file.read()
+    print(file_contents)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java-w" data-group="utf1">
+
+```java
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+Writer writer = new BufferedWriter(new OutputStreamWriter(
+    new FileOutputStream("unicode.txt"), "UTF-8"));
+String unicodeText = "Hello, ලෝක!"; // Unicode text to be stored
+writer.write(unicodeText);
+```
+
+  </div>
+  <div class="lang-block" data-lang="java-r" data-group="utf1">
+
+```java
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+Writer writer = new BufferedWriter(new OutputStreamWriter(
+    new FileOutputStream("unicode.txt"), "UTF-8"));
+StringBuilder sbr = new StringBuilder();
+int c;
+while ((c = reader.read()) != -1) {
+    sbr.append((char) c);
+}
+String unicodeText = sbr.toString();
+System.out.println(unicodeText);
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+**Considerations for Storing Unicode Data in UTF-8 format File:**
+
+When storing Unicode data in UTF-8 format, it is important to take the following considerations into account:
+
+- Ensure that the file is actually saved with UTF-8 encoding by using appropriate settings in your text editor or IDE.
+- Be cautious when manipulating or processing Unicode data, as characters outside the Basic Multilingual Plane (BMP) might require handling surrogate pairs.
+
+</div>
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. Unicode Consortium. (n.d.). Home. Retrieved October 3, 2023, from [https://home.unicode.org/](https://home.unicode.org/).
+2. Stack Overflow. (n.d.). Where Developers Learn, Share, & Build Careers. Retrieved October 3, 2023, from [https://stackoverflow.com/](https://stackoverflow.com/).
+3. Python Software Foundation. (n.d.). Unicode HOWTO. Retrieved October 3, 2023, from [https://docs.python.org/3/howto/unicode.html](https://docs.python.org/3/howto/unicode.html).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License — Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>
