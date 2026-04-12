@@ -10,6 +10,12 @@
         data-nav-home
     >
         <div class="dot-ready" aria-hidden="true"></div>
+        <img
+            src="/images/ua-icon.png"
+            alt="UA Skills"
+            class="nav-ua-icon"
+            aria-hidden="true"
+        />
         <span class="lbl">~/skills</span><span class="lbl ua">UA</span>
     </a>
 
@@ -97,13 +103,21 @@
     .nav-brand {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         flex-shrink: 0;
         color: inherit;
     }
 
     .nav-brand:hover {
         color: inherit;
+    }
+
+    /* UA icon — solo la imagen, sin fondo adicional */
+    .nav-ua-icon {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        flex-shrink: 0;
     }
 
     .nav-brand .lbl {
