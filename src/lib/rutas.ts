@@ -31,9 +31,8 @@ export const RUTAS: Record<string, RutaData> = {
     temas: [
       {
         id: "eb-00",
-        titulo: "Módulo 0 - Introducción a la Aceptación Universal",
+        titulo: "Guide 0 - Introducción a la Aceptación Universal",
         nivel: "Básico",
-        duracion: "30min",
         descripcion:
           "Propuesta para la modernización curricular mediante la integración de módulos de Aceptación Universal (UA) desarrollado por el WG de UA de ICANN.",
         icon: "globe",
@@ -41,9 +40,8 @@ export const RUTAS: Record<string, RutaData> = {
       },
       {
         id: "eb-01",
-        titulo: "Module 1 - Unicode Basics for Programmers",
+        titulo: "Guide 1 - Unicode Basics for Programmers",
         nivel: "Básico",
-        duracion: "180 min",
         descripcion:
           "Introductory module on Unicode fundamentals covering encoding schemes, string operations, and practical applications in Python and Java.",
         icon: "network",
@@ -51,9 +49,8 @@ export const RUTAS: Record<string, RutaData> = {
       },
       {
         id: "eb-02",
-        titulo: "Module 2 - Unicode Advanced Programming",
+        titulo: "Guide 2 - Unicode Advanced Programming",
         nivel: "Básico",
-        duracion: "136 min",
         descripcion:
           "Advanced module on Unicode covering the character-glyph model, normalization, Unicode Character Database, string comparison, and bidirectional scripts in Python and Java.",
         icon: "mail",
@@ -61,9 +58,8 @@ export const RUTAS: Record<string, RutaData> = {
       },
       {
         id: "eb-03",
-        titulo: "Module 3 - Unicode in Data Structures and Algorithms",
+        titulo: "Guide 3 - Unicode in Data Structures and Algorithms",
         nivel: "Básico",
-        duracion: "180 min",
         descripcion:
           "Module on implementing Unicode-aware data structures and algorithms, covering sorting, searching, and collation techniques.",
         icon: "flask",
@@ -71,13 +67,87 @@ export const RUTAS: Record<string, RutaData> = {
       },
       {
         id: "eb-04",
-        titulo: "Module 4 - Unicode in Database Systems",
+        titulo: "Guide 4 - Unicode in Database Systems",
         nivel: "Básico",
-        duracion: "120 min",
         descripcion:
           "A concise introduction to the essential concepts and considerations for working with Unicode character data in database systems.",
         icon: "doc",
         slug: "eb-04-unicode-databases",
+      },
+    ],
+  },
+
+  educator_avanzada: {
+    titulo: "Implementación Técnica",
+    subtitulo: "SysAdmins & Devs",
+    desc: "Configuraciones de servidores, código y protocolos para implementar Aceptación Universal en producción.",
+    temas: [
+      {
+        id: "ea-01",
+        titulo: "Guide 5 - Introducing Internationalized Domain Names (IDNs)",
+        nivel: "Avanzado",
+        descripcion:
+          "Introduction to IDNs and their significance in the global Internet ecosystem.",
+        icon: "server",
+      },
+      {
+        id: "ea-02",
+        titulo:
+          "Guide 6 - Programming with Internationalized Domain Names (IDNs).",
+        nivel: "Avanzado",
+        descripcion:
+          "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.",
+        icon: "mail",
+      },
+      {
+        id: "ea-03",
+        titulo: "Guide 7 - Email Address Internationalization (EAI).",
+        nivel: "Avanzado",
+        descripcion:
+          "Email Address Internationalization (EAI) and its significance in today's globalized communication landscape.",
+        icon: "code",
+      },
+      {
+        id: "ea-04",
+        titulo:
+          "Guide 8 - Advanced Topics in Internationalized Domain Names (IDNs).",
+        nivel: "Avanzado",
+        descripcion:
+          "Advanced analysis of IDN concepts and techniques, focused on identifying and addressing the limitations of the IDNA2008 protocol.",
+        icon: "doc",
+      },
+      {
+        id: "ea-05",
+        titulo:
+          "Guide 9 - Programming in Email Address Internationalization(EAI).",
+        nivel: "Avanzado",
+        descripcion:
+          "Explore The fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.",
+        icon: "api",
+      },
+      {
+        id: "ea-06",
+        titulo: "Guide 10 - Processing IDNs and EAI In Mobile Apps",
+        nivel: "Avanzado",
+        descripcion:
+          "Explore the essential aspects of Unicode character sets and their significance in mobile apps.",
+        icon: "flask",
+      },
+      {
+        id: "ea-07",
+        titulo: "Guide 11 - IDN Security",
+        nivel: "Avanzado",
+        descripcion:
+          "Explore the security vulnerabilities and challenges associated with Unicode, specifically in the context of Internationalized Domain Names (IDNs).",
+        icon: "shield",
+      },
+      {
+        id: "ea-08",
+        titulo: "Guide 12 - Unicode, IDNs and EAI Support in Operating Systems",
+        nivel: "Avanzado",
+        descripcion:
+          "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems.",
+        icon: "chart",
       },
     ],
   },
@@ -130,81 +200,85 @@ export const RUTAS: Record<string, RutaData> = {
     ],
   },
 
-  avanzada: {
+  learner_avanzada: {
     titulo: "Implementación Técnica",
     subtitulo: "SysAdmins & Devs",
     desc: "Configuraciones de servidores, código y protocolos para implementar Aceptación Universal en producción.",
     temas: [
       {
-        id: "av-01",
-        titulo: "Configuración de Servidores DNS",
+        id: "la-01",
+        titulo: "Module 5 - Introducing Internationalized Domain Names (IDNs)",
         nivel: "Avanzado",
-        duracion: "4h 00min",
+        duracion: "104min",
         descripcion:
-          "Implementación práctica de zonas IDN, configuración de BIND y pruebas de resolución de nombres Unicode.",
+          "Introduction to IDNs and their significance in the global Internet ecosystem.",
         icon: "server",
       },
       {
-        id: "av-02",
-        titulo: "SMTP & EAI: Configuración",
+        id: "la-02",
+        titulo:
+          "Module 6 - Programming with Internationalized Domain Names (IDNs).",
         nivel: "Avanzado",
-        duracion: "5h 00min",
+        duracion: "60min",
         descripcion:
-          "Postfix/Exim con soporte EAI, cabeceras UTF-8, reescritura de envolventes y compatibilidad con MUA legacy.",
+          "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.",
         icon: "mail",
       },
       {
-        id: "av-03",
-        titulo: "Validación de Inputs Unicode",
+        id: "la-03",
+        titulo: "Module 7 - Email Address Internationalization (EAI).",
         nivel: "Avanzado",
-        duracion: "3h 30min",
+        duracion: "68min",
         descripcion:
-          "Implementar validación robusta de emails y dominios internacionales en backend con librerías actuales.",
+          "Email Address Internationalization (EAI) and its significance in today's globalized communication landscape.",
         icon: "code",
       },
       {
-        id: "av-04",
-        titulo: "Normalización IDNA2008 vs UTS46",
+        id: "la-04",
+        titulo:
+          "Module 8 - Advanced Topics in Internationalized Domain Names (IDNs).",
         nivel: "Avanzado",
-        duracion: "3h 00min",
+        duracion: "93min",
         descripcion:
-          "Diferencias entre estándares de normalización, casos de borde y cómo elegir la implementación correcta.",
+          "Advanced analysis of IDN concepts and techniques, focused on identifying and addressing the limitations of the IDNA2008 protocol.",
         icon: "doc",
       },
       {
-        id: "av-05",
-        titulo: "APIs REST con Soporte UA",
+        id: "la-05",
+        titulo:
+          "Module 9 - Programming in Email Address Internationalization(EAI).",
         nivel: "Avanzado",
-        duracion: "4h 30min",
+        duracion: "185min",
         descripcion:
-          "Diseño de endpoints, serialización JSON con Unicode y testing de integración para APIs UA-ready.",
+          "Explore The fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.",
         icon: "api",
       },
       {
-        id: "av-06",
-        titulo: "Testing y QA para UA",
+        id: "la-06",
+        titulo: "Module 10 - Processing IDNs and EAI In Mobile Apps",
         nivel: "Avanzado",
-        duracion: "3h 00min",
+        duracion: "94min",
         descripcion:
-          "Suites de pruebas, casos de borde con scripts no-ASCII y herramientas de auditoría de conformidad.",
+          "Explore the essential aspects of Unicode character sets and their significance in mobile apps.",
         icon: "flask",
       },
       {
-        id: "av-07",
-        titulo: "Seguridad: Ataques Homoglifos y Punycode",
+        id: "la-07",
+        titulo: "Module 11 - IDN Security",
         nivel: "Avanzado",
-        duracion: "4h 00min",
+        duracion: "130min",
         descripcion:
-          "Vectores de ataque basados en similitud visual de caracteres Unicode y estrategias de mitigación.",
+          "Explore the security vulnerabilities and challenges associated with Unicode, specifically in the context of Internationalized Domain Names (IDNs).",
         icon: "shield",
       },
       {
-        id: "av-08",
-        titulo: "Monitoreo y Logging UA en Producción",
+        id: "la-08",
+        titulo:
+          "Module 12 -  Unicode, IDNs and EAI Support in Operating Systems",
         nivel: "Avanzado",
-        duracion: "2h 30min",
+        duracion: "127min",
         descripcion:
-          "Dashboards, alertas y logs que soporten caracteres internacionales sin pérdida de datos.",
+          "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems.",
         icon: "chart",
       },
     ],
@@ -230,10 +304,11 @@ export const BASICA_POR_ROL: Record<string, BasicaPorRolData> = {
 
 /**
  * Convierte la combinación rol+ruta en la clave del objeto RUTAS.
- * La ruta avanzada es la misma para educator y learner.
  */
 export function resolverRuta(rol: string, ruta: string): string {
-  if (ruta === "avanzada") return "avanzada";
+  if (ruta === "avanzada") {
+    return rol === "educator" ? "educator_avanzada" : "learner_avanzada";
+  }
   return rol === "educator" ? "educator_basica" : "learner_basica";
 }
 

@@ -38,19 +38,22 @@
 
     .badge-init {
         display: inline-block;
-        border: 1px solid var(--border);
         border-radius: 100px;
-        padding: 5px 16px;
+        background: var(--accent-bg-soft);
+        border: 1px solid var(--accent-border-soft);
+        padding: 6px 18px;
         margin-bottom: 24px;
-        font-family: var(--font-mono);
+        font-family: var(--font-body);
         font-size: 11px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        background: var(--bg);
+        /* Sin sombra — aspecto plano y limpio */
+        box-shadow: none;
     }
 
+    /* Título en color accent — naranja del sistema de diseño */
     .hero h1 {
         font-size: clamp(34px, 5.5vw, 60px);
         font-weight: 700;
@@ -60,6 +63,7 @@
         margin-bottom: 20px;
     }
 
+    /* Párrafo 1: texto negro, "Aceptación Universal (UA)" en accent */
     .hero-p1 {
         font-size: 16px;
         color: var(--text);
@@ -73,6 +77,7 @@
         font-weight: 700;
     }
 
+    /* Párrafo 2: texto negro, separado visualmente del p1 */
     .hero-p2 {
         font-size: 16px;
         color: var(--text);
@@ -95,19 +100,46 @@
         font-size: 15px;
         transition:
             background var(--transition-base),
-            box-shadow var(--transition-base),
             transform var(--transition-base);
-        box-shadow: var(--shadow-accent-sm);
+        animation: pulse-glow 2.4s ease-in-out infinite;
     }
 
     .btn-cta:hover {
         background: var(--accent-hover);
-        box-shadow: var(--shadow-accent-md);
+        border-color: var(--accent-hover);
         transform: translateY(-2px);
+        animation-play-state: paused;
+        box-shadow:
+            0 0 0 4px rgba(229, 98, 26, 0.25),
+            0 8px 24px rgba(229, 98, 26, 0.45);
     }
 
     .btn-cta:active {
         transform: translateY(0);
-        box-shadow: var(--shadow-accent-sm);
+        animation-play-state: paused;
+        box-shadow: 0 0 0 2px rgba(229, 98, 26, 0.3);
+    }
+
+    @keyframes pulse-glow {
+        0%,
+        100% {
+            box-shadow:
+                0 0 0 0px rgba(229, 98, 26, 0.55),
+                0 0 10px 2px rgba(229, 98, 26, 0.25),
+                0 4px 18px 0px rgba(229, 98, 26, 0.18);
+        }
+        50% {
+            box-shadow:
+                0 0 0 6px rgba(229, 98, 26, 0),
+                0 0 22px 8px rgba(229, 98, 26, 0.35),
+                0 8px 32px 4px rgba(229, 98, 26, 0.22);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .btn-cta {
+            animation: none;
+            box-shadow: var(--shadow-accent-sm);
+        }
     }
 </style>

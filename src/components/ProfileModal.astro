@@ -724,66 +724,84 @@
 
     // ── GRID ─────────────────────────────────────────────────────────────────────
 
-    function construirCard(t: (typeof RUTAS)[string]["temas"][number]): string {
+    function construirCard(
+        t: (typeof RUTAS)[string]["temas"][number],
+        esAvanzada: boolean = false,
+    ): string {
         const est = store.temas[t.id] ?? { visitado: false, completado: false };
         const nivelClass = t.nivel === "Avanzado" ? "avanzado" : "basico";
-        const btnLabel = est.completado
-            ? "$ revisar"
-            : est.visitado
-              ? "$ continuar"
-              : "$ iniciar";
+
+        let botonHtml = "";
+        let progHtml = "";
+
+        if (esAvanzada) {
+            // Botón deshabilitado para rutas avanzadas
+            botonHtml = `
+                <button type="button" class="btn-iniciar btn-disabled" disabled data-id="${t.id}">
+                    🔒 Próximamente
+                </button>
+            `;
+        } else {
+            const btnLabel = est.completado
+                ? "$ revisar"
+                : est.visitado
+                  ? "$ continuar"
+                  : "$ iniciar";
+            if (t.slug) {
+                botonHtml = `<a href="/modulos/${t.slug}" class="btn-iniciar" data-id="${t.id}" data-slug="${t.slug}">${btnLabel}</a>`;
+            } else {
+                botonHtml = `<button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>`;
+            }
+
+            if (est.visitado) {
+                progHtml = `
+                    <div class="tc-prog">
+                        <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
+                        <div class="tc-prog-bg">
+                            <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
+                                 style="width:${est.completado ? 100 : 60}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         const cardClass = est.completado
             ? "completed"
             : est.visitado
               ? "visited"
               : "";
-
         const sbadge = est.completado
             ? `<span class="tc-sbadge done">✓ completado</span>`
             : est.visitado
               ? `<span class="tc-sbadge prog">en progreso</span>`
               : "";
 
-        const progHtml = est.visitado
-            ? `<div class="tc-prog">
-                   <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
-                   <div class="tc-prog-bg">
-                       <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
-                            style="width:${est.completado ? 100 : 60}%"></div>
-                   </div>
-               </div>`
-            : "";
-
-        const botonHtml = t.slug
-            ? `<a href="/modulos/${t.slug}" class="btn-iniciar" data-id="${t.id}"
-                  data-slug="${t.slug}">${btnLabel}</a>`
-            : `<button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>`;
-
         return `
-        <div class="topic-card ${cardClass}" data-id="${t.id}" style="opacity:0;transform:translateY(14px)">
-            <div class="tc-top">
-                <div class="tc-icon-box">${ICONS[t.icon] ?? ICONS["doc"]}</div>
-                <div class="tc-info">
-                    <div class="tc-title">${t.titulo}${sbadge}</div>
-                    <div class="tc-badges">
-                        <span class="tc-nivel ${nivelClass}">${t.nivel}</span>
-                        <span class="tc-dur">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                            ${t.duracion}
-                        </span>
+            <div class="topic-card ${cardClass}" data-id="${t.id}" style="opacity:0;transform:translateY(14px)">
+                <div class="tc-top">
+                    <div class="tc-icon-box">${ICONS[t.icon] ?? ICONS["doc"]}</div>
+                    <div class="tc-info">
+                        <div class="tc-title">${t.titulo}${sbadge}</div>
+                        <div class="tc-badges">
+                            <span class="tc-nivel ${nivelClass}">${t.nivel}</span>
+                            <span class="tc-dur">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                ${t.duracion}
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <p class="tc-desc">${t.descripcion}</p>
-            <div class="tc-foot">
-                ${botonHtml}
-                ${progHtml}
-            </div>
-        </div>`;
+                <p class="tc-desc">${t.descripcion}</p>
+                <div class="tc-foot">
+                    ${botonHtml}
+                    ${progHtml}
+                </div>
+            </div>`;
     }
 
     function actualizarProgreso(temas: (typeof RUTAS)[string]["temas"]) {
@@ -812,13 +830,22 @@
         const ruta = RUTAS[claveRuta];
         if (!ruta) return;
 
+        const esAvanzada =
+            claveRuta === "educator_avanzada" ||
+            claveRuta === "learner_avanzada";
+
         document.getElementById("grid-titulo")!.textContent = ruta.titulo;
         document.getElementById("grid-badge")!.textContent =
             `✦ ${ruta.subtitulo}`;
         document.getElementById("grid-desc")!.textContent = ruta.desc;
-        topicsCont.innerHTML = ruta.temas.map(construirCard).join("");
+
+        // Pasar esAvanzada a construirCard
+        topicsCont.innerHTML = ruta.temas
+            .map((t) => construirCard(t, esAvanzada))
+            .join("");
         actualizarProgreso(ruta.temas);
 
+        // ... resto del código igual, pero cuidado con registrarBotones
         if (soloRefresh) {
             topicsCont
                 .querySelectorAll<HTMLElement>(".topic-card")
@@ -829,10 +856,11 @@
                         card.style.transform = "translateY(0)";
                     }, 40);
                 });
-            registrarBotones(ruta.temas);
-            return; // ← salir sin tocar las vistas
+            if (!esAvanzada) registrarBotones(ruta.temas);
+            return;
         }
 
+        // ... animaciones
         if (sinTransicion) {
             viewHome.classList.add("oculto");
             viewGrid.classList.add("visible");
@@ -843,7 +871,6 @@
             await runAnim(viewGrid, "gridEnter", 360);
         }
 
-        // Stagger de cards
         const delay = sinTransicion ? 80 : 40;
         topicsCont
             .querySelectorAll<HTMLElement>(".topic-card")
@@ -855,7 +882,7 @@
                 }, delay);
             });
 
-        registrarBotones(ruta.temas);
+        if (!esAvanzada) registrarBotones(ruta.temas);
     }
 
     async function volverAlHome() {

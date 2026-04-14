@@ -1100,3 +1100,22 @@ canvas {
 }
 
 /* Líneas hijas ocultas al colapsar — gestionadas por JS con display:none */
+
+/* ============================================
+    Botón deshabilitado
+   ============================================ */
+
+=.btn-iniciar.btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--bg);
+    color: var(--text-muted);
+    border-color: var(--border);
+}
+
+.btn-iniciar.btn-disabled:hover {
+    background: var(--bg);
+    color: var(--text-muted);
+    transform: none;
+    box-shadow: none;
+}

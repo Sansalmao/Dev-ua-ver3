@@ -1,15 +1,8 @@
 ---
 /**
- * Toast.astro
- *
  * Singleton de notificación temporal. Solo existe uno en el DOM.
  * Se activa mediante el evento personalizado "toast:show" desde
  * cualquier parte de la página, sin necesidad de props en build time.
- *
- * Uso desde cualquier script:
- *   document.dispatchEvent(new CustomEvent("toast:show", {
- *       detail: { message: "Texto aquí", duration: 2800 }
- *   }));
  */
 ---
 

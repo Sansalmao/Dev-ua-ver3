@@ -4,9 +4,18 @@ interface Props {
     dotColor: "red" | "yellow" | "green" | "neutral";
     title: string;
     description?: string;
+    href?: string; // si existe, muestra el enlace "ver"
+    linkText?: string; // opcional: personalizar el texto del enlace (por defecto "Ver →")
 }
 
-const { filename, dotColor, title, description } = Astro.props;
+const {
+    filename,
+    dotColor,
+    title,
+    description,
+    href,
+    linkText = "Ver →",
+} = Astro.props;
 
 const dotClass = {
     red: "d-r",
@@ -29,6 +38,34 @@ const dotClass = {
 
         <div class="dc-title">{title}</div>
         {description && <p class="dc-desc">{description}</p>}
+
+        {
+            href && (
+                <div class="dc-link-wrapper">
+                    <a
+                        href={href}
+                        class="dc-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {linkText}
+                        <svg
+                            class="dc-link-icon"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                    </a>
+                </div>
+            )
+        }
     </div>
 </div>
 
@@ -76,7 +113,6 @@ const dotClass = {
         color: var(--accent);
     }
 
-    /* Sin "export default" — título directo con más peso */
     .dc-title {
         font-size: 14px;
         font-weight: 700;
@@ -84,12 +120,41 @@ const dotClass = {
         margin-bottom: 8px;
     }
 
-    /* Descripción justificada */
     .dc-desc {
         font-size: 12.5px;
         color: var(--text-secondary);
         line-height: 1.6;
         text-align: justify;
-        margin: 0;
+        margin: 0 0 12px 0;
+    }
+
+    .dc-link-wrapper {
+        margin-top: 8px;
+        text-align: right;
+    }
+
+    .dc-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+
+    .dc-link:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+    }
+
+    .dc-link-icon {
+        transition: transform var(--transition-fast);
+    }
+
+    .dc-link:hover .dc-link-icon {
+        transform: translateX(2px);
     }
 </style>
