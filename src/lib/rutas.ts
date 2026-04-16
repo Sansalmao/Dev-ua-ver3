@@ -33,6 +33,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "eb-00",
         titulo: "Guide 0 - Introducción a la Aceptación Universal",
         nivel: "Básico",
+        duracion: "30min",
         descripcion:
           "Propuesta para la modernización curricular mediante la integración de módulos de Aceptación Universal (UA) desarrollado por el WG de UA de ICANN.",
         icon: "globe",
@@ -42,6 +43,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "eb-01",
         titulo: "Guide 1 - Unicode Basics for Programmers",
         nivel: "Básico",
+        duracion: "180 min",
         descripcion:
           "Introductory module on Unicode fundamentals covering encoding schemes, string operations, and practical applications in Python and Java.",
         icon: "network",
@@ -51,6 +53,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "eb-02",
         titulo: "Guide 2 - Unicode Advanced Programming",
         nivel: "Básico",
+        duracion: "136 min",
         descripcion:
           "Advanced module on Unicode covering the character-glyph model, normalization, Unicode Character Database, string comparison, and bidirectional scripts in Python and Java.",
         icon: "mail",
@@ -60,6 +63,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "eb-03",
         titulo: "Guide 3 - Unicode in Data Structures and Algorithms",
         nivel: "Básico",
+        duracion: "180 min",
         descripcion:
           "Module on implementing Unicode-aware data structures and algorithms, covering sorting, searching, and collation techniques.",
         icon: "flask",
@@ -69,6 +73,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "eb-04",
         titulo: "Guide 4 - Unicode in Database Systems",
         nivel: "Básico",
+        duracion: "120 min",
         descripcion:
           "A concise introduction to the essential concepts and considerations for working with Unicode character data in database systems.",
         icon: "doc",
@@ -209,7 +214,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "la-01",
         titulo: "Module 5 - Introducing Internationalized Domain Names (IDNs)",
         nivel: "Avanzado",
-        duracion: "104min",
+        duracion: "104 min",
         descripcion:
           "Introduction to IDNs and their significance in the global Internet ecosystem.",
         icon: "server",
@@ -219,7 +224,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Module 6 - Programming with Internationalized Domain Names (IDNs).",
         nivel: "Avanzado",
-        duracion: "60min",
+        duracion: "60 min",
         descripcion:
           "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.",
         icon: "mail",
@@ -228,7 +233,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "la-03",
         titulo: "Module 7 - Email Address Internationalization (EAI).",
         nivel: "Avanzado",
-        duracion: "68min",
+        duracion: "68 min",
         descripcion:
           "Email Address Internationalization (EAI) and its significance in today's globalized communication landscape.",
         icon: "code",
@@ -238,7 +243,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Module 8 - Advanced Topics in Internationalized Domain Names (IDNs).",
         nivel: "Avanzado",
-        duracion: "93min",
+        duracion: "93 min",
         descripcion:
           "Advanced analysis of IDN concepts and techniques, focused on identifying and addressing the limitations of the IDNA2008 protocol.",
         icon: "doc",
@@ -248,7 +253,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Module 9 - Programming in Email Address Internationalization(EAI).",
         nivel: "Avanzado",
-        duracion: "185min",
+        duracion: "185 min",
         descripcion:
           "Explore The fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.",
         icon: "api",
@@ -257,7 +262,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "la-06",
         titulo: "Module 10 - Processing IDNs and EAI In Mobile Apps",
         nivel: "Avanzado",
-        duracion: "94min",
+        duracion: "94 min",
         descripcion:
           "Explore the essential aspects of Unicode character sets and their significance in mobile apps.",
         icon: "flask",
@@ -266,7 +271,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "la-07",
         titulo: "Module 11 - IDN Security",
         nivel: "Avanzado",
-        duracion: "130min",
+        duracion: "130 min",
         descripcion:
           "Explore the security vulnerabilities and challenges associated with Unicode, specifically in the context of Internationalized Domain Names (IDNs).",
         icon: "shield",
@@ -276,7 +281,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Module 12 -  Unicode, IDNs and EAI Support in Operating Systems",
         nivel: "Avanzado",
-        duracion: "127min",
+        duracion: "127 min",
         descripcion:
           "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems.",
         icon: "chart",
