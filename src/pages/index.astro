@@ -7,6 +7,8 @@ import ReadmeCard from "../components/ReadmeCard.astro";
 import ProfileModal from "../components/ProfileModal.astro";
 import Toast from "../components/Toast.astro";
 import ProgressPanel from "../components/ProgressPanel.astro";
+import ChallengesPanel from "../components/ChallengesPanel.astro";
+import ChallengeFlow from "../components/ChallengeFlow.astro";
 ---
 
 <BaseLayout
@@ -21,10 +23,9 @@ import ProgressPanel from "../components/ProgressPanel.astro";
 
         <div class="home-cards">
             <DecoCard
-                filename="Skills.md"
+                filename="intro.md"
                 dotColor="yellow"
-                title="Creación de capacidades"
-                description="Dominar la UA no requiere aprender una nueva categoría de codificación, sino que se basa en las habilidades existentes para ampliar los sistemas con el fin de reconocer y admitir direcciones URL y de correo electrónico en todas las longitudes de caracteres, idiomas y escrituras."
+                title="Introducción a la iniciativa"
             >
                 <svg
                     slot="icon"
@@ -42,10 +43,9 @@ import ProgressPanel from "../components/ProgressPanel.astro";
             </DecoCard>
 
             <DecoCard
-                filename="Aprendizaje.md"
+                filename="standards.md"
                 dotColor="yellow"
-                title="Aprendizaje flexible"
-                description="Módulos de microaprendizaje integrados en los cursos existentes de los programas técnicos: ciencias de la computación, tecnología de la información, ingeniería informática y similares."
+                title="Estándares y compatibilidad"
             >
                 <svg
                     slot="icon"
@@ -64,12 +64,9 @@ import ProgressPanel from "../components/ProgressPanel.astro";
             </DecoCard>
 
             <DecoCard
-                filename="WG-UA.md"
+                filename="community.md"
                 dotColor="red"
-                title="WG - UA de LACNOG"
-                description="El objetivo del WG UA es crear una comunidad preocupada por mejorar la forma en que los nombres de dominio y direcciones de correo electrónico asimilan o conectan cuando incluyen caracteres multilingües."
-                href="https://nog.lat/aceptacion-universal/"
-                linkText="Ver proyecto"
+                title="Recursos y comunidad"
             >
                 <svg
                     slot="icon"
@@ -125,7 +122,84 @@ import ProgressPanel from "../components/ProgressPanel.astro";
 
         <div class="grid-layout">
             <aside class="grid-side">
+                <!-- Panel 1: Progreso de la ruta de temas (ya existente) -->
                 <ProgressPanel completados={0} total={0} pct={0} />
+
+                <!--
+                    Panel 2: Retos de código — clickeable.
+                    data-challenges-entry: selector para el JS de apertura.
+                    El título cambia de "Tu Progreso" a "Retos de código"
+                    y el icono bolt → consola cuando el panel está activo.
+                    Por defecto inactivo (challenges-panel-card--locked)
+                    hasta que el usuario inicia la ruta de temas.
+                -->
+                <div
+                    class="challenges-panel-card"
+                    id="challenges-entry-card"
+                    data-challenges-entry
+                    role="button"
+                    tabindex="0"
+                    aria-label="Abrir retos de código"
+                >
+                    <div class="cpc-header">
+                        <p class="cpc-lbl" id="cpc-lbl">Retos de código</p>
+                        <div class="cpc-icon" id="cpc-icon" aria-hidden="true">
+                            <!-- Icono consola / terminal -->
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <polyline points="4 17 10 11 4 5"></polyline>
+                                <line x1="12" y1="19" x2="20" y2="19"></line>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="cpc-count">
+                        <span class="cpc-num" id="cpc-done">0</span>
+                        <span class="cpc-tot" id="cpc-total">/12</span>
+                    </div>
+
+                    <div class="cpc-bar-wrap" aria-hidden="true">
+                        <div class="cpc-bar-fill" id="cpc-bar" style="width:0%">
+                        </div>
+                    </div>
+
+                    <div class="cpc-pct" id="cpc-pct">0% COMPLETADO</div>
+
+                    <div class="cpc-tip">
+                        <div
+                            class="cpc-bolt"
+                            aria-hidden="true"
+                            id="cpc-bolt-icon"
+                        >
+                            <!-- Bolt → activo, consola → expandido -->
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
+                                <polygon
+                                    points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+                                ></polygon>
+                            </svg>
+                        </div>
+                        <div class="cpc-tip-text">
+                            <p id="cpc-tip-title">
+                                Comienza ahora. Explora los módulos y desbloquea
+                                los retos de programación.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             <div id="topics-container"></div>
@@ -137,6 +211,12 @@ import ProgressPanel from "../components/ProgressPanel.astro";
 
     <!-- Toast singleton — gestionado por Toast.astro via evento "toast:show" -->
     <Toast />
+
+    <!-- Panel de Retos de Código — oculto por defecto, activado por challenges:open -->
+    <ChallengesPanel />
+
+    <!-- Flow de Reto Individual — oculto por defecto, activado por challenge-flow:open -->
+    <ChallengeFlow />
 </BaseLayout>
 
 <style>
@@ -334,3 +414,235 @@ import ProgressPanel from "../components/ProgressPanel.astro";
         }
     }
 </style>
+
+<style>
+    /* ═══════════════════════════════════════════════════════════════════
+       Challenges Entry Card — segundo ProgressPanel en grid-side
+       Hereda todos los tokens del sistema.
+    ═══════════════════════════════════════════════════════════════════ */
+    .challenges-panel-card {
+        width: 100%;
+        max-width: 204px;
+        border-radius: 16px;
+        border: 2px solid var(--accent-border-soft);
+        padding: 20px;
+        background: linear-gradient(
+            145deg,
+            var(--card-bg) 55%,
+            var(--accent-bg-soft) 100%
+        );
+        cursor: pointer;
+        margin-top: 14px;
+        transition:
+            box-shadow var(--transition-fast),
+            border-color var(--transition-fast),
+            transform var(--transition-fast);
+        outline: none;
+    }
+
+    .challenges-panel-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-card-hover);
+        transform: translateY(-2px);
+    }
+
+    .challenges-panel-card:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+    }
+
+    .challenges-panel-card:active {
+        transform: translateY(0);
+    }
+
+    /* Header del card: label + icono consola */
+    .cpc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .cpc-lbl {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .cpc-icon {
+        color: var(--accent);
+        opacity: 0.7;
+    }
+
+    /* Fracción X/N */
+    .cpc-count {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+        margin-bottom: 8px;
+    }
+
+    .cpc-num {
+        font-size: 42px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        transition: all 0.3s ease;
+    }
+
+    .cpc-tot {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--muted-2);
+    }
+
+    /* Barra de progreso */
+    .cpc-bar-wrap {
+        width: 100%;
+        height: 5px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+
+    .cpc-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cpc-pct {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--accent);
+        margin-bottom: 14px;
+        display: block;
+    }
+
+    /* CTA */
+    .cpc-tip {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .cpc-bolt {
+        color: var(--accent);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .cpc-tip-text p {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+</style>
+
+<script>
+    "use strict";
+    (function () {
+        var UA_STORAGE_KEY = "ua-challenges-v1";
+        var CHALLENGES_PER_MODULE = 4;
+        var TOTAL_CHALLENGES = 16; // 4 módulos × 4 retos
+
+        /* ── Leer progreso de retos desde localStorage ─────────────────── */
+        function getChallengesProgress() {
+            try {
+                var raw = localStorage.getItem(UA_STORAGE_KEY);
+                if (!raw) return { done: 0, total: TOTAL_CHALLENGES, pct: 0 };
+                var state = JSON.parse(raw);
+                var done = 0;
+                Object.values(state.modules || {}).forEach(function (mod) {
+                    (mod.challenges || []).forEach(function (c) {
+                        if (c.status === "completed") done++;
+                    });
+                });
+                return {
+                    done: done,
+                    total: TOTAL_CHALLENGES,
+                    pct: Math.round((done / TOTAL_CHALLENGES) * 100),
+                };
+            } catch (e) {
+                return { done: 0, total: TOTAL_CHALLENGES, pct: 0 };
+            }
+        }
+
+        /* ── Actualizar el challenges-entry-card ──────────────────────── */
+        function updateEntryCard() {
+            var p = getChallengesProgress();
+            var doneEl = document.getElementById("cpc-done");
+            var totEl = document.getElementById("cpc-total");
+            var barEl = document.getElementById("cpc-bar");
+            var pctEl = document.getElementById("cpc-pct");
+            if (doneEl) doneEl.textContent = p.done;
+            if (totEl) totEl.textContent = "/" + p.total;
+            if (barEl) barEl.style.width = p.pct + "%";
+            if (pctEl) pctEl.textContent = p.pct + "% COMPLETADO";
+        }
+
+        /* ── Apertura del ChallengesPanel ─────────────────────────────── */
+        function openChallenges() {
+            var grid = document.getElementById("view-grid");
+            var challenges = document.getElementById("view-challenges");
+            if (!grid || !challenges) return;
+
+            // Leer el badge del perfil del DOM actual
+            var badgeEl = document.getElementById("grid-badge");
+            var profileLabel = badgeEl ? badgeEl.textContent.trim() : "";
+
+            // Ocultar grid con animación
+            grid.style.animation = "gridExit 220ms ease forwards";
+            setTimeout(function () {
+                grid.classList.remove("visible");
+                grid.style.animation = "";
+                // Emitir evento para que ChallengesPanel arranque
+                document.dispatchEvent(
+                    new CustomEvent("challenges:open", {
+                        detail: { profileLabel: profileLabel },
+                    }),
+                );
+            }, 220);
+        }
+
+        /* ── Cierre del ChallengesPanel (volver a la ruta) ────────────── */
+        document.addEventListener("challenges:closed", function () {
+            var grid = document.getElementById("view-grid");
+            if (!grid) return;
+            grid.style.animation = "gridEnter 260ms ease forwards";
+            grid.classList.add("visible");
+            setTimeout(function () {
+                grid.style.animation = "";
+            }, 260);
+            updateEntryCard();
+        });
+
+        /* ── Bind del challenges-entry-card ───────────────────────────── */
+        document.addEventListener("DOMContentLoaded", function () {
+            updateEntryCard();
+
+            var card = document.getElementById("challenges-entry-card");
+            if (card) {
+                card.addEventListener("click", function () {
+                    // Solo abrir si estamos en view-grid
+                    var grid = document.getElementById("view-grid");
+                    if (grid && grid.classList.contains("visible")) {
+                        openChallenges();
+                    }
+                });
+                card.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            }
+        });
+    })();
+</script>

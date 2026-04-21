@@ -33,7 +33,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "eb-00",
         titulo: "Guide 0 - Introducción a la Aceptación Universal",
         nivel: "Básico",
-        duracion: "30min",
+        duracion: "30 min",
         descripcion:
           "Propuesta para la modernización curricular mediante la integración de módulos de Aceptación Universal (UA) desarrollado por el WG de UA de ICANN.",
         icon: "globe",

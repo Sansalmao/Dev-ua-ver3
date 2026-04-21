@@ -1,0 +1,863 @@
+---
+interface Props {
+    moduleTitle?: string;
+    moduleDesc?: string;
+    exerciseNum?: string;
+    exerciseTitle?: string;
+    exerciseItems?: string[];
+    solutionLang?: "java" | "python" | "sql";
+    solutionCode?: string;
+}
+---
+
+<!-- SHELL — oculto por defecto, activado por 'challenge-flow:open'-->
+<div id="view-challenge-flow" class="cf-shell" aria-hidden="true">
+    <!-- ── Header ── -->
+    <div class="cf-page-header">
+        <div class="cf-header-top">
+            <div>
+                <h1 class="cf-page-title" id="cf-page-title">
+                    Module 1 – Unicode Programming Fundamentals
+                </h1>
+                <p class="cf-page-sub" id="cf-page-sub">
+                    Provide the basic understanding of Unicode and its
+                    applications.
+                </p>
+            </div>
+            <!-- Botón volver a los retos -->
+            <button
+                type="button"
+                class="cf-btn-back-retos"
+                id="cf-btn-back-retos"
+            >
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Volver a los Retos
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Window card: macOS dots + flow buttons ── -->
+    <div class="cf-window-card">
+        <div class="cf-titlebar">
+            <div class="cf-dot cf-dot-r" aria-hidden="true"></div>
+            <div class="cf-dot cf-dot-y" aria-hidden="true"></div>
+            <div class="cf-dot cf-dot-g" aria-hidden="true"></div>
+        </div>
+        <div class="cf-window-body">
+            <p class="cf-window-desc">
+                Start building, submit solution and get feedback from the
+                community.
+            </p>
+
+            <div class="cf-btn-row" role="group" aria-label="Pasos del reto">
+                <button
+                    class="cf-flow-btn cf-btn-active"
+                    id="cf-btn-start"
+                    type="button"
+                >
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                            d="M2 13L6 8 2 3"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
+                        <rect
+                            x="8"
+                            y="3"
+                            width="6"
+                            height="10"
+                            rx="1.5"
+                            fill="currentColor"
+                            opacity="0.6"></rect>
+                    </svg>
+                    $ Start Working
+                </button>
+
+                <span class="cf-connector" aria-hidden="true"></span>
+
+                <button
+                    class="cf-flow-btn cf-btn-inactive"
+                    id="cf-btn-submit"
+                    type="button"
+                    disabled
+                >
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                            d="M8 2v9M5 8l3 3 3-3"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
+                        <path
+                            d="M2 13h12"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"></path>
+                    </svg>
+                    $ Submit Solution
+                </button>
+
+                <span class="cf-connector" aria-hidden="true"></span>
+
+                <button
+                    class="cf-flow-btn cf-btn-inactive"
+                    id="cf-btn-enviar"
+                    type="button"
+                    disabled
+                >
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                            d="M14 2L2 6.5l5 2 2 5L14 2z"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
+                    </svg>
+                    $ Enviar
+                </button>
+
+                <span class="cf-connector" aria-hidden="true"></span>
+
+                <button
+                    class="cf-flow-btn cf-btn-inactive"
+                    id="cf-btn-solucion"
+                    type="button"
+                    disabled
+                >
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <circle
+                            cx="8"
+                            cy="8"
+                            r="6"
+                            stroke="currentColor"
+                            stroke-width="1.8"></circle>
+                        <path
+                            d="M5.5 8h5M8 5.5v5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"></path>
+                    </svg>
+                    $ Solución
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Exercise label ── -->
+    <div class="cf-challenge-label">
+        <h2 id="cf-exercise-num">Exercise 1</h2>
+    </div>
+
+    <!-- ── Description card ── -->
+    <div class="cf-desc-card">
+        <p class="cf-desc-intro" id="cf-exercise-title">
+            Write individual pieces of code in Java that execute the following
+            tasks with Unicode strings:
+        </p>
+        <ul class="cf-desc-list" id="cf-exercise-items"></ul>
+    </div>
+
+    <!-- ── Code section ── -->
+    <div class="cf-code-section" id="cf-code-section">
+        <!-- Completion banner — oculto hasta cf-banner-show -->
+        <div
+            class="cf-completion-banner"
+            id="cf-completion-banner"
+            aria-live="polite"
+        >
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="var(--green-bg)"
+                    stroke="var(--green-text)"
+                    stroke-width="1.5"></circle>
+                <path
+                    d="M7 12l3.5 3.5 6.5-7"
+                    stroke="var(--green-text)"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+            </svg>
+            <div>
+                <p class="cf-banner-title">¡Reto completado!</p>
+                <p class="cf-banner-sub">
+                    Has terminado el reto del módulo. Tu solución ha sido
+                    enviada a la comunidad.
+                </p>
+            </div>
+        </div>
+
+        <div class="cf-code-block" id="cf-code-block" aria-hidden="true">
+            <div id="cf-code-inject"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 1 — Comienza a construir -->
+<div
+    class="cf-overlay cf-overlay-hidden"
+    id="cf-modal1"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cf-m1-title"
+>
+    <div class="cf-modal">
+        <div class="cf-modal-titlebar" aria-hidden="true">
+            <div class="cf-dot cf-dot-r"></div>
+            <div class="cf-dot cf-dot-y"></div>
+            <div class="cf-dot cf-dot-g"></div>
+        </div>
+        <div class="cf-modal-status">
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+            >
+                <circle cx="8" cy="8" r="7" stroke="#fff" stroke-width="1.5"
+                ></circle>
+                <path
+                    d="M5 8l2 2 4-4"
+                    stroke="#fff"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+            </svg>
+            <span>Reto iniciado</span>
+        </div>
+        <div class="cf-modal-body">
+            <h2 class="cf-modal-title" id="cf-m1-title">
+                Comienza a construir
+            </h2>
+            <p class="cf-modal-sub">
+                Sigue estos pasos para completar el reto.
+            </p>
+            <ol class="cf-step-list">
+                <li class="cf-step-item">
+                    Crea un nuevo repositorio público en GitHub.
+                </li>
+                <li class="cf-step-item">
+                    Completa el reto de acuerdo con los requisitos y sube tu
+                    código al repositorio de GitHub.
+                </li>
+                <li class="cf-step-item">
+                    Añade un archivo README con instrucciones para ejecutar el
+                    reto y la
+                    <span class="cf-step-link"
+                        >URL de la página del reto 🔗</span
+                    >.
+                </li>
+                <li class="cf-step-item">
+                    Una vez hecho, envía tu solución para ayudar a otros a
+                    aprender y recibir feedback de la comunidad.
+                </li>
+            </ol>
+            <p class="cf-modal-note">
+                Si te quedas atascado, siempre puedes pedir ayuda en el
+                <span class="cf-step-link">chat de discord</span> de la comunidad.
+            </p>
+            <button
+                class="cf-btn-full cf-btn-full-accent"
+                id="cf-modal1-close"
+                type="button"
+            >
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 2 — Enviar URL de la Solución -->
+<div
+    class="cf-overlay cf-overlay-hidden"
+    id="cf-modal2"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cf-m2-title"
+>
+    <div class="cf-modal cf-modal-pos">
+        <button
+            class="cf-modal2-close"
+            id="cf-modal2-close"
+            type="button"
+            aria-label="Cerrar modal">✕</button
+        >
+        <div class="cf-modal-titlebar" aria-hidden="true">
+            <div class="cf-dot cf-dot-r"></div>
+            <div class="cf-dot cf-dot-y"></div>
+            <div class="cf-dot cf-dot-g"></div>
+            <span class="cf-modal-timer">Reto iniciado</span>
+        </div>
+        <div class="cf-modal-body">
+            <div class="cf-modal2-header">
+                <svg
+                    width="36"
+                    height="36"
+                    viewBox="0 0 24 24"
+                    fill="var(--text)"
+                    aria-hidden="true"
+                    style="flex-shrink:0;"
+                >
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.66-.22.66-.48v-1.69c-2.78.6-3.37-1.34-3.37-1.34-.45-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85.004 1.7.115 2.5.337 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.16.58.67.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"
+                    ></path>
+                </svg>
+                <div>
+                    <h2 class="cf-modal-title" id="cf-m2-title">
+                        Enviar URL de la <span class="cf-badge-solucion"
+                            >Solución</span
+                        >
+                    </h2>
+                </div>
+            </div>
+            <p class="cf-modal-desc">
+                Envía la URL de tu repositorio de GitHub con la solución.
+            </p>
+            <ul class="cf-req-list">
+                <li class="cf-req-item">
+                    <div class="cf-req-check" aria-hidden="true">
+                        <svg viewBox="0 0 12 12" fill="none">
+                            <path
+                                d="M2 6l3 3 5-5"
+                                stroke="#fff"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"></path>
+                        </svg>
+                    </div>
+                    La URL debe apuntar a un repositorio público de GitHub.
+                </li>
+                <li class="cf-req-item">
+                    <div class="cf-req-check" aria-hidden="true">
+                        <svg viewBox="0 0 12 12" fill="none">
+                            <path
+                                d="M2 6l3 3 5-5"
+                                stroke="#fff"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"></path>
+                        </svg>
+                    </div>
+                    El repositorio debe contener un archivo README.
+                </li>
+                <li class="cf-req-item">
+                    <div class="cf-req-check" aria-hidden="true">
+                        <svg viewBox="0 0 12 12" fill="none">
+                            <path
+                                d="M2 6l3 3 5-5"
+                                stroke="#fff"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"></path>
+                        </svg>
+                    </div>
+                    El archivo README debe contener la
+                    <span class="cf-step-link">`URL del proyecto` 🔗</span>
+                </li>
+            </ul>
+            <input
+                class="cf-url-input"
+                id="cf-repo-url"
+                type="url"
+                placeholder="https://github.com/tu-usuario/repo-de-solucion"
+                autocomplete="url"
+                aria-label="URL del repositorio de GitHub"
+            />
+            <button
+                class="cf-btn-full cf-btn-full-accent"
+                id="cf-btn-verify"
+                type="button"
+            >
+                Verificar y Enviar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST (propio del flow, z-index independiente) -->
+<div class="cf-toast" id="cf-toast" role="status" aria-live="polite">
+    <div class="cf-toast-dot" aria-hidden="true"></div>
+    <span id="cf-toast-msg"></span>
+</div>
+
+<script>
+    "use strict";
+    (function () {
+        var fase = 0;
+
+        var currentModuleId = null;
+        var currentChallengeId = null;
+
+        /* ── DOM refs ─────────────────────────────────────────────────────── */
+        var shell = document.getElementById("view-challenge-flow");
+        var btnStart = document.getElementById("cf-btn-start");
+        var btnSubmit = document.getElementById("cf-btn-submit");
+        var btnEnviar = document.getElementById("cf-btn-enviar");
+        var btnSolucion = document.getElementById("cf-btn-solucion");
+        var btnBackRetos = document.getElementById("cf-btn-back-retos");
+        var modal1 = document.getElementById("cf-modal1");
+        var modal2 = document.getElementById("cf-modal2");
+        var codeBlock = document.getElementById("cf-code-block");
+        var codeInject = document.getElementById("cf-code-inject");
+        var compBanner = document.getElementById("cf-completion-banner");
+        var repoInput = document.getElementById("cf-repo-url");
+        var toast = document.getElementById("cf-toast");
+        var toastMsg = document.getElementById("cf-toast-msg");
+
+        /* ── SVG para botones ─────────────────────────────────────────────── */
+        var SVG_CHECK =
+            '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"' +
+            ' style="flex-shrink:0;" aria-hidden="true">' +
+            '<circle cx="7" cy="7" r="6.5" fill="var(--green-text)"/>' +
+            '<path d="M4 7l2 2 4-4" stroke="#fff" stroke-width="1.8"' +
+            ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        var ICO_SUBMIT =
+            '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"' +
+            ' style="flex-shrink:0;" aria-hidden="true">' +
+            '<path d="M8 2v9M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.8"' +
+            ' stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+            "</svg>";
+
+        var ICO_ENVIAR =
+            '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"' +
+            ' style="flex-shrink:0;" aria-hidden="true">' +
+            '<path d="M14 2L2 6.5l5 2 2 5L14 2z" stroke="currentColor" stroke-width="1.8"' +
+            ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        var ICO_SOL =
+            '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"' +
+            ' style="flex-shrink:0;" aria-hidden="true">' +
+            '<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.8"/>' +
+            '<path d="M5.5 8h5M8 5.5v5" stroke="currentColor" stroke-width="1.8"' +
+            ' stroke-linecap="round"/></svg>';
+
+        /* ── Helpers de estado ────────────────────────────────────────────── */
+        function setDone(btn, label) {
+            btn.className = "cf-flow-btn cf-btn-done";
+            btn.disabled = true;
+            btn.innerHTML = SVG_CHECK + " $ " + label;
+        }
+
+        function setActive(btn, ico, label) {
+            btn.className = "cf-flow-btn cf-btn-active";
+            btn.disabled = false;
+            btn.innerHTML = ico + " $ " + label;
+        }
+
+        function resetFlow() {
+            fase = 0;
+            var startIco =
+                '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"' +
+                ' style="flex-shrink:0;" aria-hidden="true">' +
+                '<path d="M2 13L6 8 2 3" stroke="currentColor" stroke-width="2"' +
+                ' stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<rect x="8" y="3" width="6" height="10" rx="1.5" fill="currentColor" opacity="0.6"/>' +
+                "</svg>";
+            setActive(btnStart, startIco, "Start Working");
+            btnSubmit.className = "cf-flow-btn cf-btn-inactive";
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = ICO_SUBMIT + " $ Submit Solution";
+            btnEnviar.className = "cf-flow-btn cf-btn-inactive";
+            btnEnviar.disabled = true;
+            btnEnviar.innerHTML = ICO_ENVIAR + " $ Enviar";
+            btnSolucion.className = "cf-flow-btn cf-btn-inactive";
+            btnSolucion.disabled = true;
+            btnSolucion.innerHTML = ICO_SOL + " $ Solución";
+            if (compBanner) compBanner.classList.remove("cf-banner-show");
+            if (codeBlock) {
+                codeBlock.classList.remove("cf-code-visible");
+                codeBlock.setAttribute("aria-hidden", "true");
+            }
+            if (repoInput) repoInput.value = "";
+            var codeSection = document.getElementById("cf-code-section");
+            if (codeSection) codeSection.style.display = "none";
+        }
+
+        /* ── Inyección de contenido dinámico ─────────────────────────────── */
+        function injectContent(data) {
+            var t = document.getElementById("cf-page-title");
+            var s = document.getElementById("cf-page-sub");
+            var n = document.getElementById("cf-exercise-num");
+            var et = document.getElementById("cf-exercise-title");
+            var ei = document.getElementById("cf-exercise-items");
+
+            if (t && data.moduleTitle) t.textContent = data.moduleTitle;
+            if (s && data.moduleDesc) s.textContent = data.moduleDesc;
+            if (n && data.exerciseNum) n.textContent = data.exerciseNum;
+            if (et && data.exerciseTitle) et.textContent = data.exerciseTitle;
+
+            if (ei && data.exerciseItems && data.exerciseItems.length) {
+                ei.innerHTML = data.exerciseItems
+                    .map(function (item) {
+                        return "<li>" + item + "</li>";
+                    })
+                    .join("");
+            }
+
+            if (codeInject && data.solutionCode) {
+                var lang = data.solutionLang || "java";
+                var langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
+                var groupId = "cf-sol-" + Date.now();
+
+                var switcherHtml =
+                    '<div class="code-switcher">' +
+                    '<div class="lang-switcher">' +
+                    '<button class="lang-btn active" data-lang="' +
+                    lang +
+                    '" data-target="' +
+                    groupId +
+                    '">' +
+                    '<span class="lang-icon lang-icon--' +
+                    lang +
+                    '"></span>' +
+                    langCap +
+                    "</button>" +
+                    "</div>" +
+                    '<div class="lang-block active" data-lang="' +
+                    lang +
+                    '" data-group="' +
+                    groupId +
+                    '">' +
+                    "<pre><code>" +
+                    escapeHtml(data.solutionCode) +
+                    "</code></pre>" +
+                    "</div>" +
+                    "</div>";
+
+                codeInject.innerHTML = switcherHtml;
+                initCodeSwitcher(codeInject);
+            }
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        /* ── Funciones para el bloque de código (copiar, líneas, tabs) ───── */
+        function processCodeEl(codeEl) {
+            var raw = codeEl.textContent || "";
+            var lines = raw.split("\n");
+            if (lines[lines.length - 1] === "") lines.pop();
+
+            var html = lines
+                .map(function (line, i) {
+                    var num = String(i + 1);
+                    return (
+                        '<span class="code-line">' +
+                        '<span class="code-line-num">' +
+                        num +
+                        "</span>" +
+                        '<span class="code-line-content">' +
+                        line +
+                        "</span>" +
+                        "</span>"
+                    );
+                })
+                .join("");
+
+            codeEl.innerHTML = html;
+        }
+
+        function addCopyButton(pre) {
+            if (pre.querySelector(".copy-btn")) return;
+
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "copy-btn";
+            btn.setAttribute("aria-label", "Copiar código");
+            btn.innerHTML =
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"' +
+                ' stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+                '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
+                '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+                "</svg>" +
+                "<span>Copiar</span>";
+
+            btn.addEventListener("click", function () {
+                var code = pre.querySelector("code");
+                var lines = code
+                    ? code.querySelectorAll(".code-line-content")
+                    : [];
+                var text =
+                    lines.length > 0
+                        ? Array.from(lines)
+                              .map(function (l) {
+                                  return l.textContent || "";
+                              })
+                              .join("\n")
+                        : (code ? code.textContent : pre.textContent) || "";
+
+                var spanEl = btn.querySelector("span");
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard
+                        .writeText(text)
+                        .then(function () {
+                            btn.classList.add("copied");
+                            if (spanEl) spanEl.textContent = "✓ Copiado";
+                            setTimeout(function () {
+                                btn.classList.remove("copied");
+                                if (spanEl) spanEl.textContent = "Copiar";
+                            }, 2000);
+                        })
+                        .catch(function () {
+                            fallbackCopy(text, btn, spanEl);
+                        });
+                } else {
+                    fallbackCopy(text, btn, spanEl);
+                }
+            });
+
+            pre.appendChild(btn);
+        }
+
+        function fallbackCopy(text, btn, spanEl) {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.cssText = "position:fixed;opacity:0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            btn.classList.add("copied");
+            if (spanEl) spanEl.textContent = "✓ Copiado";
+            setTimeout(function () {
+                btn.classList.remove("copied");
+                if (spanEl) spanEl.textContent = "Copiar";
+            }, 2000);
+        }
+
+        function initCodeSwitcher(container) {
+            container
+                .querySelectorAll(".lang-block pre")
+                .forEach(function (preEl) {
+                    var codeEl = preEl.querySelector("code");
+                    if (codeEl) processCodeEl(codeEl);
+                    addCopyButton(preEl);
+                });
+
+            container.querySelectorAll(".lang-btn").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var group = btn.dataset.target;
+                    var lang = btn.dataset.lang;
+                    var switcher = btn.closest(".lang-switcher");
+                    if (switcher) {
+                        switcher
+                            .querySelectorAll(".lang-btn")
+                            .forEach(function (b) {
+                                b.classList.toggle(
+                                    "active",
+                                    b.dataset.lang === lang,
+                                );
+                            });
+                    }
+                    container
+                        .querySelectorAll(
+                            '.lang-block[data-group="' + group + '"]',
+                        )
+                        .forEach(function (block) {
+                            block.classList.toggle(
+                                "active",
+                                block.dataset.lang === lang,
+                            );
+                        });
+                });
+            });
+        }
+
+        /* ── Modal helpers ────────────────────────────────────────────────── */
+        function openModal(el) {
+            el.classList.remove("cf-overlay-hidden");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeModal(el) {
+            el.classList.add("cf-overlay-hidden");
+            document.body.style.overflow = "";
+        }
+
+        /* ── Toast ────────────────────────────────────────────────────────── */
+        var toastTimer;
+        function showToast(msg) {
+            if (!toastMsg || !toast) return;
+            toastMsg.textContent = msg;
+            toast.classList.add("cf-toast-show");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () {
+                toast.classList.remove("cf-toast-show");
+            }, 3000);
+        }
+
+        /* ── FLUJO DE BOTONES ─────────────────────────────────────────────── */
+        if (btnStart) {
+            btnStart.addEventListener("click", function () {
+                if (fase === 0) openModal(modal1);
+            });
+        }
+
+        var m1Close = document.getElementById("cf-modal1-close");
+        if (m1Close) {
+            m1Close.addEventListener("click", function () {
+                closeModal(modal1);
+                setDone(btnStart, "Start Working");
+                setActive(btnSubmit, ICO_SUBMIT, "Submit Solution");
+                fase = 1;
+                showToast("Reto iniciado — ¡a construir!");
+            });
+        }
+
+        if (btnSubmit) {
+            btnSubmit.addEventListener("click", function () {
+                if (fase === 1) openModal(modal2);
+            });
+        }
+
+        var m2Close = document.getElementById("cf-modal2-close");
+        if (m2Close) {
+            m2Close.addEventListener("click", function () {
+                closeModal(modal2);
+            });
+        }
+
+        var verifyBtn = document.getElementById("cf-btn-verify");
+        if (verifyBtn) {
+            verifyBtn.addEventListener("click", function () {
+                var val = repoInput ? repoInput.value.trim() : "";
+                if (!val) {
+                    if (repoInput) {
+                        repoInput.classList.add("cf-input-error");
+                        repoInput.focus();
+                        setTimeout(function () {
+                            repoInput.classList.remove("cf-input-error");
+                        }, 1500);
+                    }
+                    return;
+                }
+                if (repoInput) repoInput.classList.remove("cf-input-error");
+                closeModal(modal2);
+                setDone(btnSubmit, "Submit Solution");
+                setDone(btnEnviar, "Enviar");
+                setActive(btnSolucion, ICO_SOL, "Solución");
+                fase = 2;
+                showToast("Solución enviada correctamente");
+            });
+        }
+
+        if (btnSolucion) {
+            btnSolucion.addEventListener("click", function () {
+                if (fase !== 2) return;
+                setDone(btnSolucion, "Solución");
+                fase = 3;
+
+                if (currentModuleId && currentChallengeId) {
+                    document.dispatchEvent(
+                        new CustomEvent("challenge-flow:completed", {
+                            detail: {
+                                moduleId: currentModuleId,
+                                challengeId: currentChallengeId,
+                            },
+                        }),
+                    );
+                }
+
+                if (compBanner) {
+                    var codeSection =
+                        document.getElementById("cf-code-section");
+                    if (codeSection) codeSection.style.display = "block";
+                    compBanner.classList.add("cf-banner-show");
+                    compBanner.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest",
+                    });
+                }
+                setTimeout(function () {
+                    if (codeBlock) {
+                        codeBlock.classList.add("cf-code-visible");
+                        codeBlock.removeAttribute("aria-hidden");
+                    }
+                }, 400);
+                showToast("¡Reto completado!");
+            });
+        }
+
+        // Cerrar modales con backdrop / Escape
+        if (modal1)
+            modal1.addEventListener("click", function (e) {
+                if (e.target === modal1) closeModal(modal1);
+            });
+        if (modal2)
+            modal2.addEventListener("click", function (e) {
+                if (e.target === modal2) closeModal(modal2);
+            });
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                if (modal1 && !modal1.classList.contains("cf-overlay-hidden"))
+                    closeModal(modal1);
+                if (modal2 && !modal2.classList.contains("cf-overlay-hidden"))
+                    closeModal(modal2);
+            }
+        });
+
+        /* ── Botón Volver a los Retos ─────────────────────────────────────── */
+        if (btnBackRetos) {
+            btnBackRetos.addEventListener("click", function () {
+                document.dispatchEvent(new CustomEvent("challenge-flow:close"));
+            });
+        }
+
+        /* ── Apertura: escucha 'challenge-flow:open' ──────────────────────── */
+        document.addEventListener("challenge-flow:open", function (e) {
+            if (!shell) return;
+            resetFlow();
+            var data =
+                e.detail && e.detail.challengeData
+                    ? e.detail.challengeData
+                    : {};
+
+            currentModuleId = data.moduleId || null;
+            currentChallengeId = data.challengeId || null;
+
+            injectContent(data);
+            shell.removeAttribute("aria-hidden");
+            shell.classList.add("vc-visible");
+            shell.scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+        /* ── Cierre: escucha 'challenge-flow:close' ───────────────────────── */
+        document.addEventListener("challenge-flow:close", function () {
+            if (!shell) return;
+            shell.setAttribute("aria-hidden", "true");
+            shell.classList.remove("vc-visible");
+            document.dispatchEvent(new CustomEvent("challenge-flow:closed"));
+        });
+    })();
+</script>
