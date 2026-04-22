@@ -23,9 +23,10 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
 
         <div class="home-cards">
             <DecoCard
-                filename="intro.md"
+                filename="Skills.md"
                 dotColor="yellow"
-                title="Introducción a la iniciativa"
+                title="Creación de capacidades"
+                description="Dominar la UA no requiere aprender una nueva categoría de codificación, sino que se basa en las habilidades existentes para ampliar los sistemas con el fin de reconocer y admitir direcciones URL y de correo electrónico en todas las longitudes de caracteres, idiomas y escrituras."
             >
                 <svg
                     slot="icon"
@@ -43,9 +44,10 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
             </DecoCard>
 
             <DecoCard
-                filename="standards.md"
+                filename="Aprendizaje.md"
                 dotColor="yellow"
-                title="Estándares y compatibilidad"
+                title="Aprendizaje flexible"
+                description="Módulos de microaprendizaje integrados en los cursos existentes de los programas técnicos: ciencias de la computación, tecnología de la información, ingeniería informática y similares."
             >
                 <svg
                     slot="icon"
@@ -64,9 +66,12 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
             </DecoCard>
 
             <DecoCard
-                filename="community.md"
+                filename="WG-UA.md"
                 dotColor="red"
-                title="Recursos y comunidad"
+                title="WG - UA de LACNOG"
+                description="El objetivo del WG UA es crear una comunidad preocupada por mejorar la forma en que los nombres de dominio y direcciones de correo electrónico asimilan o conectan cuando incluyen caracteres multilingües."
+                href="https://nog.lat/aceptacion-universal/"
+                linkText="Ver proyecto"
             >
                 <svg
                     slot="icon"
@@ -163,7 +168,7 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
 
                     <div class="cpc-count">
                         <span class="cpc-num" id="cpc-done">0</span>
-                        <span class="cpc-tot" id="cpc-total">/12</span>
+                        <span class="cpc-tot" id="cpc-total">/0</span>
                     </div>
 
                     <div class="cpc-bar-wrap" aria-hidden="true">
@@ -555,8 +560,20 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
         /* ── Leer progreso de retos desde localStorage ─────────────────── */
         function getChallengesProgress() {
             try {
-                var raw = localStorage.getItem(UA_STORAGE_KEY);
-                if (!raw) return { done: 0, total: TOTAL_CHALLENGES, pct: 0 };
+                var badgeEl = document.getElementById("grid-badge");
+                var profile = "learner"; // por defecto
+                if (badgeEl) {
+                    var label = badgeEl.textContent.trim();
+                    profile = label.includes("Profesores")
+                        ? "educator"
+                        : "learner";
+                }
+                var storageKey = "ua-challenges-v1-" + profile;
+                var raw = localStorage.getItem(storageKey);
+                var total = profile === "educator" ? 20 : 16;
+                if (!raw) {
+                    return { done: 0, total: total, pct: 0 };
+                }
                 var state = JSON.parse(raw);
                 var done = 0;
                 Object.values(state.modules || {}).forEach(function (mod) {
@@ -566,13 +583,59 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                 });
                 return {
                     done: done,
-                    total: TOTAL_CHALLENGES,
-                    pct: Math.round((done / TOTAL_CHALLENGES) * 100),
+                    total: total,
+                    pct: Math.round((done / total) * 100) || 0,
                 };
             } catch (e) {
-                return { done: 0, total: TOTAL_CHALLENGES, pct: 0 };
+                return { done: 0, total: 16, pct: 0 };
             }
         }
+
+        function updateEntryCard() {
+            var p = getChallengesProgress();
+            var doneEl = document.getElementById("cpc-done");
+            var totEl = document.getElementById("cpc-total");
+            var barEl = document.getElementById("cpc-bar");
+            var pctEl = document.getElementById("cpc-pct");
+            if (doneEl) doneEl.textContent = p.done;
+            if (totEl) totEl.textContent = "/" + p.total;
+            if (barEl) barEl.style.width = p.pct + "%";
+            if (pctEl) pctEl.textContent = p.pct + "% COMPLETADO";
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            updateEntryCard();
+
+            // Observar cambios en el badge del grid
+            var badgeEl = document.getElementById("grid-badge");
+            if (badgeEl) {
+                var badgeObserver = new MutationObserver(function () {
+                    updateEntryCard();
+                });
+                badgeObserver.observe(badgeEl, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true,
+                });
+            }
+
+            // El resto de tu código (listeners de la tarjeta, etc.)
+            var card = document.getElementById("challenges-entry-card");
+            if (card) {
+                card.addEventListener("click", function () {
+                    var grid = document.getElementById("view-grid");
+                    if (grid && grid.classList.contains("visible")) {
+                        openChallenges();
+                    }
+                });
+                card.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            }
+        });
 
         /* ── Actualizar el challenges-entry-card ──────────────────────── */
         function updateEntryCard() {
@@ -596,6 +659,9 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
             // Leer el badge del perfil del DOM actual
             var badgeEl = document.getElementById("grid-badge");
             var profileLabel = badgeEl ? badgeEl.textContent.trim() : "";
+            var profile = profileLabel.includes("Profesores")
+                ? "educator"
+                : "learner";
 
             // Ocultar grid con animación
             grid.style.animation = "gridExit 220ms ease forwards";
@@ -605,7 +671,10 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                 // Emitir evento para que ChallengesPanel arranque
                 document.dispatchEvent(
                     new CustomEvent("challenges:open", {
-                        detail: { profileLabel: profileLabel },
+                        detail: {
+                            profileLabel: profileLabel,
+                            profile: profile,
+                        },
                     }),
                 );
             }, 220);
@@ -621,6 +690,18 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                 grid.style.animation = "";
             }, 260);
             updateEntryCard();
+
+            var badgeEl = document.getElementById("grid-badge");
+            if (badgeEl) {
+                var badgeObserver = new MutationObserver(function () {
+                    updateEntryCard();
+                });
+                badgeObserver.observe(badgeEl, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true,
+                });
+            }
         });
 
         /* ── Bind del challenges-entry-card ───────────────────────────── */
@@ -642,6 +723,65 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                         card.click();
                     }
                 });
+            }
+        });
+
+        // Observar cambios en el badge del grid para ocultar/mostrar la tarjeta de retos
+        function initChallengesCardObserver() {
+            const badgeEl = document.getElementById("grid-badge");
+            const challengesCard = document.getElementById(
+                "challenges-entry-card",
+            );
+            if (!badgeEl || !challengesCard) return;
+
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (
+                        mutation.type === "childList" ||
+                        mutation.type === "characterData"
+                    ) {
+                        const text = badgeEl.textContent.trim();
+                        // Si es ruta avanzada (SysAdmins & Devs), ocultar la tarjeta
+                        if (text.includes("SysAdmins & Devs")) {
+                            challengesCard.style.display = "none";
+                        } else {
+                            challengesCard.style.display = "block";
+                        }
+                    }
+                });
+            });
+            observer.observe(badgeEl, {
+                childList: true,
+                characterData: true,
+                subtree: true,
+            });
+            // También ejecutar una vez al inicio
+            const initialText = badgeEl.textContent.trim();
+            if (initialText.includes("SysAdmins & Devs")) {
+                challengesCard.style.display = "none";
+            } else {
+                challengesCard.style.display = "block";
+            }
+        }
+
+        // Llamar a esta función cuando el DOM esté listo y también cada vez que se muestre el grid
+        // Por simplicidad, la llamamos dentro del DOMContentLoaded y también al abrir el grid
+        document.addEventListener(
+            "DOMContentLoaded",
+            initChallengesCardObserver,
+        );
+        // También cuando se muestre el grid (por si el badge se actualiza después)
+        document.addEventListener("challenges:closed", function () {
+            // Al cerrar el panel de retos, el grid se vuelve visible; actualizar visibilidad
+            const badgeEl = document.getElementById("grid-badge");
+            const challengesCard = document.getElementById(
+                "challenges-entry-card",
+            );
+            if (badgeEl && challengesCard) {
+                const text = badgeEl.textContent.trim();
+                challengesCard.style.display = text.includes("SysAdmins & Devs")
+                    ? "none"
+                    : "block";
             }
         });
     })();

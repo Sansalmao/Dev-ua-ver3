@@ -1237,27 +1237,6 @@ canvas {
     transform: translateX(-2px);
 }
 
-.vc-btn-reset {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 14px;
-    border-radius: 10px;
-    background: var(--text);
-    color: var(--card-bg);
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background var(--transition-fast);
-}
-
-.vc-btn-reset:hover {
-    background: #333;
-}
-
 /* ── Divisor ── */
 .vc-divider {
     height: 1px;
@@ -1612,52 +1591,29 @@ canvas {
     border: 1px solid #e7e5e4;
 }
 
-/* Icono centrado debajo del badge */
-.vc-card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--accent-bg-soft);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--accent);
-    margin-bottom: 10px;
-}
-
-/* Título y descripción */
+/* Título */
 .vc-card-title {
     font-size: 13px;
     font-weight: 700;
     color: var(--text);
     line-height: 1.35;
-    margin-bottom: 6px;
-}
-
-.vc-card-desc {
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    flex: 1;
     margin-bottom: 14px;
+    flex: 1;
 }
 
-/* Footer: duración + botón */
+/* Footer: lang-icon a la izquierda, botón a la derecha */
 .vc-card-foot {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: auto;
     gap: 8px;
 }
 
-.vc-card-dur {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 4px;
+/* Lang icon en la card — hereda tamaño del sistema */
+.vc-card-foot .lang-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 /* Botones de acción */
@@ -2561,4 +2517,27 @@ canvas {
 
 .cf-code-block pre:hover .copy-btn {
     opacity: 1;
+}
+/* ── Language pill en las cards de retos ── */
+.vc-lang-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-bg-soft);
+    border: 1px solid var(--accent-border-light);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+}
+.vc-lang-pill .lang-icon {
+    width: 14px;
+    height: 14px;
+}
+.vc-lang-label {
+    color: var(--accent);
+    font-weight: 600;
 }
