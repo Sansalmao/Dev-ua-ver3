@@ -1,0 +1,361 @@
+---
+title: "Guide 6 - Programming in Internationalized Domain Names (IDNs) — Python"
+description: "Essential topics related to implementing the IDNA2008 protocol and exploring available compatible libraries in Python — covering pitfalls, homograph attacks, contextual rules, and TLD parsing."
+difficulty: "Básico"
+duration: "75 min"
+objective: "Explore IDNA2003 vs IDNA2008 differences, identify pitfalls, gain knowledge of IDNA2008-compatible libraries in Python, and understand how to parse active IDN TLDs."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+      - title: "Note on String Literals"
+        panelId: "note-about-the-utilization-of-unicode-string-literals"
+  - title: "Implementing IDNA2008"
+    items:
+      - title: "IDNA2008 Library in Python"
+        panelId: "implementing-idna2008"
+  - title: "Pitfalls of IDNA2003"
+    items:
+      - title: "Limited Character Set Support"
+        panelId: "pitfalls-of-idna2003-libraries-and-remediation-in-idna-2008"
+      - title: "Security Vulnerabilities — Homograph Attack"
+        panelId: "idna2003-security-vulnerabilities-homograph-attack"
+      - title: "Deficiency in Contextual Rules"
+        panelId: "idna2003-deficiency-in-enforcing-contextual-rules-for-characters"
+  - title: "Parsing IDN TLDs"
+    items:
+      - title: "Parsing tlds-alpha-by-domain.txt"
+        panelId: "parsing-the-tlds-alpha-by-domaintxt-file"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "reference"
+---
+
+## Objectives
+
+<div class="info-card">
+
+Essential topics related to implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Explore the differences between IDNA2003 and IDNA2008 standards and their impact on domain name handling and compatibility;
+- Identify the challenges and pitfalls associated with using IDNA2003 libraries in programming languages;
+- Gain knowledge of available IDNA2008 compatible libraries in popular programming languages and their features; and
+- Understand the process of parsing and extracting active IDN TLDs (Top-Level Domains) from a given data source.
+
+</div>
+
+---
+
+## Note About the Utilization of Unicode String Literals
+
+- The Unicode string literals utilized in the code examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
+- Throughout the module, Unicode string literals derived from various scripts have been used  in the examples code, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts..
+- The module provides the meanings of Unicode string literals used in the example codes in English, along with their transliterations, to aid learners in accurately pronouncing them.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples code.
+
+---
+
+## Implementing IDNA2008
+
+### Available Compatible Libraries in Programming Languages
+
+<span class="hl">Commonly used IDNA2008 libraries in Python:</span>
+
+- <span class="hl">Python:</span>
+  - <span class="hl">idna library:</span> to use this library, you need to install it using applicable package manager to your operating system.
+  - <span class="hl">Example: IDNA2008 library Usage in Python:</span>
+
+```bash
+pip install idna
+```
+
+<span class="hl">Example: IDNA2008 library usage in Python</span>
+
+The domain `تجربة-القبول-الشامل.موريتانيا` means "universal acceptance test" in Arabic and uses the `.موريتانيا` (Mauritania) ccTLD.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="idna1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="idna1">
+
+```python
+import idna
+
+# Encode Unicode domain name to Punycode (IDNA2008)
+punycode_domain = idna.encode('تجربة-القبول-الشامل.موريتانيا')
+print(punycode_domain)
+
+# Decode Punycode domain name back to Unicode
+unicode_domain = idna.decode(punycode_domain)
+print(unicode_domain)
+
+# First output:  b'xn-----ctdbabcfhu9c2b9l1acccr4c.xn--mgbah1a3hjkrd'
+# Second output: تجربة-القبول-الشامل.موريتانيا
+```
+
+  </div>
+</div>
+
+---
+
+## Pitfalls of IDNA2003 Libraries and Remediation in IDNA 2008
+
+<span class="hl">IDNA2003 Libraries — Limited Character Set Support</span>
+
+The domain `straße.de` (German for "street.de") exposes a key difference: IDNA2003 maps `ß` (sharp s) to `ss`, losing the original character. IDNA2008 preserves it correctly via Punycode.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python-2003" data-target="pitfall1"><span class="lang-icon lang-icon--python"></span>Python (IDNA2003)</button>
+    <button class="lang-btn" data-lang="python-2008" data-target="pitfall1"><span class="lang-icon lang-icon--python"></span>Python (IDNA2008)</button>
+  </div>
+  <div class="lang-block active" data-lang="python-2003" data-group="pitfall1">
+
+```python
+from idna import encode, decode
+import encodings.idna
+
+def idna2003_support():
+    unicode_domain_name = "straße.de"
+    try:
+        # Convert Unicode domain name to Punycode using IDNA2003
+        punycode_domain_name_idna2003 = encodings.idna.ToASCII(unicode_domain_name)
+        print("Punycode domain name (IDNA2003):", punycode_domain_name_idna2003)
+        # Attempt to convert Punycode domain name back to Unicode using IDNA2003
+        decoded_domain_name_idna2003 = encodings.idna.ToUnicode(punycode_domain_name_idna2003)
+        print("Decoded domain name (IDNA2003):", decoded_domain_name_idna2003)
+    except UnicodeError as e:
+        print("Error (IDNA2003):", str(e))
+
+idna2003_support()
+```
+
+  </div>
+  <div class="lang-block" data-lang="python-2008" data-group="pitfall1">
+
+```python
+from idna import encode, decode
+
+def idna2008_support():
+    unicode_domain_name = "straße.de"
+    try:
+        # Convert Unicode domain name to Punycode using IDNA2008
+        punycode_domain_name_idna2008 = encode(unicode_domain_name)
+        print("Punycode domain name (IDNA2008):", punycode_domain_name_idna2008)
+        # Attempt to convert Punycode domain name back to Unicode using IDNA2008
+        decoded_domain_name_idna2008 = decode(punycode_domain_name_idna2008)
+        print("Decoded domain name (IDNA2008):", decoded_domain_name_idna2008)
+    except UnicodeError as e:
+        print("Error (IDNA2008):", str(e))
+
+idna2008_support()
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output comparison:</span>
+
+```
+Demonstrating IDNA2003 Support:
+Punycode domain name (IDNA2003): b'strasse.de'
+Decoded domain name (IDNA2003): strasse.de
+
+Demonstrating IDNA2008 Support:
+Punycode domain name (IDNA2008): b'xn--strae-oqa.de'
+Decoded domain name (IDNA2008): straße.de
+```
+
+IDNA2003 silently maps `ß` → `ss`, losing the character. IDNA2008 correctly encodes it as `xn--strae-oqa.de` and restores `straße.de` on decode.
+
+</div>
+
+---
+
+## IDNA2003 Security Vulnerabilities — Homograph Attack
+
+<span class="hl">Example: IDNA2003 Security Vulnerabilities — Homograph Attack</span>
+
+The domain `example.cоm` contains a **Cyrillic `о`** (U+043E) that looks identical to the **Latin `o`**. IDNA2003 allows this through, enabling phishing. IDNA2008 raises an error.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python-2003" data-target="homograph1"><span class="lang-icon lang-icon--python"></span>Python (IDNA2003)</button>
+    <button class="lang-btn" data-lang="python-2008" data-target="homograph1"><span class="lang-icon lang-icon--python"></span>Python (IDNA2008 — prevention)</button>
+  </div>
+  <div class="lang-block active" data-lang="python-2003" data-group="homograph1">
+
+```python
+from idna import encode, decode
+
+def demonstrate_idna2003_homograph_attack():
+    # Visually similar characters: Latin 'o' and Cyrillic 'о' look identical
+    unicode_domain_name_homograph = "example.cоm"  # Cyrillic 'о' in 'com'
+    try:
+        # IDNA2003 encodes the mixed-script domain without raising an error
+        punycode_domain_name_idna2003 = (
+            unicode_domain_name_homograph.encode('idna').decode('utf-8')
+        )
+        print("Punycode domain name (IDNA2003):", punycode_domain_name_idna2003)
+    except UnicodeError as e:
+        print("Error (IDNA2003):", str(e))
+
+demonstrate_idna2003_homograph_attack()
+```
+
+  </div>
+  <div class="lang-block" data-lang="python-2008" data-group="homograph1">
+
+```python
+from idna import encode
+
+def demonstrate_idna2008_homograph_attack_prevention():
+    # Same mixed-script domain — IDNA2008 rejects it
+    unicode_domain_name_homograph = "example.cоm"  # Cyrillic 'о' in 'com'
+    try:
+        punycode_domain_name_idna2008 = encode(unicode_domain_name_homograph)
+        print("Punycode domain name (IDNA2008):", punycode_domain_name_idna2008)
+    except UnicodeError as e:
+        # IDNA2008 raises an error for mixed-script labels — homograph prevented
+        print("Error (IDNA2008):", str(e))
+
+demonstrate_idna2008_homograph_attack_prevention()
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+**Key insight:** IDNA2003 processes mixed-script domains silently — this is exploited in homograph phishing attacks. IDNA2008's script-aware processing raises `UnicodeError` for labels mixing scripts (e.g., Latin + Cyrillic), effectively preventing the attack.
+
+</div>
+
+---
+
+## IDNA2003 Deficiency in Enforcing Contextual Rules for Characters
+
+<span class="hl">Example: IDNA2003 vs IDNA2008 — Hyphen Handling</span>
+
+Domain names cannot begin with a hyphen (`-`). IDNA2008 enforces this contextual rule; IDNA2003 does not.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ctx1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ctx1">
+
+```python
+from idna import encode
+
+def demonstrate_idna2003_vs_idna2008_hyphen_handling():
+    # Hyphen at the beginning of the label — invalid in DNS
+    domain_name_hyphen_beginning = "-example.com"
+
+    try:
+        # IDNA2003 — may process without error
+        punycode_domain_name_idna2003 = (
+            domain_name_hyphen_beginning.encode('idna').decode('utf-8')
+        )
+        print("Punycode domain name (IDNA2003):", punycode_domain_name_idna2003)
+    except UnicodeError as e:
+        print("Error (IDNA2003):", str(e))
+
+    try:
+        # IDNA2008 — enforces contextual rules, raises error for leading hyphen
+        punycode_domain_name_idna2008 = encode(domain_name_hyphen_beginning)
+        print("Punycode domain name (IDNA2008):", punycode_domain_name_idna2008)
+    except UnicodeError as e:
+        print("Error (IDNA2008):", str(e))
+
+demonstrate_idna2003_vs_idna2008_hyphen_handling()
+```
+
+  </div>
+</div>
+
+---
+
+## Parsing the tlds-alpha-by-domain.txt File
+
+<span class="hl">Parsing the IANA `tlds-alpha-by-domain.txt` file to extract active IDN TLDs:</span>
+
+The IANA publishes a list of all active TLDs at `https://data.iana.org/TLD/tlds-alpha-by-domain.txt`. IDN TLDs are those beginning with `XN--` (the ACE prefix for Punycode-encoded TLDs).
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="tld1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="tld1">
+
+```python
+import requests
+import re
+
+# Download the IDN TLDs list from IANA
+url = "https://data.iana.org/TLD/tlds-alpha-by-domain.txt"
+
+try:
+    response = requests.get(url)
+    if response.status_code == 200:
+        content = response.text
+        # Extract only IDN TLDs (those starting with XN--)
+        idn_tlds = re.findall(r"XN--[A-Z0-9\-]+", content)
+        for tld in idn_tlds:
+            print(tld)
+    else:
+        print(f"Failed to retrieve data. Status code: {response.status_code}")
+except requests.exceptions.RequestException as e:
+    print(f"An error occurred: {e}")
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+**What the regex matches:** `XN--[A-Z0-9\-]+` selects all lines starting with `XN--` — the standard ACE prefix for Punycode-encoded TLDs. These correspond to IDN top-level domains such as `.موريتانيا` (`xn--mgbah1a3hjkrd`), `.中国` (`xn--fiqs8sirgfmh`), and `.бел` (`xn--90a3ac`).
+
+</div>
+
+---
+
+## Reference
+
+<div class="meta-card">
+
+<span class="hl">Reference</span>
+
+1. Klensin, J., & Vange, M. (2010). Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework. IETF RFC 5890. Retrieved from [https://www.rfc-editor.org/rfc/rfc5890.txt](https://www.rfc-editor.org/rfc/rfc5890.txt).
+2. Internationalizing Domain Names in Applications (IDNA) Review for New Unicode Versions. (2018). RFC 8753. Retrieved from [https://www.rfc-editor.org/rfc/rfc8753.xml](https://www.rfc-editor.org/rfc/rfc8753.xml).
+3. ICANN. (2011, September 2). Guidelines for the Implementation of Internationalized Domain Names, Version 3.0. Retrieved from [https://www.icann.org/resources/pages/idn-guidelines-2011-09-02-en](https://www.icann.org/resources/pages/idn-guidelines-2011-09-02-en).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

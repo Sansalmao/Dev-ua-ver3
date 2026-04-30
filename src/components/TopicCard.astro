@@ -8,7 +8,7 @@ interface Props {
     duracion: string;
     descripcion: string;
     estado: TopicState;
-    slug?: string; // ← opcional: si existe, el botón navega al módulo
+    slug?: string;
 }
 
 const { id, titulo, nivel, duracion, descripcion, estado, slug } = Astro.props;
@@ -28,8 +28,6 @@ const botonTexto =
           ? "$ continuar"
           : "$ iniciar";
 
-// Si el tema tiene slug, el destino es la página del módulo.
-// Si no, es "#" y el JS del grid maneja el click (marcar progreso).
 const href = slug ? `/modulos/${slug}` : "#";
 const esEnlace = !!slug;
 ---

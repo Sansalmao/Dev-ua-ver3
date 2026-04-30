@@ -89,11 +89,12 @@ export const RUTAS: Record<string, RutaData> = {
     temas: [
       {
         id: "ea-01",
-        titulo: "Guide 5 - Introducing Internationalized Domain Names (IDNs)",
+        titulo: "Guide 5 - Introducing Internationalized Domain Names (IDNs)",
         nivel: "Avanzado",
         descripcion:
           "Introduction to IDNs and their significance in the global Internet ecosystem.",
         icon: "server",
+        slug: "ea-01-ind-introduction",
       },
       {
         id: "ea-02",
@@ -103,6 +104,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.",
         icon: "mail",
+        slug: "ea-02-ind-programming",
       },
       {
         id: "ea-03",

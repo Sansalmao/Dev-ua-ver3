@@ -7,10 +7,10 @@ interface Props {
     exerciseItems?: string[];
     solutionLang?: "java" | "python" | "sql";
     solutionCode?: string;
+    solutions?: Partial<Record<"java" | "python" | "sql", string>>;
 }
 ---
 
-<!-- SHELL — oculto por defecto, activado por 'challenge-flow:open'-->
 <div id="view-challenge-flow" class="cf-shell" aria-hidden="true">
     <!-- ── Header ── -->
     <div class="cf-page-header">
@@ -24,7 +24,6 @@ interface Props {
                     applications.
                 </p>
             </div>
-            <!-- Botón volver a los retos -->
             <button
                 type="button"
                 class="cf-btn-back-retos"
@@ -48,7 +47,7 @@ interface Props {
         </div>
     </div>
 
-    <!-- ── Window card: macOS dots + flow buttons ── -->
+    <!-- ── Window card ── -->
     <div class="cf-window-card">
         <div class="cf-titlebar">
             <div class="cf-dot cf-dot-r" aria-hidden="true"></div>
@@ -60,7 +59,6 @@ interface Props {
                 Start building, submit solution and get feedback from the
                 community.
             </p>
-
             <div class="cf-btn-row" role="group" aria-label="Pasos del reto">
                 <button
                     class="cf-flow-btn cf-btn-active"
@@ -172,7 +170,6 @@ interface Props {
 
     <!-- ── Code section ── -->
     <div class="cf-code-section" id="cf-code-section">
-        <!-- Completion banner — oculto hasta cf-banner-show -->
         <div
             class="cf-completion-banner"
             id="cf-completion-banner"
@@ -214,7 +211,7 @@ interface Props {
     </div>
 </div>
 
-<!-- MODAL 1 — Comienza a construir -->
+<!-- ── MODAL 1 — Comienza a construir ── -->
 <div
     class="cf-overlay cf-overlay-hidden"
     id="cf-modal1"
@@ -289,7 +286,7 @@ interface Props {
     </div>
 </div>
 
-<!-- MODAL 2 — Enviar URL de la Solución -->
+<!-- ── MODAL 2 — Enviar URL de la Solución ── -->
 <div
     class="cf-overlay cf-overlay-hidden"
     id="cf-modal2"
@@ -318,7 +315,7 @@ interface Props {
                     viewBox="0 0 24 24"
                     fill="var(--text)"
                     aria-hidden="true"
-                    style="flex-shrink:0;"
+                    style="flex-shrink:0"
                 >
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.66-.22.66-.48v-1.69c-2.78.6-3.37-1.34-3.37-1.34-.45-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85.004 1.7.115 2.5.337 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.16.58.67.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"
@@ -326,9 +323,8 @@ interface Props {
                 </svg>
                 <div>
                     <h2 class="cf-modal-title" id="cf-m2-title">
-                        Enviar URL de la <span class="cf-badge-solucion"
-                            >Solución</span
-                        >
+                        Enviar URL de la
+                        <span class="cf-badge-solucion">Solución</span>
                     </h2>
                 </div>
             </div>
@@ -396,7 +392,7 @@ interface Props {
     </div>
 </div>
 
-<!-- TOAST (propio del flow, z-index independiente) -->
+<!-- ── TOAST ── -->
 <div class="cf-toast" id="cf-toast" role="status" aria-live="polite">
     <div class="cf-toast-dot" aria-hidden="true"></div>
     <span id="cf-toast-msg"></span>
@@ -406,7 +402,6 @@ interface Props {
     "use strict";
     (function () {
         var fase = 0;
-
         var currentModuleId = null;
         var currentChallengeId = null;
 
@@ -426,7 +421,7 @@ interface Props {
         var toast = document.getElementById("cf-toast");
         var toastMsg = document.getElementById("cf-toast-msg");
 
-        /* ── SVG para botones ─────────────────────────────────────────────── */
+        /* ── SVG para botones de flujo ────────────────────────────────────── */
         var SVG_CHECK =
             '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"' +
             ' style="flex-shrink:0;" aria-hidden="true">' +
@@ -439,14 +434,14 @@ interface Props {
             ' style="flex-shrink:0;" aria-hidden="true">' +
             '<path d="M8 2v9M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.8"' +
             ' stroke-linecap="round" stroke-linejoin="round"/>' +
-            '<path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-            "</svg>";
+            '<path d="M2 13h12" stroke="currentColor" stroke-width="1.8"' +
+            ' stroke-linecap="round"/></svg>';
 
         var ICO_ENVIAR =
             '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"' +
             ' style="flex-shrink:0;" aria-hidden="true">' +
-            '<path d="M14 2L2 6.5l5 2 2 5L14 2z" stroke="currentColor" stroke-width="1.8"' +
-            ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            '<path d="M14 2L2 6.5l5 2 2 5L14 2z" stroke="currentColor"' +
+            ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
         var ICO_SOL =
             '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"' +
@@ -475,26 +470,281 @@ interface Props {
                 ' style="flex-shrink:0;" aria-hidden="true">' +
                 '<path d="M2 13L6 8 2 3" stroke="currentColor" stroke-width="2"' +
                 ' stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<rect x="8" y="3" width="6" height="10" rx="1.5" fill="currentColor" opacity="0.6"/>' +
-                "</svg>";
+                '<rect x="8" y="3" width="6" height="10" rx="1.5"' +
+                ' fill="currentColor" opacity="0.6"/></svg>';
+
             setActive(btnStart, startIco, "Start Working");
+
             btnSubmit.className = "cf-flow-btn cf-btn-inactive";
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = ICO_SUBMIT + " $ Submit Solution";
+
             btnEnviar.className = "cf-flow-btn cf-btn-inactive";
             btnEnviar.disabled = true;
             btnEnviar.innerHTML = ICO_ENVIAR + " $ Enviar";
+
             btnSolucion.className = "cf-flow-btn cf-btn-inactive";
             btnSolucion.disabled = true;
             btnSolucion.innerHTML = ICO_SOL + " $ Solución";
+
             if (compBanner) compBanner.classList.remove("cf-banner-show");
             if (codeBlock) {
                 codeBlock.classList.remove("cf-code-visible");
                 codeBlock.setAttribute("aria-hidden", "true");
             }
             if (repoInput) repoInput.value = "";
+
             var codeSection = document.getElementById("cf-code-section");
             if (codeSection) codeSection.style.display = "none";
+        }
+
+        /* ── Helpers de código ────────────────────────────────────────────── */
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function processCodeEl(codeEl) {
+            if (codeEl.querySelector(".code-line")) return;
+            var raw = codeEl.textContent || "";
+            var lines = raw.split("\n");
+            if (lines[lines.length - 1] === "") lines.pop();
+
+            var html = lines
+                .map(function (line, i) {
+                    return (
+                        '<span class="code-line">' +
+                        '<span class="code-line-num">' +
+                        (i + 1) +
+                        "</span>" +
+                        '<span class="code-line-content">' +
+                        line +
+                        "</span>" +
+                        "</span>"
+                    );
+                })
+                .join("");
+
+            codeEl.innerHTML = html;
+        }
+
+        function copyText(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            }
+            return new Promise(function (resolve) {
+                var ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.cssText = "position:fixed;opacity:0";
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+                resolve();
+            });
+        }
+
+        function getCodeText(container) {
+            var activeBlock = container.querySelector(".lang-block.active");
+            var lines = activeBlock
+                ? activeBlock.querySelectorAll(".code-line-content")
+                : [];
+            if (lines.length > 0) {
+                return Array.from(lines)
+                    .map(function (l) {
+                        return l.textContent || "";
+                    })
+                    .join("\n");
+            }
+            return (
+                (activeBlock && activeBlock.querySelector("code")
+                    ? activeBlock.querySelector("code").textContent
+                    : null) ||
+                (activeBlock ? activeBlock.textContent : "") ||
+                ""
+            );
+        }
+
+        /* ── Pill fusionado para el bloque de solución ────────────────────── */
+        var LANG_LABELS = { java: "Java", python: "Python", sql: "SQL" };
+
+        function copyIconSvg() {
+            return (
+                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"' +
+                ' stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+                '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
+                '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+                "</svg>"
+            );
+        }
+
+        function buildCfPill(switcher) {
+            if (switcher.querySelector(".cs-pill")) return;
+
+            var blocks = Array.from(switcher.querySelectorAll(".lang-block"));
+            var langs = blocks.map(function (b) {
+                return b.dataset.lang || "";
+            });
+            var multiLang = langs.length > 1;
+            var activeLang = (
+                switcher.querySelector(".lang-block.active") || {}
+            ).dataset
+                ? switcher.querySelector(".lang-block.active").dataset.lang
+                : langs[0] || "java";
+
+            // Eliminar barra antigua si existe
+            var oldBar = switcher.querySelector(".lang-switcher");
+            if (oldBar) oldBar.remove();
+
+            // Dropdown items
+            var dropdownHtml = multiLang
+                ? '<div class="cs-dropdown" role="menu">' +
+                  langs
+                      .map(function (lang) {
+                          return (
+                              '<button class="cs-dd-item' +
+                              (lang === activeLang ? " active" : "") +
+                              '" data-lang="' +
+                              lang +
+                              '" type="button" role="menuitem">' +
+                              '<span class="lang-icon lang-icon--' +
+                              lang +
+                              '"></span>' +
+                              (LANG_LABELS[lang] || lang) +
+                              "</button>"
+                          );
+                      })
+                      .join("") +
+                  "</div>"
+                : "";
+
+            // Caret
+            var caretHtml = multiLang
+                ? '<svg class="cs-pill-caret" width="10" height="10" viewBox="0 0 10 10"' +
+                  ' fill="none" aria-hidden="true">' +
+                  '<path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.6"' +
+                  ' stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                : "";
+
+            // Pill HTML
+            var pillHtml =
+                '<div class="cs-pill-wrap">' +
+                '<div class="cs-pill">' +
+                '<button class="cs-pill-lang' +
+                (multiLang ? " cs-pill-lang--multi" : "") +
+                '"' +
+                ' type="button"' +
+                (multiLang
+                    ? ' aria-haspopup="true" aria-expanded="false"'
+                    : "") +
+                ' aria-label="Lenguaje: ' +
+                (LANG_LABELS[activeLang] || activeLang) +
+                '">' +
+                '<span class="lang-icon lang-icon--' +
+                activeLang +
+                '" data-role="pill-icon"></span>' +
+                '<span data-role="pill-label">' +
+                (LANG_LABELS[activeLang] || activeLang) +
+                "</span>" +
+                caretHtml +
+                "</button>" +
+                '<span class="cs-pill-sep" aria-hidden="true"></span>' +
+                '<button class="cs-pill-copy" type="button" aria-label="Copiar código">' +
+                copyIconSvg() +
+                '<span class="cs-copy-label"> </span>' +
+                "</button>" +
+                "</div>" +
+                dropdownHtml +
+                "</div>";
+
+            switcher.insertAdjacentHTML("afterbegin", pillHtml);
+
+            // ── Refs ──────────────────────────────────────────────────────
+            var pillWrap = switcher.querySelector(".cs-pill-wrap");
+            var langBtn = pillWrap.querySelector(".cs-pill-lang");
+            var copyBtn = pillWrap.querySelector(".cs-pill-copy");
+            var copyLabel = pillWrap.querySelector(".cs-copy-label");
+            var dropdown = pillWrap.querySelector(".cs-dropdown");
+            var ddItems = pillWrap.querySelectorAll(".cs-dd-item");
+
+            // ── Dropdown ──────────────────────────────────────────────────
+            if (multiLang && dropdown) {
+                langBtn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    var isOpen = dropdown.classList.toggle("open");
+                    langBtn.setAttribute(
+                        "aria-expanded",
+                        isOpen ? "true" : "false",
+                    );
+                });
+
+                document.addEventListener("click", function () {
+                    dropdown.classList.remove("open");
+                    langBtn.setAttribute("aria-expanded", "false");
+                });
+
+                ddItems.forEach(function (item) {
+                    item.addEventListener("click", function (e) {
+                        e.stopPropagation();
+                        var lang = item.dataset.lang || "";
+                        if (!lang) return;
+
+                        // Actualizar pill
+                        var icon = langBtn.querySelector(
+                            "[data-role='pill-icon']",
+                        );
+                        var label = langBtn.querySelector(
+                            "[data-role='pill-label']",
+                        );
+                        if (icon)
+                            icon.className = "lang-icon lang-icon--" + lang;
+                        if (label)
+                            label.textContent = LANG_LABELS[lang] || lang;
+                        langBtn.setAttribute(
+                            "aria-label",
+                            "Lenguaje: " + (LANG_LABELS[lang] || lang),
+                        );
+
+                        // Marcar item activo
+                        ddItems.forEach(function (i) {
+                            i.classList.remove("active");
+                        });
+                        item.classList.add("active");
+
+                        // Mostrar bloque correcto
+                        blocks.forEach(function (b) {
+                            b.classList.remove("active");
+                        });
+                        var target = switcher.querySelector(
+                            '.lang-block[data-lang="' + lang + '"]',
+                        );
+                        if (target) {
+                            target.classList.add("active");
+                            var code = target.querySelector("pre code");
+                            if (code) processCodeEl(code);
+                        }
+
+                        // Cerrar
+                        dropdown.classList.remove("open");
+                        langBtn.setAttribute("aria-expanded", "false");
+                    });
+                });
+            }
+
+            // ── Copiar ────────────────────────────────────────────────────
+            copyBtn.addEventListener("click", function () {
+                var text = getCodeText(switcher);
+                copyText(text).then(function () {
+                    copyBtn.classList.add("copied");
+                    copyLabel.textContent = "✓ ";
+                    setTimeout(function () {
+                        copyBtn.classList.remove("copied");
+                    }, 2000);
+                });
+            });
         }
 
         /* ── Inyección de contenido dinámico ─────────────────────────────── */
@@ -518,185 +768,66 @@ interface Props {
                     .join("");
             }
 
-            if (codeInject && data.solutionCode) {
-                var lang = data.solutionLang || "java";
-                var langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
-                var groupId = "cf-sol-" + Date.now();
+            if (!codeInject) return;
 
-                var switcherHtml =
-                    '<div class="code-switcher">' +
-                    '<div class="lang-switcher">' +
-                    '<button class="lang-btn active" data-lang="' +
-                    lang +
-                    '" data-target="' +
-                    groupId +
-                    '">' +
-                    '<span class="lang-icon lang-icon--' +
-                    lang +
-                    '"></span>' +
-                    langCap +
-                    "</button>" +
-                    "</div>" +
-                    '<div class="lang-block active" data-lang="' +
-                    lang +
-                    '" data-group="' +
-                    groupId +
-                    '">' +
-                    "<pre><code>" +
-                    escapeHtml(data.solutionCode) +
-                    "</code></pre>" +
-                    "</div>" +
-                    "</div>";
+            // ── Determinar lenguajes disponibles ──────────────────────────
+            var solutions = data.solutions || {};
+            var activeLang = data.solutionLang || "java";
 
-                codeInject.innerHTML = switcherHtml;
-                initCodeSwitcher(codeInject);
+            // Retrocompatibilidad: solutionCode (string único)
+            if (data.solutionCode && !solutions[activeLang]) {
+                solutions[activeLang] = data.solutionCode;
             }
-        }
 
-        function escapeHtml(str) {
-            return str
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
-        }
+            var langs = Object.keys(solutions);
+            if (langs.length === 0) return;
 
-        /* ── Funciones para el bloque de código (copiar, líneas, tabs) ───── */
-        function processCodeEl(codeEl) {
-            var raw = codeEl.textContent || "";
-            var lines = raw.split("\n");
-            if (lines[lines.length - 1] === "") lines.pop();
+            if (!solutions[activeLang]) activeLang = langs[0];
 
-            var html = lines
-                .map(function (line, i) {
-                    var num = String(i + 1);
+            // ── Construir bloques ─────────────────────────────────────────
+            var blocksHtml = langs
+                .map(function (lang) {
                     return (
-                        '<span class="code-line">' +
-                        '<span class="code-line-num">' +
-                        num +
-                        "</span>" +
-                        '<span class="code-line-content">' +
-                        line +
-                        "</span>" +
-                        "</span>"
+                        '<div class="lang-block' +
+                        (lang === activeLang ? " active" : "") +
+                        '" data-lang="' +
+                        lang +
+                        '">' +
+                        "<pre><code>" +
+                        escapeHtml(solutions[lang]) +
+                        "</code></pre>" +
+                        "</div>"
                     );
                 })
                 .join("");
 
-            codeEl.innerHTML = html;
-        }
+            // ── Switcher wrapper (sin barra — el pill la reemplaza) ───────
+            var switcherHtml =
+                '<div class="code-switcher">' + blocksHtml + "</div>";
 
-        function addCopyButton(pre) {
-            if (pre.querySelector(".copy-btn")) return;
+            codeInject.innerHTML = switcherHtml;
 
-            var btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "copy-btn";
-            btn.setAttribute("aria-label", "Copiar código");
-            btn.innerHTML =
-                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"' +
-                ' stroke="currentColor" stroke-width="2" aria-hidden="true">' +
-                '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
-                '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
-                "</svg>" +
-                "<span>Copiar</span>";
-
-            btn.addEventListener("click", function () {
-                var code = pre.querySelector("code");
-                var lines = code
-                    ? code.querySelectorAll(".code-line-content")
-                    : [];
-                var text =
-                    lines.length > 0
-                        ? Array.from(lines)
-                              .map(function (l) {
-                                  return l.textContent || "";
-                              })
-                              .join("\n")
-                        : (code ? code.textContent : pre.textContent) || "";
-
-                var spanEl = btn.querySelector("span");
-
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard
-                        .writeText(text)
-                        .then(function () {
-                            btn.classList.add("copied");
-                            if (spanEl) spanEl.textContent = "✓ Copiado";
-                            setTimeout(function () {
-                                btn.classList.remove("copied");
-                                if (spanEl) spanEl.textContent = "Copiar";
-                            }, 2000);
-                        })
-                        .catch(function () {
-                            fallbackCopy(text, btn, spanEl);
-                        });
-                } else {
-                    fallbackCopy(text, btn, spanEl);
-                }
-            });
-
-            pre.appendChild(btn);
-        }
-
-        function fallbackCopy(text, btn, spanEl) {
-            var ta = document.createElement("textarea");
-            ta.value = text;
-            ta.style.cssText = "position:fixed;opacity:0";
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            document.body.removeChild(ta);
-            btn.classList.add("copied");
-            if (spanEl) spanEl.textContent = "✓ Copiado";
-            setTimeout(function () {
-                btn.classList.remove("copied");
-                if (spanEl) spanEl.textContent = "Copiar";
-            }, 2000);
-        }
-
-        function initCodeSwitcher(container) {
-            container
-                .querySelectorAll(".lang-block pre")
-                .forEach(function (preEl) {
-                    var codeEl = preEl.querySelector("code");
-                    if (codeEl) processCodeEl(codeEl);
-                    addCopyButton(preEl);
+            // Procesar líneas de código
+            var switcher = codeInject.querySelector(".code-switcher");
+            switcher
+                .querySelectorAll(".lang-block pre code")
+                .forEach(function (code) {
+                    processCodeEl(code);
                 });
 
-            container.querySelectorAll(".lang-btn").forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    var group = btn.dataset.target;
-                    var lang = btn.dataset.lang;
-                    var switcher = btn.closest(".lang-switcher");
-                    if (switcher) {
-                        switcher
-                            .querySelectorAll(".lang-btn")
-                            .forEach(function (b) {
-                                b.classList.toggle(
-                                    "active",
-                                    b.dataset.lang === lang,
-                                );
-                            });
-                    }
-                    container
-                        .querySelectorAll(
-                            '.lang-block[data-group="' + group + '"]',
-                        )
-                        .forEach(function (block) {
-                            block.classList.toggle(
-                                "active",
-                                block.dataset.lang === lang,
-                            );
-                        });
-                });
-            });
+            // Construir pill fusionado
+            buildCfPill(switcher);
         }
 
         /* ── Modal helpers ────────────────────────────────────────────────── */
         function openModal(el) {
             el.classList.remove("cf-overlay-hidden");
             document.body.style.overflow = "hidden";
+            var first = el.querySelector("button, [href], input");
+            if (first)
+                setTimeout(function () {
+                    first.focus();
+                }, 50);
         }
 
         function closeModal(el) {
@@ -717,6 +848,8 @@ interface Props {
         }
 
         /* ── FLUJO DE BOTONES ─────────────────────────────────────────────── */
+
+        // PASO 1: Start Working
         if (btnStart) {
             btnStart.addEventListener("click", function () {
                 if (fase === 0) openModal(modal1);
@@ -734,6 +867,7 @@ interface Props {
             });
         }
 
+        // PASO 2: Submit Solution
         if (btnSubmit) {
             btnSubmit.addEventListener("click", function () {
                 if (fase === 1) openModal(modal2);
@@ -771,6 +905,7 @@ interface Props {
             });
         }
 
+        // PASO 3: Solución → banner + code block
         if (btnSolucion) {
             btnSolucion.addEventListener("click", function () {
                 if (fase !== 2) return;
@@ -788,42 +923,46 @@ interface Props {
                     );
                 }
 
+                var codeSection = document.getElementById("cf-code-section");
+                if (codeSection) codeSection.style.display = "block";
+
                 if (compBanner) {
-                    var codeSection =
-                        document.getElementById("cf-code-section");
-                    if (codeSection) codeSection.style.display = "block";
                     compBanner.classList.add("cf-banner-show");
                     compBanner.scrollIntoView({
                         behavior: "smooth",
                         block: "nearest",
                     });
                 }
+
                 setTimeout(function () {
                     if (codeBlock) {
                         codeBlock.classList.add("cf-code-visible");
                         codeBlock.removeAttribute("aria-hidden");
                     }
                 }, 400);
+
                 showToast("¡Reto completado!");
             });
         }
 
-        // Cerrar modales con backdrop / Escape
-        if (modal1)
+        /* ── Cerrar modales con backdrop / Escape ─────────────────────────── */
+        if (modal1) {
             modal1.addEventListener("click", function (e) {
                 if (e.target === modal1) closeModal(modal1);
             });
-        if (modal2)
+        }
+        if (modal2) {
             modal2.addEventListener("click", function (e) {
                 if (e.target === modal2) closeModal(modal2);
             });
+        }
+
         document.addEventListener("keydown", function (e) {
-            if (e.key === "Escape") {
-                if (modal1 && !modal1.classList.contains("cf-overlay-hidden"))
-                    closeModal(modal1);
-                if (modal2 && !modal2.classList.contains("cf-overlay-hidden"))
-                    closeModal(modal2);
-            }
+            if (e.key !== "Escape") return;
+            if (modal1 && !modal1.classList.contains("cf-overlay-hidden"))
+                closeModal(modal1);
+            if (modal2 && !modal2.classList.contains("cf-overlay-hidden"))
+                closeModal(modal2);
         });
 
         /* ── Botón Volver a los Retos ─────────────────────────────────────── */
@@ -837,6 +976,7 @@ interface Props {
         document.addEventListener("challenge-flow:open", function (e) {
             if (!shell) return;
             resetFlow();
+
             var data =
                 e.detail && e.detail.challengeData
                     ? e.detail.challengeData
@@ -846,6 +986,7 @@ interface Props {
             currentChallengeId = data.challengeId || null;
 
             injectContent(data);
+
             shell.removeAttribute("aria-hidden");
             shell.classList.add("vc-visible");
             shell.scrollTop = 0;

@@ -727,6 +727,7 @@
     function construirCard(
         t: (typeof RUTAS)[string]["temas"][number],
         esAvanzada: boolean = false,
+        index: number = 0, // ← nuevo parámetro
     ): string {
         const est = store.temas[t.id] ?? { visitado: false, completado: false };
         const nivelClass = t.nivel === "Avanzado" ? "avanzado" : "basico";
@@ -734,8 +735,9 @@
         let botonHtml = "";
         let progHtml = "";
 
-        if (esAvanzada) {
-            // Botón deshabilitado para rutas avanzadas
+        const bloqueado = esAvanzada && index >= 2;
+
+        if (bloqueado) {
             botonHtml = `
                 <button type="button" class="btn-iniciar btn-disabled" disabled data-id="${t.id}">
                     🔒 Próximamente
@@ -841,7 +843,7 @@
 
         // Pasar esAvanzada a construirCard
         topicsCont.innerHTML = ruta.temas
-            .map((t) => construirCard(t, esAvanzada))
+            .map((t, idx) => construirCard(t, esAvanzada, idx))
             .join("");
         actualizarProgreso(ruta.temas);
 
@@ -856,7 +858,7 @@
                         card.style.transform = "translateY(0)";
                     }, 40);
                 });
-            if (!esAvanzada) registrarBotones(ruta.temas);
+            registrarBotones(ruta.temas);
             return;
         }
 

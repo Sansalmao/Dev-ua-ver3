@@ -1,0 +1,403 @@
+---
+title: "Guide 5 - Introducing Internationalized Domain Names (IDNs)"
+description: "Introduction to IDNs and their significance in the global Internet ecosystem — covering TLDs, Punycode, IDNA2003/2008, DNS configuration, and network troubleshooting."
+difficulty: "Básico"
+duration: "90 min"
+objective: "Understand IDN concepts, the Punycode algorithm, DNS configuration for non-ASCII domain names, IDNA standards, and network troubleshooting commands for IDNs."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+  - title: "DNS & TLDs"
+    items:
+      - title: "Root Zone: TLD, gTLD, ccTLD"
+        panelId: "introducing-the-root-zone-tld-gtld-cctld"
+      - title: "What is IDN?"
+        panelId: "what-is-idn"
+      - title: "Why do we need IDNs?"
+        panelId: "why-do-we-need-idns"
+  - title: "Unicode Domain Names"
+    items:
+      - title: "Unicode Based Domain Names"
+        panelId: "unicode-based-domain-names"
+      - title: "Punycode Algorithm (RFC 3492)"
+        panelId: "punycode-algorithm-rfc-3492"
+      - title: "Normalization of Domain Name Strings"
+        panelId: "normalization-of-domain-name-strings-or-labels"
+      - title: "Normalization Requirements"
+        panelId: "normalization-requirements-of-domain-name-strings-or-labels"
+      - title: "Punycode Algorithm Steps"
+        panelId: "example-punycode-algorithm-steps"
+  - title: "DNS Configuration"
+    items:
+      - title: "Configuring DNS for IDN-Encoded Domain Names"
+        panelId: "configuring-dns-for-idn-encoded-domain-names"
+      - title: "Key Steps for Non-ASCII Domains"
+        panelId: "configuring-dns-for-non-ascii-domain-names-key-steps"
+  - title: "IDNA Standards"
+    items:
+      - title: "IDNA 2003"
+        panelId: "internationalized-domain-names-in-applications-idna-2003"
+      - title: "IDNA 2008"
+        panelId: "internationalized-domain-names-in-applications-idna-2008"
+      - title: "Bidi Text in IDNA 2008"
+        panelId: "ensuring-proper-display-how-idna2008-manages-bidirectional-text-ordering"
+      - title: "Compatibility Issues: IDNA 2003 vs 2008"
+        panelId: "potential-compatibility-issues-between-idna-2008-and-idna-2003"
+      - title: "IDN Support in FTP, HTTP, HTTPS"
+        panelId: "idn-support-in-ftp-http-and-https-addressing-limitations"
+  - title: "Network Troubleshooting"
+    items:
+      - title: "Troubleshooting Commands for IDNs"
+        panelId: "network-troubleshooting-commands-for-idns"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "reference"
+---
+
+## Objectives
+
+<div class="info-card">
+
+This module provides an introduction to IDNs and their significance in the global Internet ecosystem.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Understand the concept and significance of Internationalized Domain Names (IDNs) in the domain name system (DNS).
+- Identify the different types of top-level domains (TLDs), including generic TLDs (gTLDs) and country-code TLDs (ccTLDs), and their role in organizing domain names.
+- Explain the process of converting Unicode-based domain names into an ASCII-compatible format using the Punycode Algorithm (RFC 3492).
+- Configure DNS servers to support IDN-encoded domain names, ensuring accurate resolution and functionality.
+- Differentiate between IDNA2003 and IDNA2008 standards and their impact on handling IDNs.
+- Use network troubleshooting commands such as `dig`, `traceroute`, `nslookup`, `mtr`, and `ping` to effectively diagnose and resolve IDN-related issues specifically in the context of U-labels.
+
+</div>
+
+---
+
+## Introducing the Root Zone: TLD, gTLD, ccTLD
+
+<details>
+<summary>Top-level domains (TLDs):</summary>
+
+- The highest level in the DNS tree structure.
+  - Country Code Top-Level Domains (ccTLDs): ccTLDs are TLDs that are specifically designated for individual countries or geographic regions.
+  - Generic Top-Level Domains (gTLDs): gTLDs are TLDs that are not inherently tied to any specific country or geographic region.
+
+</details>
+
+<details>
+<summary>What is the Root Zone?</summary>
+
+- The root zone refers to the highest level in the hierarchical structure of the Domain Name System (DNS).
+- It is the starting point for resolving domain names on the internet.
+- In summary, the root zone is the highest level in the DNS hierarchy and contains the authoritative information about the TLDs.
+
+</details>
+
+---
+
+## What is IDN?
+
+- IDN stands for Internationalized Domain Name:
+
+  - It enable internet users to register and access domain names in their native languages.
+  - Makes the internet more inclusive and accessible to individuals and communities worldwide.
+  - Traditionally, domain names were limited to a set of characters from the ASCII character set.
+  - IDNs, domain names can now include characters from a wide range of scripts, such as Cyrillic, Arabic, Chinese, Japanese, Korean, and many others.
+
+---
+
+## Why do we need IDNs?
+
+- IDNs have several important benefits:
+  - Linguistic Diversity.
+  - Cultural and Linguistic Preservation.
+  - Localized Internet Presence.
+  - Localized Email Addresses.
+  - User-Friendly Experience.
+
+---
+
+## Unicode Based Domain Names
+
+Unicode-based domain names refer to domain names created from Unicode characters, allowing for representation in various scripts and languages.
+
+- A-labels (ASCII labels):
+    - ASCII-compatible encoding of Unicode-based domain names.
+    - Example: the A-label representation of the U-label "экзампл.ком" (in Cyrillic script) would be "xn--80aniges7g.xn--j1aef" (using ASCII characters).
+    - A-labels are used for internal processing and storage within the DNS infrastructure
+- U-labels (Unicode labels):
+    - U-labels are the human-readable representation of Unicode-based domain names.
+    - They consist of Unicode characters encoded in UTF-8 or UTF-16 format.
+    - U-labels allow domain names to be registered and displayed in languages such as Chinese, Arabic, Cyrillic, and others.
+    - The U-label 'ουτοπία.ευ' represents the Greek-based domain name 'ουτοπία.ευ’ (using Greek characters).
+
+---
+
+## Punycode Algorithm (RFC 3492)
+
+- It is a vital component in the implementation of Internationalized Domain Names (IDNs).
+- It prrovides a standardized method for converting Unicode-based domain names.
+- Punycode algorithm enables the seamless integration of IDNs.
+- The Punycode algorithm allows non-ASCII characters to be represented in a compatible format within the DNS infrastructure.
+
+---
+
+## Normalization of Domain Name Strings or Labels
+
+- It refers to the process of transforming and standardizing domain names to a consistent format.
+- Some key aspects related to the normalization of domain name strings or labels:
+
+  - <span class="hl">Unicode Normalization:</span> Unicode normalization, specifically Unicode Normalization Form C (NFC) or Normalization Form D (NFD), is employed to convert domain names to a standardized Unicode representation.
+  - <span class="hl">Case Normalization:</span> Domain names are case-insensitive, meaning that the case of letters in a domain name does not affect its resolution.
+  - <span class="hl">IDN Normalization:</span> To ensure interoperability, IDNs undergo normalization.
+    - Unicode Normalization Form C (NFC).
+    - Normalization Form D (NFD)
+  - <span class="hl">Punycode Encoding:</span>
+    - IDNs encoded in Punycode are first decoded to obtain the original Unicode representation.
+    - Normalization is then applied to the Unicode form of the domain name.
+
+---
+
+## Normalization Requirements of Domain Name Strings or Labels
+
+- Some of the factors that make domain name normalization unique:
+    - Case Insensitivity.
+    - ASCII Compatibility.
+    - Label Separators.
+    - **Unicode Normalization:**
+        - NFC
+    - **DNS Considerations:**
+        - Label Length- a label needs to be a maximum of 63 characters long.
+        - Domain Name Length-FQDN needs to be a maximum of 253 characters long.
+        - Path Length- a complete domain name path needs to be a maximum of 255 characters long.
+
+---
+
+## Example Punycode Algorithm Steps
+
+<div class="info-card">
+
+- Punycode algorithm using an example domain name in Arabic script: العربية.com         (the word "Arabic" in Arabic script):
+    - **Input:** the Unicode input string is العربية.com.
+    - **Prepare the Input:** Apply NFKC
+    - **Encoding**
+    - **ASCII Conversion**
+    - **Basic Encoding**
+    - **Handling Non-Basic Code Points**
+    - **Handling Bias**
+    - **Output:** the Punycode representation for العربية.com would be "xn—mgba3a4f16a.com"
+    - **Conversion Complete:** the resulting Punycode representation, "xn--mgba3a4f16a.com" is now ACE, and it can be used within the existing DNS infrastructure.
+
+</div>
+
+---
+
+## Configuring DNS for IDN-Encoded Domain Names
+
+- <span class="hl">Configure DNS for IDN-encoded domain names:</span>
+
+  - Selecting the appropriate encoding.
+  - Mapping-establishing a relationship between the IDN-encoded domain name and its corresponding ASCII-compatible representation (Punycode).
+  - Configuring DNS records and name servers accordingly.
+
+---
+
+## Configuring DNS for non ASCII Domain Names Key Steps
+
+- <span class="hl">Verify Registrar Support:</span> Ensure that your domain name registrar supports Internationalized Domain Names (IDNs).
+- <span class="hl">Choose IDN Encoding:</span> Select the appropriate encoding mechanism for representing non-ASCII characters in your domain name. 
+    - The standard encoding scheme is Punycode, which converts non-ASCII characters into an ASCII-compatible format.
+- <span class="hl">Encode the Domain Name:</span> Apply the chosen encoding mechanism (e.g., Punycode) to convert your domain name with non-ASCII characters into an ASCII-compatible representation.
+- <span class="hl">Configure DNS Records:</span> Set up DNS records for your IDN-encoded domain name. 
+- <span class="hl">Name Server Configuration:</span> Configure the name servers for your domain to handle IDN-encoded domain names.
+- <span class="hl">Test and Validate:</span> Perform thorough testing and validation of your DNS configuration to ensure that the IDN-encoded domain name resolves correctly.
+
+---
+
+## Internationalized Domain Names in Applications (IDNA) 2003
+
+<div class="info-card">
+
+- Key features of IDNA2003 include:
+    - <span class="hl">Punycode Encoding:</span> IDNA2003 utilizes Punycode encoding to represent non-ASCII characters in an ASCII-compatible format.
+    - <span class="hl">Unicode Normalization:</span> IDNA2003 requires Unicode normalization to ensure consistency and avoid variations in equivalent character sequences.
+    - <span class="hl">Mapping Characters:</span> IDNA2003 has specific rules for mapping characters that are not allowed in domain names.
+    - <span class="hl">Label Length Limit:</span> DNA2003 imposes a limit of 63 characters for each label within an IDN. This limit includes both ASCII and non-ASCII characters.
+
+</div>
+
+<div class="info-card">
+
+- It has critical limitations:
+    - <span class="hl">Limited Character Set or Restricted Character Repertoire:</span> IDNA2003 only supports a limited set of Unicode characters known as Unicode 3.2
+    - <span class="hl">Language-specific Rules:</span> IDNA2003 uses language-specific rules for handling certain characters.
+    - <span class="hl">It leads to inconsistencies and conflicts:</span> IDNA2003 does not have built-in script awareness.
+    - <span class="hl">Lack of Script Awareness:</span> IDNA2003 uses a normalization process called Nameprep, which is based on Unicode 3.2.
+    - <span class="hl">Limited Normalization:</span> IDNA2003 uses a normalization process called Nameprep, which is based on Unicode 3.2.
+    - <span class="hl">Security Vulnerabilities:</span> IDNA2003 introduced security concerns related to homograph attacks.
+    - <span class="hl">Lack of error handling:</span> IDNA2003 does not provide explicit error handling mechanisms.
+
+</div>
+
+---
+
+## Internationalized Domain Names in Applications (IDNA) 2008
+
+<div class="info-card">
+
+- Key features and Improvements of IDNA2008 include:
+    - <span class="hl">Extended Character Set:</span> Character set based on Unicode 5.2.
+    - <span class="hl">Backward Compatibility:</span> While IDNA2008 is not fully backward compatible with IDNA2003, efforts were made to minimize disruption during the transition.
+    - <span class="hl">Script-aware Processing:</span> IDNA2008 introduces script awareness.
+    - <span class="hl">Contextual Rules:</span> IDNA2008 introduced contextual rules for certain characters.
+    - <span class="hl">Enhanced Normalization:</span> IDNA2008 improves the normalization process (NFC, NFD, NFKC, NFKD).
+    - <span class="hl">Bidi (bidirectional) Support:</span> IDNA2008 addresses bidirectional text handling
+    - <span class="hl">Security enhancements:</span> IDNA2008 introduces several security measures to mitigate homograph attacks.
+    - <span class="hl">Error handling:</span> IDNA2008 provides explicit error handling mechanisms.
+
+</div>
+
+---
+
+## Ensuring Proper Display: How IDNA2008 Manages Bidirectional Text Ordering
+
+<div class="info-card">
+
+- <span class="hl">To ensure the accurate ordering and representation of mixed-script domain names, IDNA2008 implements the following steps:</span>
+
+  - <span class="hl">Directional Formatting Characters (DFCs):</span> IDNA2008 uses Directional Formatting Characters (DFCs) to control the directionality of text within a domain name.
+  - <span class="hl">RAL and LAL Labels:</span> In IDNA2008, a domain name is divided into labels separated by dots. Each label can be either a Right-to-Left (RTL) label (RAL) or a Left-to-Right (LTR) label (LAL).
+  - <span class="hl">RTL Embedding and LTR Embedding:</span>  IDNA2008 introduces the RTL Embedding (RLE) and LTR Embedding (LRE) DFCs.
+  - <span class="hl">Punctuation Handling:</span> IDNA2008 defines rules for handling punctuation marks and symbols within bidi text.
+  - <span class="hl">Contextual Rules:</span> IDNA2008 incorporates contextual rules to determine the correct ordering of characters within a label.
+
+</div>
+
+---
+
+## Potential Compatibility Issues between IDNA 2008 and IDNA 2003
+
+<div class="info-card">
+
+- <span class="hl">IDNA 2003 Vs 2008:</span> there are some cases where differences in the handling and interpretation of certain characters- some examples.
+    - <span class="hl">Character Set Differences:</span> IDNA2008 includes an expanded character set compared to IDNA2003.
+    - <span class="hl">Unicode Normalization:</span> IDNA2008 requires Unicode normalization (NFC or NFKC) before encoding domain names.
+    - <span class="hl">Contextual Rules:</span> IDNA2008 introduces refined contextual rules for character handling, especially in the context of bidi text.
+    - <span class="hl">Error Handling:</span> IDNA2008 provides more explicit error handling mechanisms compared to IDNA2003.
+    - <span class="hl">Mapping and Compatibility:</span> IDNA2008 introduced improved mapping and compatibility mechanisms for visually similar characters.
+
+</div>
+
+---
+
+## IDN Support in FTP, HTTP, and HTTPS: Addressing the Limitations.
+
+<div class="info-card">
+
+- <span class="hl">IDNA  2003 Vs 2008:</span> there are some cases where differences in the handling and interpretation of certain characters- some examples.
+    - <span class="hl">FTP (File Transfer Protocol):</span>
+        -  Limitations on character encoding.
+    - <span class="hl">HTTP (Hypertext Transfer Protocol</span>
+        - Limitations on character encoding.
+    - <span class="hl">HTTPS (HTTP Secure):</span>
+        - Inherits the same limitations as HTTP.
+
+</div>
+
+<div class="obs-card">
+
+**Note:** While there are limitations in directly supporting IDNs in protocols like FTP, HTTP, and HTTPS, the use of Punycode encoding allows for the representation and usage of IDNs in these protocols.
+
+</div>
+
+---
+
+## Network Troubleshooting Commands for IDNs
+
+<div class="info-card">
+
+-  <span class="hl">dig (Domain Information Groper):</span>
+    - <span class="hl">Usage Example:</span> Suppose you want to query information for the U-label                   "普遍适用测试.我爱你"
+    - Convert it to Punycode (A-label) format:
+           "xn—tkvs6ms8gqpywye3ma.xn—6qq986b3xl".
+            dig  xn--tkvs6ms8gqpywye3ma.xn--6qq986b3xl
+
+</div>
+
+<div class="info-card">
+    
+-  <span class="hl">Traceroute:</span>
+    - <span class="hl">Usage Example:</span> you can use traceroute in both  U-labels orA-labels (Punycode):
+    - <span class="hl">traceroute</span> 普遍适用测试.我爱你
+    - <span class="hl">traceroute</span> xn—tkvs6ms8gqpywye3ma.xn--6qq986b3xl
+
+</div>
+
+<div class="info-card">
+
+-  <span class="hl">nslookup (Name Server Lookup):</span>
+    - <span class="hl">Usage Example:</span> for instance to query information for the U-label                              "普遍适用测试.我爱你".
+    - Convert it to Punycode (A-label) format: "xn—tkvs6ms8gqpywye3ma.xn—6qq986b3xl".
+    - <span class="hl">nslookup</span> xn--tkvs6ms8gqpywye3ma.xn—6qq986b3xl
+
+</div>
+
+<div class="info-card">
+
+-  <span class="hl">mtr (My Traceroute):</span>
+    - <span class="hl">Usage Example:</span> for instance to diagnose network issues with the U-label                “普遍适用测试.我爱你".
+    - convert it to Punycode representation as  “xn—tkvs6ms8gqpywye3ma.xn—6qq986b3xl”.
+    - <span class="hl">mtr</span> xn—tkvs6ms8gqpywye3ma.xn--6qq986b3xl
+
+</div>
+
+<div class="info-card">
+
+- <span class="hl">Ping:</span>
+    - <span class="hl">ping</span> 普遍适用测试.我爱你
+    - <span class="hl">ping</span> xn--tkvs6ms8gqpywye3ma.xn--6qq986b3xl
+
+</div>
+
+---
+
+## Reference
+
+<div class="meta-card">
+
+<span class="hl">Reference</span>
+
+1.  Internet Corporation for Assigned Names and Numbers (ICANN). (2023, October 4). Top-level domains (TLDs). Retrieved from [https://www.icann.org/resources/pages/tlds-2012-02-25-en](https://www.icann.org/resources/pages/tlds-2012-02-25-en).
+2. ICANN. (2023, November). Guidelines for the Implementation of Internationalized Domain Names, Version 3.0. Retrieved November 25, 2023, from [https://www.icann.org/resources/pages/idn-guidelines-2011-09-02-en](https://www.icann.org/resources/pages/idn-guidelines-2011-09-02-en).
+3. Internet Assigned Numbers Authority (IANA). (2022, May 23). Root zone. Retrieved from [ https://www.iana.org/domains/root](https://www.iana.org/domains/root).
+4. International Corporation for Assigned Names and Numbers (ICANN). (2023, October 4). Internationalized Domain Names (IDNs). Retrieved from [https://www.icann.org/resources/pages/idn-2012-02-25-en](https://www.icann.org/resources/pages/idn-2012-02-25-en).
+5. International Corporation for Assigned Names and Numbers (ICANN). (2023, October 4). Unicode-based domain names (IDNs). Retrieved from [https://www.icann.org/resources/pages/idn-2012-02-25-en](https://www.icann.org/resources/pages/idn-2012-02-25-en).
+6. Alvestrand, H., & Rose, M. (2003, March). Punycode: A Bootstring encoding of Unicode for Internationalized Domain Names in Applications (IDNA). IETF. [https://doi.org/10.17487/RFC3492](https://doi.org/10.17487/RFC3492).
+7. Internet Engineering Task Force (IETF). (2003, March). Internationalizing Domain Names in Applications (IDNA): Requirements and Solutions. Retrieved from [https://doi.org/10.17487/RFC3492](https://doi.org/10.17487/RFC3492).
+8. Internet Engineering Task Force (IETF). (2008, June). Internationalizing Domain Names in Applications (IDNA): Current Status. Retrieved from [https://doi.org/10.17487/RFC5893](https://doi.org/10.17487/RFC5893)
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

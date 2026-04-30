@@ -5,7 +5,7 @@ import BreadCrumb from "../components/BreadCrumb.astro";
 import PageHeader from "../components/PageHeader.astro";
 import MetadataCard from "../components/MetadataCard.astro";
 import TabsNav from "../components/TabsNav.astro";
-import TabsPanel from "../components/TabsPanel.astro"; // ← nuevo
+import TabsPanel from "../components/TabsPanel.astro";
 import type { ModuleSection } from "../lib/module-schema";
 
 interface Props {
@@ -39,10 +39,6 @@ const {
 } = Astro.props;
 
 const hasNav = sections.length > 0;
-
-// El defaultPanel es el panelId del primer ítem de la primera sección.
-// Se pasa a TabsPanel para que active ese panel al cargar sin esperar
-// el primer click del usuario.
 const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
 ---
 
@@ -84,7 +80,6 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
             {
                 hasNav && (
                     <aside class="module-sidebar">
-                        {/* TabsNav con el primer panel activo por defecto */}
                         <TabsNav
                             sections={sections}
                             activePanel={defaultPanel}
@@ -96,17 +91,10 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
             <div class="module-content">
                 {
                     hasNav ? (
-                        /*
-                         * Con navegación: el slot se renderiza dentro de TabsPanel,
-                         * que lo segmenta en paneles y escucha los eventos tabchange.
-                         */
                         <TabsPanel defaultPanel={defaultPanel}>
                             <slot />
                         </TabsPanel>
                     ) : (
-                        /*
-                         * En módulos simples el contenido se muestra
-                         * completo sin segmentar.*/
                         <slot />
                     )
                 }
@@ -115,64 +103,37 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
     </div>
 
     <script>
-        // ═══════════════════════════════════════════════════════════════════════
-        // NÚMEROS DE LÍNEA + FOLD (acoplamiento de bloques {}, [], ())
-        // ═══════════════════════════════════════════════════════════════════════
-        //
-        // processCodeBlock():
-        //   1. Divide el innerHTML del <code> por \n
-        //   2. Detecta líneas que abren bloque ({ [ ( al final) para añadir
-        //      una flecha ▶ de fold en el gutter
-        //   3. Envuelve cada línea en:
-        //        <span class="code-line [code-line--foldable]" data-fold-id="N">
-        //          <span class="code-line-num">
-        //            [<button class="fold-btn">▶</button>]
-        //            N
-        //          </span>
-        //          <span class="code-line-content">...</span>
-        //        </span>
-        //   4. Las líneas interiores de un bloque foldable reciben
-        //      data-fold-child="N" para poder ocultarlas todas al colapsar.
-        //   5. join("") — sin \n entre spans, elimina las líneas vacías
-        //      que aparecían entre cada línea de código.
+        // ═══════════════════════════════════════════════════════════════════
+        // NÚMEROS DE LÍNEA + FOLD
+        // ═══════════════════════════════════════════════════════════════════
 
-        // Abre bloque: termina en { o [ o ( (ignorando espacios y comentarios)
-        const OPENS = /[{\[(]\s*(?:\/\/.*)?(?:\/\*.*)?$/;
-        // Cierra bloque: empieza en } o ] o )
-        const CLOSES = /^\s*[}\])]/;
+        const OPENS = /[{$$(]\s*(?:\/\/.*)?(?:\/\*.*)?$/;
+        const CLOSES = /^\s*[}$$)]/;
 
         function processCodeBlock(codeEl: HTMLElement) {
             if (codeEl.querySelector(".code-line")) return;
 
             const rawHtml = codeEl.innerHTML;
             const lines = rawHtml.split("\n");
-
-            // Quitar trailing newline vacío del fenced block
             if (lines.length > 0 && lines[lines.length - 1].trim() === "") {
                 lines.pop();
             }
 
-            // ── Detectar bloques foldables ─────────────────────────────────
-            // Cada entrada: { open: lineIndex, close: lineIndex }
             type FoldRange = { open: number; close: number };
             const foldRanges: FoldRange[] = [];
             const stack: number[] = [];
 
             lines.forEach((lineHtml, i) => {
-                const text = lineHtml.replace(/<[^>]+>/g, ""); // strip tags
+                const text = lineHtml.replace(/<[^>]+>/g, "");
                 if (OPENS.test(text)) stack.push(i);
                 if (CLOSES.test(text) && stack.length > 0) {
                     const openIdx = stack.pop()!;
-                    // Solo registrar si el bloque tiene >1 línea interior
-                    if (i - openIdx > 1) {
+                    if (i - openIdx > 1)
                         foldRanges.push({ open: openIdx, close: i });
-                    }
                 }
             });
 
-            // Mapa: lineIndex → foldId (para líneas que abren bloque)
             const foldOpeners = new Map<number, number>();
-            // Mapa: lineIndex → Set<foldId> (para líneas interiores)
             const foldChildren = new Map<number, Set<number>>();
 
             foldRanges.forEach((range, foldId) => {
@@ -183,7 +144,6 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                 }
             });
 
-            // ── Construir HTML de las líneas ───────────────────────────────
             const html = lines
                 .map((lineHtml, i) => {
                     const num = i + 1;
@@ -206,12 +166,10 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                         .filter(Boolean)
                         .join(" ");
 
-                    // Flecha de fold — solo en líneas que abren bloque
                     const foldBtn = isFoldable
                         ? `<button class="fold-btn" aria-label="Colapsar bloque" data-fold-target="${foldId}">` +
                           `<svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true">` +
-                          `<path d="M2 1l4 3-4 3V1z"/>` +
-                          `</svg></button>`
+                          `<path d="M2 1l4 3-4 3V1z"/></svg></button>`
                         : "";
 
                     return (
@@ -221,11 +179,10 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                         `</span>`
                     );
                 })
-                .join(""); // ← join("") sin \n evita líneas vacías entre spans
+                .join("");
 
             codeEl.innerHTML = html;
 
-            // ── Listeners de fold ──────────────────────────────────────────
             codeEl
                 .querySelectorAll<HTMLButtonElement>(".fold-btn")
                 .forEach((btn) => {
@@ -236,12 +193,9 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                             `.code-line[data-fold-id="${foldId}"]`,
                         );
                         if (!opener) return;
-
                         const isCollapsed = opener.classList.toggle(
                             "code-line--collapsed",
                         );
-
-                        // Ocultar/mostrar todas las líneas hijas
                         codeEl
                             .querySelectorAll<HTMLElement>(
                                 `[data-fold-child~="${foldId}"]`,
@@ -249,8 +203,6 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                             .forEach((child) => {
                                 child.style.display = isCollapsed ? "none" : "";
                             });
-
-                        // Rotar la flecha
                         btn.classList.toggle("fold-btn--open", !isCollapsed);
                     });
                 });
@@ -262,114 +214,232 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                 .forEach(processCodeBlock);
         }
 
-        // ── LANG SWITCHER ─────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
+        // PILL FUSIONADO — [icono][Lenguaje][▼]?[|][copiar]
+        // ═══════════════════════════════════════════════════════════════════
+
+        const LANG_LABELS: Record<string, string> = {
+            python: "Python",
+            java: "Java",
+            sql: "SQL",
+        };
+
+        function copyIconSvg(): string {
+            return (
+                `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" ` +
+                `stroke="currentColor" stroke-width="2" aria-hidden="true">` +
+                `<rect x="9" y="9" width="13" height="13" rx="2"/>` +
+                `<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>` +
+                `</svg>`
+            );
+        }
+
+        function getCodeText(switcher: HTMLElement): string {
+            const activeBlock =
+                switcher.querySelector<HTMLElement>(".lang-block.active");
+            const lines =
+                activeBlock?.querySelectorAll<HTMLElement>(
+                    ".code-line-content",
+                );
+            if (lines && lines.length > 0) {
+                return Array.from(lines)
+                    .map((l) => l.textContent ?? "")
+                    .join("\n");
+            }
+            return (
+                activeBlock?.querySelector("code")?.textContent ??
+                activeBlock?.textContent ??
+                ""
+            );
+        }
+
+        function copyText(text: string): Promise<void> {
+            if (navigator.clipboard?.writeText) {
+                return navigator.clipboard.writeText(text);
+            }
+            return new Promise((resolve) => {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.cssText = "position:fixed;opacity:0";
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+                resolve();
+            });
+        }
+
+        function buildPill(switcher: HTMLElement) {
+            if (switcher.querySelector(".cs-pill")) return;
+
+            // ── Recopilar lenguajes disponibles ──────────────────────────
+            const blocks = Array.from(
+                switcher.querySelectorAll<HTMLElement>(".lang-block"),
+            );
+            const langs = blocks.map((b) => b.dataset.lang ?? "");
+            const multiLang = langs.length > 1;
+
+            const activeLang =
+                switcher.querySelector<HTMLElement>(".lang-block.active")
+                    ?.dataset.lang ??
+                langs[0] ??
+                "java";
+
+            // ── Eliminar barra superior original ─────────────────────────
+            const oldBar =
+                switcher.querySelector<HTMLElement>(".lang-switcher");
+            if (oldBar) oldBar.remove();
+
+            // ── Dropdown items (solo si multiLang) ────────────────────────
+            const dropdownHtml = multiLang
+                ? `<div class="cs-dropdown" role="menu">` +
+                  langs
+                      .map(
+                          (lang) =>
+                              `<button class="cs-dd-item${lang === activeLang ? " active" : ""}" ` +
+                              `data-lang="${lang}" type="button" role="menuitem">` +
+                              `<span class="lang-icon lang-icon--${lang}"></span>` +
+                              (LANG_LABELS[lang] ?? lang) +
+                              `</button>`,
+                      )
+                      .join("") +
+                  `</div>`
+                : "";
+
+            // ── Caret (solo si multiLang) ─────────────────────────────────
+            const caretHtml = multiLang
+                ? `<svg class="cs-pill-caret" width="10" height="10" viewBox="0 0 10 10" ` +
+                  `fill="none" aria-hidden="true">` +
+                  `<path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" ` +
+                  `stroke-linecap="round" stroke-linejoin="round"/></svg>`
+                : "";
+
+            // ── HTML del pill ─────────────────────────────────────────────
+            const pillHtml =
+                `<div class="cs-pill-wrap">` +
+                `<div class="cs-pill">` +
+                `<button class="cs-pill-lang${multiLang ? " cs-pill-lang--multi" : ""}" ` +
+                `type="button" ` +
+                `${multiLang ? `aria-haspopup="true" aria-expanded="false"` : ""} ` +
+                `aria-label="Lenguaje: ${LANG_LABELS[activeLang] ?? activeLang}">` +
+                `<span class="lang-icon lang-icon--${activeLang}" data-role="pill-icon"></span>` +
+                `<span data-role="pill-label">${LANG_LABELS[activeLang] ?? activeLang}</span>` +
+                caretHtml +
+                `</button>` +
+                `<span class="cs-pill-sep" aria-hidden="true"></span>` +
+                `<button class="cs-pill-copy" type="button" aria-label="Copiar código">` +
+                copyIconSvg() +
+                `<span class="cs-copy-label"> </span>` +
+                `</button>` +
+                `</div>` +
+                dropdownHtml +
+                `</div>`;
+
+            switcher.insertAdjacentHTML("afterbegin", pillHtml);
+
+            // ── Refs ──────────────────────────────────────────────────────
+            const pillWrap =
+                switcher.querySelector<HTMLElement>(".cs-pill-wrap")!;
+            const langBtn =
+                pillWrap.querySelector<HTMLButtonElement>(".cs-pill-lang")!;
+            const copyBtn =
+                pillWrap.querySelector<HTMLButtonElement>(".cs-pill-copy")!;
+            const copyLabel =
+                pillWrap.querySelector<HTMLElement>(".cs-copy-label")!;
+            const dropdown =
+                pillWrap.querySelector<HTMLElement>(".cs-dropdown");
+            const ddItems =
+                pillWrap.querySelectorAll<HTMLButtonElement>(".cs-dd-item");
+
+            // ── Dropdown logic ────────────────────────────────────────────
+            if (multiLang && dropdown) {
+                langBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isOpen = dropdown.classList.toggle("open");
+                    langBtn.setAttribute("aria-expanded", String(isOpen));
+                });
+
+                document.addEventListener("click", () => {
+                    dropdown.classList.remove("open");
+                    langBtn.setAttribute("aria-expanded", "false");
+                });
+
+                ddItems.forEach((item) => {
+                    item.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        const lang = item.dataset.lang ?? "";
+                        if (!lang) return;
+
+                        // Actualizar pill
+                        const icon = langBtn.querySelector<HTMLElement>(
+                            "[data-role='pill-icon']",
+                        )!;
+                        const label = langBtn.querySelector<HTMLElement>(
+                            "[data-role='pill-label']",
+                        )!;
+                        icon.className = `lang-icon lang-icon--${lang}`;
+                        label.textContent = LANG_LABELS[lang] ?? lang;
+                        langBtn.setAttribute(
+                            "aria-label",
+                            `Lenguaje: ${LANG_LABELS[lang] ?? lang}`,
+                        );
+
+                        // Marcar item activo
+                        ddItems.forEach((i) => i.classList.remove("active"));
+                        item.classList.add("active");
+
+                        // Mostrar bloque correcto
+                        blocks.forEach((b) => b.classList.remove("active"));
+                        const target = switcher.querySelector<HTMLElement>(
+                            `.lang-block[data-lang="${lang}"]`,
+                        );
+                        if (target) {
+                            target.classList.add("active");
+                            const code =
+                                target.querySelector<HTMLElement>("pre code");
+                            if (code) processCodeBlock(code);
+                        }
+
+                        // Cerrar dropdown
+                        dropdown.classList.remove("open");
+                        langBtn.setAttribute("aria-expanded", "false");
+                    });
+                });
+            }
+
+            // ── Copy logic ────────────────────────────────────────────────
+            copyBtn.addEventListener("click", async () => {
+                const text = getCodeText(switcher);
+                await copyText(text);
+                copyBtn.classList.add("copied");
+                copyLabel.textContent = "✓";
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                }, 2000);
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════════════
+
         function initSwitchers() {
             document
                 .querySelectorAll<HTMLElement>(".code-switcher")
                 .forEach((switcher) => {
-                    const btns =
-                        switcher.querySelectorAll<HTMLButtonElement>(
-                            ".lang-btn",
-                        );
-                    const blocks =
-                        switcher.querySelectorAll<HTMLElement>(".lang-block");
-
-                    btns.forEach((btn) => {
-                        btn.addEventListener("click", () => {
-                            const lang = btn.dataset.lang;
-                            if (!lang) return;
-
-                            btns.forEach((b) => b.classList.remove("active"));
-                            blocks.forEach((b) => b.classList.remove("active"));
-
-                            btn.classList.add("active");
-                            const activeBlock =
-                                switcher.querySelector<HTMLElement>(
-                                    `.lang-block[data-lang="${lang}"]`,
-                                );
-                            activeBlock?.classList.add("active");
-
-                            if (activeBlock) {
-                                const code =
-                                    activeBlock.querySelector<HTMLElement>(
-                                        "pre code",
-                                    );
-                                if (code) processCodeBlock(code);
-                            }
-                        });
-                    });
+                    switcher
+                        .querySelectorAll<HTMLElement>(".lang-block pre code")
+                        .forEach(processCodeBlock);
+                    buildPill(switcher);
                 });
         }
 
-        // ── BOTÓN COPIAR ──────────────────────────────────────────────────────
-        function addCopyButton(pre: HTMLElement) {
-            if (pre.querySelector(".copy-btn")) return;
-
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "copy-btn";
-            btn.setAttribute("aria-label", "Copiar código");
-            btn.innerHTML = `
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <rect x="9" y="9" width="13" height="13" rx="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span>Copiar</span>
-            `;
-
-            btn.addEventListener("click", async () => {
-                const code = pre.querySelector("code");
-                // Extraer texto plano sin los números de línea del gutter
-                const lines =
-                    code?.querySelectorAll<HTMLElement>(".code-line-content");
-                const text =
-                    lines && lines.length > 0
-                        ? Array.from(lines)
-                              .map((l) => l.textContent ?? "")
-                              .join("\n")
-                        : (code?.textContent ?? pre.textContent ?? "");
-
-                try {
-                    await navigator.clipboard.writeText(text);
-                } catch {
-                    const ta = document.createElement("textarea");
-                    ta.value = text;
-                    ta.style.cssText = "position:fixed;opacity:0";
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand("copy");
-                    document.body.removeChild(ta);
-                }
-                btn.classList.add("copied");
-                btn.querySelector("span")!.textContent = "✓ Copiado";
-                setTimeout(() => {
-                    btn.classList.remove("copied");
-                    btn.querySelector("span")!.textContent = "Copiar";
-                }, 2000);
-            });
-
-            pre.appendChild(btn);
+        function initAll() {
+            initLineNumbers();
+            initSwitchers();
         }
 
-        function initCopyButtons() {
-            // Bloques sueltos fuera del switcher
-            document
-                .querySelectorAll<HTMLElement>(".module-content pre")
-                .forEach((pre) => {
-                    if (pre.closest(".code-switcher")) return;
-                    addCopyButton(pre);
-                });
-
-            // Bloques dentro del switcher — incluyendo los ocultos
-            document
-                .querySelectorAll<HTMLElement>(".code-switcher pre")
-                .forEach((pre) => {
-                    addCopyButton(pre);
-                });
-        }
-
-        // ── BOTÓN VOLVER ──────────────────────────────────────────────────────
+        // ── Botón volver ──────────────────────────────────────────────────
         const btnRuta = document.getElementById("btn-back-ruta");
         if (btnRuta) {
             btnRuta.addEventListener("click", (e) => {
@@ -389,13 +459,6 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
             });
         }
 
-        // ── INIT ──────────────────────────────────────────────────────────────
-        function initAll() {
-            initLineNumbers();
-            initSwitchers();
-            initCopyButtons();
-        }
-
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", initAll);
         } else {
@@ -411,7 +474,6 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
         padding: 2rem 1.5rem;
     }
 
-    /* Fila superior: breadcrumb a la izquierda, botón a la derecha */
     .module-topbar {
         display: flex;
         align-items: center;
@@ -421,12 +483,10 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
         flex-wrap: wrap;
     }
 
-    /* Anular el margin-bottom del breadcrumb porque ahora lo controla el topbar */
     .module-topbar :global(.breadcrumb) {
         margin-bottom: 0;
     }
 
-    /* Botón "Volver a la ruta" */
     .btn-back-ruta {
         display: inline-flex;
         align-items: center;
