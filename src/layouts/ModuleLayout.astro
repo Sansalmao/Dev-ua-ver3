@@ -181,8 +181,16 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
                 })
                 .join("");
 
-            codeEl.innerHTML = html;
+            codeEl.innerHTML = html; // ← DOM poblado
 
+            // ── Ajuste dinámico del gutter ── VA AQUÍ ────────────────────────
+            const realLines = codeEl.querySelectorAll(".code-line").length;
+            const digits = Math.max(1, String(realLines).length);
+            const pre = codeEl.closest<HTMLElement>("pre");
+            if (pre) pre.style.setProperty("--gutter-digits", String(digits));
+            // ─────────────────────────────────────────────────────────────────
+
+            // Listeners de fold — siempre al final
             codeEl
                 .querySelectorAll<HTMLButtonElement>(".fold-btn")
                 .forEach((btn) => {
@@ -222,6 +230,10 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
             python: "Python",
             java: "Java",
             sql: "SQL",
+            mysql: "MySQL",
+            mssql: "MS-SQL",
+            postgresql: "PostgreSQL",
+            oracle: "Oracle",
         };
 
         function copyIconSvg(): string {
