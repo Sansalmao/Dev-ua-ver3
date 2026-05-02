@@ -906,7 +906,7 @@ canvas {
     line-height: 1.65 !important;
     border-radius: 10px !important;
     margin: 0 !important;
-    padding: 0.75rem 0 0.75rem !important; /* ← top ajustado al pill flotante */
+    padding: 0.8rem 0 0.75rem !important;
     border: none !important;
     background: var(--code-bg) !important;
     overflow-x: auto;
@@ -943,8 +943,8 @@ canvas {
     display: inline-flex;
     align-items: flex-start;
     justify-content: flex-end;
-    width: var(--gutter-w, 2.6rem);
-    min-width: var(--gutter-w, 2.6rem);
+    width: var(--gutter-w, 2.75rem);
+    min-width: var(--gutter-w, 2.75rem);
     padding-right: 0.75rem;
     color: var(--code-gutter-text);
     font-family: var(--font-mono);

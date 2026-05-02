@@ -113,6 +113,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Email Address Internationalization (EAI) and its significance in today's globalized communication landscape.",
         icon: "code",
+        slug: "ea-03-eai",
       },
       {
         id: "ea-04",
