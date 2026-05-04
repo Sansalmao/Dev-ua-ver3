@@ -1,9 +1,9 @@
 ---
-title: "Guide 6 - Programming in Internationalized Domain Names (IDNs) — Java"
-description: "Essential topics related to implementing the IDNA2008 protocol using ICU4J in Java — covering encoding/decoding, pitfalls, homograph attacks, contextual rules, and TLD parsing."
+title: "Guide 6 - Programming in Internationalized Domain Names (IDNs)"
+description: "Essential topics related to implementing the IDNA2008 protocol and exploring compatible libraries in Java and Python — covering encoding/decoding, pitfalls of IDNA2003, homograph attacks, contextual rules, and TLD parsing."
 difficulty: "Básico"
-duration: "75 min"
-objective: "Explore IDNA2003 vs IDNA2008 differences in Java, use the ICU4J library for encoding and decoding IDNs, and understand how to parse active IDN TLDs."
+duration: "90 min"
+objective: "Explore IDNA2003 vs IDNA2008 differences, use ICU4J and the idna library for encoding and decoding IDNs, and understand how to parse active IDN TLDs."
 progress: 0
 pubDate: 2026-04-20
 draft: false
@@ -42,13 +42,13 @@ sections:
 
 ## Objectives
 
-<div class= "info-card">
+<div class="info-card">
 
 Covers essential topics related to implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.
 
 </div>
 
-<div class= "info-card">
+<div class="info-card">
 
 <span class="hl">At the end of this module, students should be able to:</span>
 
@@ -64,9 +64,9 @@ Covers essential topics related to implementing the IDNA2008 protocol and explor
 ## Note About the Utilization of Unicode String Literals
 
 - The Unicode string literals utilized in the code examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
-- Throughout the module, Unicode string literals derived from various scripts have been used in the examples code, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts.
+- Throughout the module, Unicode string literals derived from various scripts have been used in the example code, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts.
 - The module provides the meanings of Unicode string literals used in the example codes in English, along with their transliterations, to aid learners in accurately pronouncing them.
-- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples code.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples.
 
 ---
 
@@ -77,7 +77,6 @@ Covers essential topics related to implementing the IDNA2008 protocol and explor
 - Since the `java.net.IDN` class lacks IDNA2008 support, employing third-party libraries is essential for encoding and decoding IDNs in Java.
 - You can achieve IDNA2008 support in Java using the **ICU4J** library.
   - Download and import the ICU4J library: Obtain the ICU4J library JAR file from the official ICU project website or a trusted source. Add the JAR file to your Java project's classpath.
-
 
 ### IDNA2008 Library Usage in Java — Encoding
 
@@ -158,8 +157,9 @@ public class IDNAExampleDecoding {
 
 <span class="hl">Commonly used IDNA2008 libraries in Python</span>
 
-- <span class="hl">idna library:</span> to use this library, you need to install it using applicable package manager to your operating system.
-- <span class="hl">Example: IDNA2008 library Usage in Python:</span>
+- **idna library:** To use this library, you need to install it using the applicable package manager for your operating system.
+
+<span class="hl">Example: IDNA2008 library usage in Python:</span>
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -169,14 +169,17 @@ public class IDNAExampleDecoding {
 
 ```python
 import idna
+
 # Encode Unicode domain name to Punycode
 punycode_domain = idna.encode('تجربة-القبول-الشامل.موريتانيا')
 print(punycode_domain)
+
 # Decode Punycode domain name to Unicode
 unicode_domain = idna.decode(punycode_domain)
 print(unicode_domain)
-#First output: b'xn-----ctdbabcfhu9c2b9l1acccr4c.xn--mgbah1a3hjkrd'
-#Second output: تجربة-القبول-الشامل.موريتانيا
+
+# First output:  b'xn-----ctdbabcfhu9c2b9l1acccr4c.xn--mgbah1a3hjkrd'
+# Second output: تجربة-القبول-الشامل.موريتانيا
 ```
 
   </div>
@@ -199,7 +202,6 @@ The domain `straße.de` (German for "street.de") exposes a key difference: IDNA2
 
 ```java
 import java.net.IDN;
-import com.ibm.icu.text.IDNA;
 
 public class IDNACharacterSet {
     public static void idna2003Support() {
@@ -227,7 +229,6 @@ public class IDNACharacterSet {
   <div class="lang-block" data-lang="java-2008" data-group="pitfall1">
 
 ```java
-import java.net.IDN;
 import com.ibm.icu.text.IDNA;
 
 public class IDNACharacterSet {
@@ -235,11 +236,15 @@ public class IDNACharacterSet {
         String unicodeDomainName = "straße.de";
         try {
             // Convert Unicode domain name to Punycode using IDNA2008
-            String punycodeDomainNameIDNA2008 = IDNA.convertIDNToASCII(unicodeDomainName, 0);
+            IDNA idna = IDNA.getUTS46Instance(IDNA.DEFAULT);
+            StringBuilder result = new StringBuilder();
+            idna.nameToASCII(unicodeDomainName, result, new IDNA.Info());
+            String punycodeDomainNameIDNA2008 = result.toString();
             System.out.println("Punycode domain name (IDNA2008): " + punycodeDomainNameIDNA2008);
-            // Attempt to convert Punycode domain name back to Unicode using IDNA2008
-            String decodedDomainNameIDNA2008 = IDNA.convertToUnicode(punycodeDomainNameIDNA2008, 0);
-            System.out.println("Decoded domain name (IDNA2008): " + decodedDomainNameIDNA2008);
+            // Convert Punycode domain name back to Unicode using IDNA2008
+            StringBuilder decoded = new StringBuilder();
+            idna.nameToUnicode(punycodeDomainNameIDNA2008, decoded, new IDNA.Info());
+            System.out.println("Decoded domain name (IDNA2008): " + decoded.toString());
         } catch (IllegalArgumentException e) {
             System.out.println("Error (IDNA2008): " + e.getMessage());
         }
@@ -277,58 +282,57 @@ IDNA2003 (`java.net.IDN`) silently maps `ß` → `ss`. IDNA2008 (ICU4J) correctl
 
 ## Pitfalls of IDNA2003 Libraries and Remediation in IDNA 2008 - Python
 
-<span class="hl">IDNA2003 Libraries: Limited Character Set Support:</span>
+<span class="hl">IDNA2003 Libraries: Limited Character Set Support</span>
+
+The domain `straße.de` exposes a key difference between IDNA2003 and IDNA2008 in Python: the built-in `encodings.idna` module (IDNA2003) maps `ß` to `ss`, while the `idna` library (IDNA2008) preserves it correctly via Punycode.
 
 <div class="code-switcher">
   <div class="lang-switcher">
-    <button class="lang-btn active" data-lang="python" data-target="lib1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn active" data-lang="python-2003" data-target="pitfall2"><span class="lang-icon lang-icon--python"></span>Python (IDNA2003)</button>
+    <button class="lang-btn" data-lang="python-2008" data-target="pitfall2"><span class="lang-icon lang-icon--python"></span>Python (IDNA2008)</button>
   </div>
-  <div class="lang-block active" data-lang="python" data-group="lib1">
+  <div class="lang-block active" data-lang="python-2003" data-group="pitfall2">
 
 ```python
-from idna import encode, decode
 import encodings.idna
+
 def idna2003_support():
     unicode_domain_name = "straße.de"
-     try:
-       # Convert Unicode domain name to Punycode using IDNA2003
-        punycode_domain_name_idna2003 = 					         encodings.idna.ToASCII(unicode_domain_name)
-        print("Punycode domain name (IDNA2003):", 				         punycode_domain_name_idna2003)
-        # Attempt to convert Punycode domain name back to Unicode using 		IDNA2003
-        	decoded_domain_name_idna2003 = 					encodings.idna.ToUnicode(punycode_domain_name_idna2003)
-        	print("Decoded domain name (IDNA2003):", 				  		decoded_domain_name_idna2003)
-    	except UnicodeError as e:
+    try:
+        # Convert Unicode domain name to Punycode using IDNA2003
+        punycode_domain_name_idna2003 = encodings.idna.ToASCII(unicode_domain_name)
+        print("Punycode domain name (IDNA2003):", punycode_domain_name_idna2003)
+        # Convert Punycode domain name back to Unicode using IDNA2003
+        decoded_domain_name_idna2003 = encodings.idna.ToUnicode(punycode_domain_name_idna2003)
+        print("Decoded domain name (IDNA2003):", decoded_domain_name_idna2003)
+    except UnicodeError as e:
         print("Error (IDNA2003):", str(e))
+
+if __name__ == "__main__":
+    print("Demonstrating IDNA2003 Support:")
+    idna2003_support()
 ```
 
   </div>
-</div>
-
-<div class="code-switcher">
-  <div class="lang-switcher">
-    <button class="lang-btn active" data-lang="python" data-target="lib1"><span class="lang-icon lang-icon--python"></span>Python</button>
-  </div>
-  <div class="lang-block active" data-lang="python" data-group="lib1">
+  <div class="lang-block" data-lang="python-2008" data-group="pitfall2">
 
 ```python
+from idna import encode, decode
+
 def idna2008_support():
     unicode_domain_name = "straße.de"
-
     try:
         # Convert Unicode domain name to Punycode using IDNA2008
         punycode_domain_name_idna2008 = encode(unicode_domain_name)
         print("Punycode domain name (IDNA2008):", punycode_domain_name_idna2008)
-
-        # Attempt to convert Punycode domain name back to Unicode using IDNA2008
+        # Convert Punycode domain name back to Unicode using IDNA2008
         decoded_domain_name_idna2008 = decode(punycode_domain_name_idna2008)
         print("Decoded domain name (IDNA2008):", decoded_domain_name_idna2008)
     except UnicodeError as e:
         print("Error (IDNA2008):", str(e))
 
 if __name__ == "__main__":
-    print("Demonstrating IDNA2003 Support:")
-    idna2003_support()
-    print("\nDemonstrating IDNA2008 Support:")
+    print("Demonstrating IDNA2008 Support:")
     idna2008_support()
 ```
 
@@ -337,7 +341,7 @@ if __name__ == "__main__":
 
 <div class="info-card">
 
-<span class="hl">Output:</span>
+<span class="hl">Output comparison:</span>
 
 ```
 Demonstrating IDNA2003 Support:
@@ -349,95 +353,93 @@ Punycode domain name (IDNA2008): b'xn--strae-oqa.de'
 Decoded domain name (IDNA2008): straße.de
 ```
 
+`encodings.idna` (IDNA2003) silently maps `ß` → `ss`. The `idna` library (IDNA2008) correctly encodes it as `xn--strae-oqa.de` and restores `straße.de` on decode.
+
 </div>
 
 ---
 
 ## IDNA2003 Security Vulnerabilities — Homograph Attack
 
-<span class="hl">Example: IDNA2003 Security Vulnerabilities — Homograph Attack</span>
- 
+<span class="hl">Example: Explaining IDNA2003 Security Vulnerabilities — Homograph Attack</span>
+
+In a homograph attack, visually similar characters from different scripts (e.g., Latin `o` vs. Cyrillic `о`) are used to craft deceptive domain names. IDNA2003 silently allows mixed-script labels, while IDNA2008 raises an error.
+
 <div class="code-switcher">
   <div class="lang-switcher">
-    <button class="lang-btn active" data-lang="java" data-target="iter1"><span class="lang-icon lang-icon--java"></span>Java</button>
-    <button class="lang-btn" data-lang="python" data-target="iter1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn active" data-lang="java" data-target="homo1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="homo1"><span class="lang-icon lang-icon--python"></span>Python</button>
   </div>
-  <div class="lang-block active" data-lang="java" data-group="iter1">
- 
+  <div class="lang-block active" data-lang="java" data-group="homo1">
+
 ```java
-import java.nio.charset.StandardCharsets;
-import java.net.IDN; // Import statement for java.net.IDN
+import java.net.IDN;
 import com.ibm.icu.text.IDNA;
+
 public class IDNAHomographAttackExample {
-    // Method to demonstrate IDNA2003 Homograph Attack
+    // IDNA2003: allows mixed-script label silently
     public static void demonstrateIDNA2003HomographAttack() {
-        // Visually similar characters from Latin and Cyrillic scripts
-        String unicodeDomainNameHomograph = "example.cоm";  // Latin 'o' and Cyrillic 'о' look similar
+        String unicodeDomainNameHomograph = "example.cоm"; // Cyrillic 'о' (U+043E)
         try {
-            // Convert Unicode domain name to Punycode using IDNA2003
             String punycodeDomainNameIDNA2003 = IDN.toASCII(unicodeDomainNameHomograph);
             System.out.println("Punycode domain name (IDNA2003): " + punycodeDomainNameIDNA2003);
         } catch (IllegalArgumentException e) {
             System.out.println("Error (IDNA2003): " + e.getMessage());
         }
     }
-  // Method to demonstrate IDNA2008 Homograph Attack Prevention
+
+    // IDNA2008: raises an error on mixed-script labels
     public static void demonstrateIDNA2008HomographAttackPrevention() {
-        // Visually similar characters from Latin and Cyrillic scripts
-        String unicodeDomainNameHomograph = "example.cоm";  // Latin 'o' and Cyrillic 'о' look similar
-        try {
-            // Convert Unicode domain name to Punycode using IDNA2008
-            String punycodeDomainNameIDNA2008 = IDNA.convertToASCII(unicodeDomainNameHomograph, 0);
-            System.out.println("Punycode domain name (IDNA2008): " + punycodeDomainNameIDNA2008);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error (IDNA2008): " + e.getMessage());
+        String unicodeDomainNameHomograph = "example.cоm"; // Cyrillic 'о' (U+043E)
+        IDNA idna = IDNA.getUTS46Instance(IDNA.CHECK_BIDI | IDNA.CHECK_CONTEXTJ);
+        StringBuilder result = new StringBuilder();
+        IDNA.Info info = new IDNA.Info();
+        idna.nameToASCII(unicodeDomainNameHomograph, result, info);
+        if (info.hasErrors()) {
+            System.out.println("Error (IDNA2008): Mixed-script label detected — " + info.getErrors());
+        } else {
+            System.out.println("Punycode domain name (IDNA2008): " + result.toString());
         }
     }
+
     public static void main(String[] args) {
-        System.out.println("Explaining IDNA2003 Security Vulnerabilities - Homograph Attack in Python.");
-        System.out.println("\nDemonstrating IDNA2003 Homograph Attack:");
+        System.out.println("IDNA2003 Homograph Attack:");
         demonstrateIDNA2003HomographAttack();
-        System.out.println("\nDemonstrating IDNA2008 Homograph Attack Prevention:");
+        System.out.println("\nIDNA2008 Homograph Attack Prevention:");
         demonstrateIDNA2008HomographAttackPrevention();
     }
 }
 ```
- 
+
   </div>
-  <div class="lang-block" data-lang="python" data-group="iter1">
- 
+  <div class="lang-block" data-lang="python" data-group="homo1">
+
 ```python
 from idna import encode, decode
+
 def demonstrate_idna2003_homograph_attack():
     # Visually similar characters from Latin and Cyrillic scripts
-    unicode_domain_name_homograph = "example.cоm"  # Latin 'o' and Cyrillic 'о' look similar
+    unicode_domain_name_homograph = "example.cоm"  # Cyrillic 'о' (U+043E)
     try:
-        # Convert Unicode domain name to Punycode using IDNA2003
+        # IDNA2003 via built-in codec — silently accepts mixed scripts
         punycode_domain_name_idna2003 = unicode_domain_name_homograph.encode('idna').decode('utf-8')
         print("Punycode domain name (IDNA2003):", punycode_domain_name_idna2003)
-
     except UnicodeError as e:
         print("Error (IDNA2003):", str(e))
-```
- 
-  </div>
-  <div class="lang-block" data-lang="python" data-group="iter1">
- 
-```python
+
 def demonstrate_idna2008_homograph_attack_prevention():
     # Visually similar characters from Latin and Cyrillic scripts
-    unicode_domain_name_homograph = "example.cоm"  # Latin 'o' and Cyrillic 'о' look similar
+    unicode_domain_name_homograph = "example.cоm"  # Cyrillic 'о' (U+043E)
     try:
-        # Convert Unicode domain name to Punycode using IDNA2008
+        # IDNA2008 via idna library — raises error on mixed-script label
         punycode_domain_name_idna2008 = encode(unicode_domain_name_homograph)
-        print("Punycode domain name (IDNA2008):",punycode_domain_name_idna2008)
+        print("Punycode domain name (IDNA2008):", punycode_domain_name_idna2008)
     except UnicodeError as e:
         print("Error (IDNA2008):", str(e))
 
-   if __name__ == "__main__":
+if __name__ == "__main__":
     print("Demonstrating IDNA2003 Homograph Attack:")
     demonstrate_idna2003_homograph_attack()
-
     print("\nDemonstrating IDNA2008 Homograph Attack Prevention:")
     demonstrate_idna2008_homograph_attack_prevention()
 ```
@@ -449,82 +451,61 @@ def demonstrate_idna2008_homograph_attack_prevention():
 
 ## IDNA2003 Deficiency in Enforcing Contextual Rules for Characters
 
-<span class="hl">Example: IDNA2003 vs IDNA2008 — Hyphen Handling</span>
+<span class="hl">IDNA2003 vs. IDNA2008 — Hyphen Handling at Label Boundaries</span>
+
+IDNA2003 does not enforce all contextual rules, such as disallowing hyphens at the beginning or end of a label. IDNA2008 correctly rejects these invalid forms.
 
 <div class="code-switcher">
   <div class="lang-switcher">
-    <button class="lang-btn active" data-lang="java" data-target="iter1"><span class="lang-icon lang-icon--java"></span>Java</button>
-    <button class="lang-btn" data-lang="python" data-target="iter1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn active" data-lang="python" data-target="ctx1"><span class="lang-icon lang-icon--python"></span>Python</button>
   </div>
-  <div class="lang-block active" data-lang="java" data-group="iter1">
- 
-```java
-import com.ibm.icu.text.IDNA;
-import java.net.IDN;
+  <div class="lang-block active" data-lang="python" data-group="ctx1">
 
-public class IDNAContextHandlingExample {
-
-    public static void demonstrateIDNA2003vsIDNA2008HyphenHandling() {
-        // Hyphen at the beginning of the label
-        String domainNameHyphenBeginning = "-example.com";
-
-        try {
-            // Convert Unicode domain name to Punycode using IDNA2003
-            String punycodeDomainNameIDNA2003 = IDN.toASCII(domainNameHyphenBeginning);
-            System.out.println("Punycode domain name (IDNA2003): " + punycodeDomainNameIDNA2003);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error (IDNA2003): " + e.getMessage());
-        }
-        try {
-            // Convert Unicode domain name to Punycode using IDNA2008
-            String punycodeDomainNameIDNA2008 = IDNA.convertToASCII(domainNameHyphenBeginning, 0);
-            System.out.println("Punycode domain name (IDNA2008): " + punycodeDomainNameIDNA2008);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error (IDNA2008): " + e.getMessage());
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println("Demonstrating IDNA2003 vs. IDNA2008 Hyphen Handling:");
-        demonstrateIDNA2003vsIDNA2008HyphenHandling();
-    }
-}
-```
- 
-  </div>
-  <div class="lang-block" data-lang="python" data-group="iter1">
- 
 ```python
-def demonstrate_idna2008_homograph_attack_prevention():
-    # Visually similar characters from Latin and Cyrillic scripts
-    unicode_domain_name_homograph = "example.cоm"  # Latin 'o' and Cyrillic 'о' look similar
+from idna import encode
+
+def demonstrate_idna2003_vs_idna2008_hyphen_handling():
+    # Hyphen at the beginning of the label
+    domain_name_hyphen_beginning = "-example.com"
     try:
-        # Convert Unicode domain name to Punycode using IDNA2008
-        punycode_domain_name_idna2008 = encode(unicode_domain_name_homograph)
-        print("Punycode domain name (IDNA2008):",punycode_domain_name_idna2008)
+        # Convert using IDNA2003 (built-in codec)
+        punycode_domain_name_idna2003 = domain_name_hyphen_beginning.encode('idna').decode('utf-8')
+        print("Punycode domain name (IDNA2003):", punycode_domain_name_idna2003)
+    except UnicodeError as e:
+        print("Error (IDNA2003):", str(e))
+    try:
+        # Convert using IDNA2008
+        punycode_domain_name_idna2008 = encode(domain_name_hyphen_beginning)
+        print("Punycode domain name (IDNA2008):", punycode_domain_name_idna2008)
     except UnicodeError as e:
         print("Error (IDNA2008):", str(e))
 
-   if __name__ == "__main__":
-    print("Demonstrating IDNA2003 Homograph Attack:")
-    demonstrate_idna2003_homograph_attack()
-
-    print("\nDemonstrating IDNA2008 Homograph Attack Prevention:")
-    demonstrate_idna2008_homograph_attack_prevention()
+if __name__ == "__main__":
+    print("Demonstrating IDNA2003 vs. IDNA2008 Hyphen Handling:")
+    demonstrate_idna2003_vs_idna2008_hyphen_handling()
 ```
 
   </div>
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Key takeaway for instructors:</span> IDNA2008 strictly enforces contextual rules defined in RFC 5891 — including prohibitions on hyphens in the third and fourth positions (reserved for `xn--` Punycode prefix) and at label boundaries. This prevents malformed domain names that IDNA2003 would silently accept.
+
 </div>
 
 ---
 
 ## Parsing the tlds-alpha-by-domain.txt File
 
-<span class="hl">Parsing the IANA `tlds-alpha-by-domain.txt` file to extract active IDN TLDs — Java</span>
+<span class="hl">Parsing the IANA `tlds-alpha-by-domain.txt` file to extract active IDN TLDs</span>
+
+The IANA publishes a list of all active TLDs. IDN TLDs are encoded in Punycode and always begin with `XN--`. The examples below download this list and extract only the IDN TLDs.
 
 <div class="code-switcher">
   <div class="lang-switcher">
     <button class="lang-btn active" data-lang="java" data-target="tld1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="tld1"><span class="lang-icon lang-icon--python"></span>Python</button>
   </div>
   <div class="lang-block active" data-lang="java" data-group="tld1">
 
@@ -572,28 +553,30 @@ public class IDNParserExample {
 ```
 
   </div>
-</div>
+  <div class="lang-block" data-lang="python" data-group="tld1">
 
-<span class="hl"> Parsing the tlds-alpha-by-domain.txt File - in Python</span>
-
-```
+```python
 import requests
 import re
+
 # Download the IDN TLDs list
 url = "https://data.iana.org/TLD/tlds-alpha-by-domain.txt"
 try:
     response = requests.get(url)
     if response.status_code == 200:
-      content = response.text
-# Parse the HTML content
-    idn_tlds = re.findall(r"XN--[A-Z0-9\-]+", content)
-    for tld in idn_tlds:
-        print(tld)
+        content = response.text
+        # Extract IDN TLDs starting with XN--
+        idn_tlds = re.findall(r"XN--[A-Z0-9\-]+", content)
+        for tld in idn_tlds:
+            print(tld)
     else:
         print(f"Failed to retrieve data. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-    	print(f"An error occurred: {e}")
+except requests.exceptions.RequestException as e:
+    print(f"An error occurred: {e}")
 ```
+
+  </div>
+</div>
 
 ---
 

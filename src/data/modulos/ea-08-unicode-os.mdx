@@ -1,0 +1,526 @@
+---
+title: "Guide 12 - Unicode Support in Operating Systems"
+description: "Fundamental concepts and mechanisms for Unicode support in contemporary operating systems — covering string manipulation, collation, OS APIs for IDNs, EAI handling, and file system Unicode support."
+difficulty: "Básico"
+duration: "127 min"
+objective: "Understand why Unicode matters in operating systems, explore OS-level string functions and collation mechanisms, learn how to handle IDNs via OS APIs, and examine file system Unicode support."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+      - title: "Note on String Literals"
+        panelId: "note-about-the-utilization-of-unicode-string-literals"
+  - title: "Why Unicode in OS?"
+    items:
+      - title: "Why Do We Need Unicode in Operating Systems?"
+        panelId: "why-do-we-need-unicode-in-operating-systems"
+      - title: "Operating Systems with Unicode Support"
+        panelId: "some-examples-of-operating-systems-that-offer-unicode-support"
+  - title: "String Operations"
+    items:
+      - title: "Unicode String Manipulation, Collation and Sorting"
+        panelId: "unicode-string-manipulation-functions-collation-and-sorting-in-operating-systems"
+      - title: "Setting the Locale — Linux"
+        panelId: "example-on-setting-the-locale-of-a-linux-operating-system"
+      - title: "Unicode-aware Collation"
+        panelId: "unicode-aware-collation-in-operating-systems"
+      - title: "String Manipulation Examples"
+        panelId: "examples-of-unicode-string-manipulation-functions-performed-by-operating-systems"
+  - title: "IDN Handling"
+    items:
+      - title: "OS APIs for IDNs"
+        panelId: "operating-systems-apis-or-system-calls-for-converting-and-handling-idns"
+      - title: "Handling IDNs in Linux"
+        panelId: "examples-on-handling-idns-in-linux"
+  - title: "EAI in Operating Systems"
+    items:
+      - title: "EAI Compatibility of Mail Utilities"
+        panelId: "eai-compatibility-of-basic-mail-command-line-utilities"
+      - title: "OS APIs for EAI in Email Clients"
+        panelId: "operating-systems-apis-or-system-calls-for-handling-eai-in-email-clients"
+  - title: "File Systems"
+    items:
+      - title: "File Systems Support for Unicode"
+        panelId: "file-systems-support-for-unicode"
+      - title: "Unicode Support in File Systems"
+        panelId: "example-on-unicode-support-in-file-systems"
+      - title: "Case Sensitivity in Filename Handling"
+        panelId: "working-with-unicode-case-sensitive-vs-case-insensitive-vs-case-insensitive-but-case-preserving-filename-handling"
+  - title: "References"
+    items:
+      - title: "References & Author"
+        panelId: "references--author"
+---
+
+## Objectives
+
+<div class="info-card">
+
+Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems. Understanding how operating systems handle Unicode is essential for ensuring proper handling, storage, and display of multilingual text.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Understand the significance of Unicode in operating systems;
+- Identify examples of operating systems that offer Unicode support, ensuring compatibility and seamless handling of multilingual text;
+- Explore Unicode string manipulation functions, collation, and sorting mechanisms in operating systems and understand their impact on efficient text processing and comparison;
+- Gain knowledge of operating system APIs and system calls available for converting and handling Internationalized Domain Names (IDNs); and
+- Examine file system support for Unicode, understanding how different file systems handle Unicode file names and metadata.
+
+</div>
+
+---
+
+## Note About the Utilization of Unicode String Literals
+
+<div class="info-card">
+
+- The Unicode string literals utilized in the examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples.
+
+</div>
+
+---
+
+## Why Do We Need Unicode in Operating Systems?
+
+<div class="info-card">
+
+The following are some of the reasons why we need Unicode in operating systems:
+- Multilingual Support.
+- Character Encoding Standard.
+- File System Management.
+- Global Compatibility.
+- Text Rendering and Display.
+- Localization and Internationalization.
+- Future-Proofing and Scalability.
+
+</div>
+
+---
+
+## Some Examples of Operating Systems that Offer Unicode Support
+
+<div class="info-card">
+
+The following are some examples of operating systems that offer Unicode support:
+- Linux.
+- FreeBSD.
+- Windows.
+- macOS.
+- Android.
+- iOS.
+- Chrome OS.
+
+</div>
+
+---
+
+## Unicode String Manipulation Functions, Collation and Sorting in Operating Systems
+
+<div class="info-card">
+
+Unicode String Manipulation Functions, Collation, and Sorting are essential features in operating systems that enable efficient handling and processing of text in different languages and scripts:
+- Unicode String Manipulation Functions.
+- Collation.
+- Sorting.
+
+</div>
+
+---
+
+## Example on Setting the Locale of a Linux Operating System
+
+<div class="info-card">
+
+The following are the general steps to set the locale on a Linux system:
+
+- Check Available Locales:
+  - Before setting the locale, you may want to check the available locales on your system.
+  - You can do this by running the command:
+  
+  ```bash
+    locale -a
+    ```
+
+  - Set the Locale:
+
+    ```bash
+    export LC_ALL=ar_MA.UTF-8
+    ```
+  
+    - Permanently Set the Locale:
+      - If you want to make the changes permanent, you can add the export command to your shell profile file.
+    - Verify the Locale:
+      - You can verify that the locale has been set by running:
+
+    ```bash
+    locale
+    ```
+
+</div>
+
+---
+
+## Unicode-aware Collation in Operating Systems
+
+<div class="info-card">
+
+ Key considerations for Unicode-aware Collation in Operating Systems:
+- Unicode Collation Algorithm (UCA).
+- Tailoring and Locale-Specific Rules.
+- Linguistic Data and Libraries.
+- Language-Specific Collation Tables.
+- Customization.
+- Collation Tailoring for Complex Scripts.
+- Unicode Collation Element Table (UCET).
+
+</div>
+
+---
+
+## Examples of Unicode String Manipulation Functions Performed by Operating Systems
+
+### Unicode String Manipulation Functions Performed by Operating Systems:
+
+<details>
+<summary>String Length:</summary>
+
+Functions to determine the length of a Unicode string.
+
+**Example:**
+```bash
+$ echo -n "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا" | wc -m
+```
+
+The `wc -m` command counts the number of characters in a string, treating each Unicode code point as a single unit.  
+<span class="hl">Output: 49</span>
+
+</details>
+
+<details>
+<summary>Concatenation:</summary>
+
+Concatenate or join multiple Unicode strings together:
+
+**Example:**
+```bash
+$ echo "Arabic Email Address: " > file1
+$ echo "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني" >> file1
+$ cat  file1
+Output:  Arabic Email Address: 
+ تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني
+```
+
+<span class="hl">Output:</span>
+Arabic Email Address:
+<span class="hl">تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني</span>
+
+</details>
+
+<details>
+<summary>Substring Extraction (String Slicing):</summary>
+
+Extract a substring from a Unicode string:
+
+**Example:**
+```bash
+$ echo تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا | cut -d '@' -f2
+ cut: This command cuts the text into fields based on a delimiter.
+-d '@': This specifies the delimiter as "@" (at symbol).
+-f2: This tells cut to print the second field (everything after the "@").
+Output: تجربة-القبول-الشامل.موريتانيا
+```
+
+</details>
+
+<details>
+<summary>Case Conversion:</summary>
+
+**Example:**
+```bash
+$ echo "Hello, 世界" | tr '[:lower:]' '[:upper:]'
+Output: HELLO, 世界
+```
+
+```bash
+$ echo "αγορί" | python -c "import sys; print(sys.stdin.read().upper(), end='')"
+Output: ΑΓΟΡΊ 
+```
+
+</details>
+
+<details>
+<summary>Character Encoding Conversion:</summary>
+
+Convert Unicode strings between different character encodings.
+
+**Example:**
+```bash
+echo -n "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني" | iconv -f UTF-8 -t UTF-16 | hexdump -C
+```
+
+The `iconv` command encodes a Unicode string from UTF-8 to UTF-16, producing the below corresponding encoded byte sequence.
+
+<span class="hl">Output:</span>
+
+```bash
+00000000  ff fe 2a 06 2c 06 31 06  28 06 29 06 2d 00 28 06  |..*.,.1.(.).-.(.|
+00000010  31 06 4a 06 2f 06 2d 00  27 06 44 06 43 06 2a 06  |1.J./.-.'.D.C.*.|
+00000020  31 06 48 06 46 06 4a 06  40 00 2a 06 2c 06 31 06  |1.H.F.J.@.*.,.1.|
+00000030  28 06 29 06 2d 00 27 06  44 06 42 06 28 06 48 06  |(.).-.'.D.B.(.H.|
+00000040  44 06 2d 00 27 06 44 06  34 06 27 06 45 06 44 06  |D.-.'.D.4.'.E.D.|
+00000050  2e 00 45 06 48 06 31 06  4a 06 2a 06 27 06 46 06  |..E.H.1.J.*.'.F.|
+00000060  4a 06 20 00                                       |J. .|
+00000064
+```
+
+</details>
+
+<details>
+<summary>Pattern Matching:</summary>
+
+Using Regular Expressions.
+
+**Example:**
+```bash
+$ echo "Hello, 世界" | grep -oP "\p{Han}"
+```
+
+The `grep -P` command performs pattern matching for Unicode characters using Unicode character properties.  
+<span class="hl">Output: 世界</span>
+
+</details>
+
+<details>
+<summary>String Comparison:</summary>
+
+Compares Unicode strings based on collation rules.
+
+**Example:**
+```bash
+#!/bin/bash
+string1="مرحبا"
+string2="مرحبًا"
+if [[ "$string1" = "$string2" ]]; then
+  echo "Equal"
+else
+  echo "Not equal"
+fi
+```
+
+</details>
+
+<details>
+<summary>Normalization:</summary>
+
+Normalization ensures that equivalent Unicode strings with different representations are transformed into a canonical form.
+
+**Example:**
+```bash
+echo -n "é" | iconv -f UTF-8 -t UTF-8//IGNORE | hexdump -C
+```
+
+The `iconv` command normalizes Unicode strings by converting them to a canonical form, eliminating any redundant or equivalent representations.
+
+<span class="hl">Output: 00000000 c3 a9</span>
+
+</details>
+
+---
+
+## Operating Systems APIs or System Calls for Converting and Handling IDNs
+
+<div class="info-card">
+
+Some examples of OS APIs or system calls support for handling IDNs popular operating systems:
+  - libidn (GNU Libidn):
+    - GNU Libidn is a widely used library for handling IDN domain names.
+  - Idn2:
+    - idn2 is another popular library for handling IDN domain names.
+  - Windows API (Windows):
+    - The Windows Internationalized Domain Names API (IDNA).
+  - Core Foundation (macOS):
+    - macOS provides IDN support through the Core Foundation framework.
+
+</div>
+
+---
+
+## Examples on Handling IDNs in Linux
+
+Some examples of OS APIs or system calls support for handling IDNs popular operating systems:
+
+<span class="hl">Prerequisites:</span>
+**- Install the idn2 utility:**
+  ```bash
+  sudo apt install idn2
+  ```
+  **- Example: Encoding**
+    ```bash
+    idn2 "सार्वभौमिक-स्वीकृति-परीक्षण.संगठन"
+    ```
+  **- Output:** xn—lnfbb8fe3cvkui0de0bcg5hxagsg7d5lwail.xn—i1b6b1a6a2e.g
+  **- Example: Decoding**
+    ```bash
+    idn2 -d "xn—lnfbb8fe3cvkui0de0bcg5hxagsg7d5lwail.xn--i1b6b1a6a2e"
+    ```
+  **- Output:** सार्वभौमिक-स्वीकृति-परीक्षण.संगठन.
+
+---
+
+## EAI Compatibility of Basic Mail Command Line Utilities
+
+<div class="info-card">
+
+- Various mail command-line utilities offer essential functionality for sending and managing emails from terminals or character-based screens.
+- In Linux, notable among these utilities are "mail" and "sendmail".
+- The mail command in Linux is a command-line utility that allows users to send and receive email from the command line interface.
+- It is a basic mail user agent (MUA) that provides a simple way to send and read emails without the need for a graphical email client.
+- It's important to note that the mail command relies on a properly configured mail transfer agent (MTA) on your system, such as Sendmail or Postfix.
+- MTA such as Postfix has also introduced EAI support in later versions, specifically from version 3.0 onwards.
+- Postfix uses the Cyrus SASL library for SASL support, which in turn supports the SMTPUTF8 extension necessary for EAI.
+- While using any MTA make sure you are using a version of the MTA that includes EAI support.
+
+</div>
+
+---
+
+## Operating Systems APIs or System Calls for Handling EAI in Email Clients
+
+<div class="info-card">
+
+The following are some key aspects of EAI integration in operating systems:
+- Unicode Support.
+- Email Client Support.
+- Input Methods.
+- DNS Support.
+- Validation and Security.
+- Interoperability
+
+</div>
+
+---
+
+## File Systems Support for Unicode
+
+<div class="info-card">
+
+The following are some examples of file systems that support Unicode:
+- Ext4 (Fourth Extended File System).
+- NTFS (New Technology File System).
+- APFS (Apple File System).
+- FAT32 (File Allocation Table).
+- exFAT (Extended File Allocation Table).
+
+</div>
+
+---
+
+## Example on Unicode Support in File Systems
+
+<details>
+<summary>Creating a File with a Unicode Name in a Linux:</summary>
+
+**Example:**
+```bash
+touch "日本語ファイル.txt"
+```
+
+The `touch` command is used to create the file named `"日本語ファイル.txt"`, which includes Japanese characters.
+
+</details>
+
+<details>
+<summary>Creating a Directory with a Unicode Name in Linux:</summary>
+
+**Example:**
+```bash
+mkdir "مجلد عربي"
+```
+
+This command creates a directory named `"مجلد عربي"`, which uses Arabic characters.
+
+</details>
+
+<details>
+<summary>Accessing a Directory with a Unicode Name:</summary>
+
+**Example:**
+```bash
+cd "مجلد عربي"
+```
+
+</details>
+
+<details>
+<summary>Accessing a File with a Unicode Name:</summary>
+
+**Example:**
+
+```bash
+cat "日本語ファイル.txt"
+```
+
+
+This command displays the content of the file named `"日本語ファイル.txt"` that includes Japanese characters.
+
+</details>
+
+---
+
+## Working with Unicode: Case-sensitive vs Case-insensitive vs Case-insensitive but Case-preserving Filename Handling
+
+<div class="info-card">
+
+**The three common approaches:**
+- Case-Sensitive Filename Handling.
+- Case-Insensitive Filename Handling.
+- Case-Insensitive but Case-Preserving Filename Handling.
+
+</div>
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. The Unicode Consortium. Retrieved from [https://home.unicode.org/](https://home.unicode.org/).
+2. Unicode Technical Reports. Retrieved from [https://www.unicode.org/reports/](https://www.unicode.org/reports/).
+3. Greenberg, J., & Sussman, M. (2019). *Unicode Explained*. O'Reilly Media.
+4. Linux Documentation Project. Unicode HOWTO. Retrieved from [https://tldp.org/HOWTO/Unicode-HOWTO.html](https://tldp.org/HOWTO/Unicode-HOWTO.html).
+5. FreeBSD Documentation. Unicode Support. Retrieved from [https://www.freebsd.org/doc/handbook/unicode.html](https://www.freebsd.org/doc/handbook/unicode.html).
+6. Microsoft. Unicode in the Windows API. Retrieved from [https://docs.microsoft.com/en-us/windows/win32/intl/unicode-in-the-windows-api](https://docs.microsoft.com/en-us/windows/win32/intl/unicode-in-the-windows-api).
+7. Davis, M., & Duerst, M. (2018). Unicode Technical Introduction. Retrieved from [https://www.unicode.org/standard/principles.html](https://www.unicode.org/standard/principles.html).
+8. GNU Core Utilities. `wc` command. Retrieved from [https://www.gnu.org/software/coreutils/manual/html_node/wc-invocation.html](https://www.gnu.org/software/coreutils/manual/html_node/wc-invocation.html).
+9. GNU Core Utilities. `cut` command. Retrieved from [https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html](https://www.gnu.org/software/coreutils/manual/html_node/cut-invocation.html).
+10. GNU Core Utilities. `tr` command. Retrieved from [https://www.gnu.org/software/coreutils/manual/html_node/tr-invocation.html](https://www.gnu.org/software/coreutils/manual/html_node/tr-invocation.html).
+11. Linux Documentation Project. Ext4 File System. Retrieved from [https://www.kernel.org/doc/html/latest/filesystems/ext4/index.html](https://www.kernel.org/doc/html/latest/filesystems/ext4/index.html).
+12. Microsoft. NTFS Technical Reference. Retrieved from [https://docs.microsoft.com/en-us/windows/win32/fileio/ntfs-technical-reference](https://docs.microsoft.com/en-us/windows/win32/fileio/ntfs-technical-reference).
+13. Apple Developer. Apple File System Guide. Retrieved from [https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/APFS_Guide/Introduction/Introduction.html](https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/APFS_Guide/Introduction/Introduction.html).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>
