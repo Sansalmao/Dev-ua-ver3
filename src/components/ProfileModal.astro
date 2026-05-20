@@ -725,17 +725,22 @@
     // ── GRID ─────────────────────────────────────────────────────────────────────
 
     function construirCard(
-        t: (typeof RUTAS)[string]["temas"][number],
-        esAvanzada: boolean = false,
-        index: number = 0, // ← nuevo parámetro
-    ): string {
+        t,
+        esAvanzada = false,
+        index = 0,
+        profile = "educator",
+    ) {
         const est = store.temas[t.id] ?? { visitado: false, completado: false };
         const nivelClass = t.nivel === "Avanzado" ? "avanzado" : "basico";
 
         let botonHtml = "";
         let progHtml = "";
 
-        const bloqueado = esAvanzada && index >= 3 && index <= 5;
+        // Bloqueo solo para ruta avanzada del perfil de estudiante/profesional (esto es temporal)
+        let bloqueado = false;
+        if (esAvanzada && profile === "learner") {
+            bloqueado = true;
+        }
 
         if (bloqueado) {
             botonHtml = `
@@ -825,7 +830,7 @@
     }
 
     async function mostrarGrid(
-        claveRuta: string,
+        claveRuta,
         sinTransicion = false,
         soloRefresh = false,
     ) {
@@ -835,19 +840,20 @@
         const esAvanzada =
             claveRuta === "educator_avanzada" ||
             claveRuta === "learner_avanzada";
+        const profile = claveRuta.startsWith("educator")
+            ? "educator"
+            : "learner";
 
-        document.getElementById("grid-titulo")!.textContent = ruta.titulo;
-        document.getElementById("grid-badge")!.textContent =
+        document.getElementById("grid-titulo").textContent = ruta.titulo;
+        document.getElementById("grid-badge").textContent =
             `✦ ${ruta.subtitulo}`;
-        document.getElementById("grid-desc")!.textContent = ruta.desc;
+        document.getElementById("grid-desc").textContent = ruta.desc;
 
-        // Pasar esAvanzada a construirCard
         topicsCont.innerHTML = ruta.temas
-            .map((t, idx) => construirCard(t, esAvanzada, idx))
+            .map((t, idx) => construirCard(t, esAvanzada, idx, profile))
             .join("");
         actualizarProgreso(ruta.temas);
 
-        // ... resto del código igual, pero cuidado con registrarBotones
         if (soloRefresh) {
             topicsCont
                 .querySelectorAll<HTMLElement>(".topic-card")

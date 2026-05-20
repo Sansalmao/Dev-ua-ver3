@@ -345,10 +345,12 @@ The code snippets written below use the Python <span class="hl">unicodedata</spa
 <details>
 <summary>Normalization Examples Using Python:</summary>
 
+<div class="obs-card">
+
 In Python, you can use the unicodedata module to normalize Unicode strings to NFC (Normalization Form C) and NFD (Normalization Form D). Below, you will find an illustrative example of NFC and NFD usages:
  
-<span class="hl">Example: Illustrating How Normalization of Unicode Strings</span>
- 
+**Example: Illustrating How Normalization of Unicode Strings**
+
 <div class="code-switcher">
   <div class="lang-switcher">
     <button class="lang-btn active" data-lang="python" data-target="norm1"><span class="lang-icon lang-icon--python"></span>Python</button>
@@ -414,14 +416,18 @@ The normalize function takes two arguments: the normalization form ('NFC' or 'NF
 
 In both Python and Java examples code given above, both NFC and NFD normalization produce similar Unicode code point outputs for characters such as C, a, and f. However, there is a difference in the representation of the diacritic character. In NFC, the Unicode code point for "é" is U+00E9, whereas in NFD, it is represented as the base character "e" (U+0065) followed by the combining character "´" (U+0301).
 
+</div>
+
 </details>
 
 <details>
 <summary>Normalization Examples Using Java:</summary>
- 
+
+<div class="obs-card">
+
 In Java, you can normalize Unicode strings or texts using NFC and NFD using the java.text.Normalizer class. Here's how you can perform normalization using NFC and NFD in Java.
- 
-- <span class="hl">Example:</span>
+
+**Example:**
  
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -457,6 +463,8 @@ for (int i = 0; i < nfdText.length(); i++) {
 In the example code above, both the normalization forms take a string with a diacritic character, apply normalization to obtain corresponding NFC and NFD normalized texts, and then display the individual Unicode code point values for each character in the normalized texts.
  
 The code ensures that combining marks are included in the output by printing each character individually, allowing for a comprehensive examination of the normalization process and the Unicode code points involved.
+
+</div>
 
 </details>
 
@@ -583,9 +591,11 @@ In the subsections that follow examples are given to illustrate how to access th
 <details>
 <summary>Accessing UCD from Programming Languages:</summary>
 
+<div class="obs-card">
+
 **Prerequisite for running the code snippets:** The code snippets(see section 13.1 and 13.2)  written below use the Python unicodedata  and the java.text.Normalizer modules to normalize a Unicode string in NFC (Normalization Form Canonical Composition) and NFD (Normalization Form Canonical Decomposition). There are no specific prerequisites to run this code, but you need to have Python and Java installed on your system.
 
-<span class="hl">Example</span>
+**Example:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -628,7 +638,9 @@ public class UCDExample2 {
 
 **Example 8:** Examples on illustrating How to Access the Unicode Characters Database Using programming Languages.
 
-<span class="hl">Note: </span>Java using the java.lang.Character package: the Character class is part of the core Java language and no need to import a package
+**Note:** Java using the java.lang.Character package: the Character class is part of the core Java language and no need to import a package
+
+</div>
 
 </details>
 
@@ -675,6 +687,8 @@ By using the Unicode CLDR utility in this way, you can quickly obtain detailed i
 
 <details>
 <summary>Illustrating the Applications of Resources from the UCD:</summary>
+
+<div class="obs-card">
 
 **Example Script:** The Scripts.txt file can be used for script detection by examining the script property value assigned to each Unicode character. 
 Here are a few examples of how the Script.txt file can be utilized:
@@ -762,6 +776,8 @@ for label in labels:
 ['Bengali', 'Han']
 ['Latin', 'Arabic']
 
+</div>
+
 </details>
 
 In the above code, the build_script_map() function reads the contents of the 'Scripts.txt' file and constructs a mapping of characters to their associated scripts. It iterates through each line of the file, ignoring comment lines and empty lines. For each valid line, it extracts the character range and script name, and adds the mapping to the script_map dictionary. The get_script_names(label) function takes a label as input and returns a list of script names associated with the characters in the label. It uses the build_script_map() function to obtain the character-to-script mapping. 
@@ -838,7 +854,9 @@ For example, in a case-insensitive comparison, "apple" and "Apple" would be cons
 
 Python's <span class="hl">str.casefold()</span> method performs case folding, which is a more comprehensive normalization of characters beyond just converting to lowercase. It provides a consistent and reliable way to compare strings while ignoring case distinctions, diacritics, and other similar characters.
 
-- <span class="hl">Example: Implementation of case-insensitive comparison</span>
+<div class="obs-card">
+
+**Example: Implementation of case-insensitive comparison**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -878,6 +896,8 @@ public class CaseInsensitiveComparison {
   </div>
 </div>
 
+</div>
+
 Java’s <span class="hl">equalsIgnoreCase()</span> method performs case folding identical to the casefold() method of Python.
 
 The above  Java code accomplishes the same case-insensitive string comparison as the Python code described above. The <span class="hl">equalsIgnoreCase()</span> method is used in Java to perform a case-insensitive comparison of strings.
@@ -891,13 +911,15 @@ Locale-based comparisons take into account the rules and conventions specific to
 
 For example, in English, "apple" comes before "banana" in a sorting algorithm based on alphabetical order. However, in some other languages, the sorting order may be different due to different alphabets or sorting rules. Locale-based comparisons consider these language-specific rules, allowing you to perform string comparisons that are culturally appropriate.
 
-﻿Python's locale.strcoll() function performs a locale-based string comparison. It uses the rules defined by the current locale to compare strings, taking into account language-specific sorting and collation. Before using locale.strcoll(), you can set the desired locale using locale.setlocale(locale.LC_COLLATE, '') to ensure the correct locale is being used.
+Python's locale.strcoll() function performs a locale-based string comparison. It uses the rules defined by the current locale to compare strings, taking into account language-specific sorting and collation. Before using locale.strcoll(), you can set the desired locale using locale.setlocale(locale.LC_COLLATE, '') to ensure the correct locale is being used.
 
 Locale-based comparisons are particularly useful when dealing with multilingual text or when you need to sort or compare strings according to language-specific rules. By understanding and utilizing case-insensitive comparisons and locale-based comparisons, you can perform string operations that are more flexible and culturally aware, accommodating different language conventions and user expectations.
 
 Before running the example codes, make sure that the necessary locale is installed.
 
-- <span class="hl">Example: How a Locale-Based Unicode String Comparisons in Python can be Performed Using the Locale Module:</span>
+<div class="obs-card">
+
+**Example: How a Locale-Based Unicode String Comparisons in Python can be Performed Using the Locale Module:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -968,6 +990,8 @@ public class UnicodeStringComparison {
   </div>
 </div>
 
+</div>
+
 In the above example, the locale module is used to set the desired locale for comparison, in this case, 'en_US.UTF-8' representing English (United States). Then, we define two Unicode strings, string1 and string2, which are "café" and "cafe" respectively. The locale.strcoll() function is used to perform a locale-based comparison between the strings, considering the sorting rules of the specified locale. The result of the comparison is stored in the result variable, which is then checked to determine the relative order of the strings in the specified locale.
 
 Please note that the availability of locales and the specific syntax for setting locales may vary depending on the operating system and programming language environment you are using. Additionally, the locale modules used might require additional configuration or setup on your system.
@@ -981,7 +1005,9 @@ It's recommended to consult the documentation and guidelines specific to your op
 
 Locale-based sorting, also known as collation or linguistic sorting, refers to the process of sorting strings based on the language-specific rules and conventions of a particular locale. Different languages have different sorting orders and rules for comparing characters.
 
-- <span class="hl">Example:</span>
+<div class="obs-card">
+
+**Example:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1007,6 +1033,8 @@ print(f"German sorted characters from the word: {german_sorted_word}") # German 
 ```
  
   </div>
+</div>
+
 </div>
 
 In the above code, the sort_word function takes a word and a locale name as input. It sets the desired locale for comparison using locale.setlocale() with the LC_COLLATE category. Then, it uses the sorted() function with the key parameter set to locale.strxfrm to perform locale-based sorting on the word. The sorted characters are then joined back together to form the sorted word.
@@ -1083,7 +1111,9 @@ Shaped display format ensures that each character appears in its appropriate for
 
 Implementing the correct display format for bidirectional and shaped scripts requires specialized text rendering engines, libraries, or frameworks that can handle the complexities of these scripts. These tools manage the text layout, character shaping, and glyph rendering, ensuring that the text is displayed accurately and in a visually pleasing manner.
 
-- <span class="hl">Example: How to Reshape Arabic Text</span>
+<div class="obs-card">
+
+**Example: How to Reshape Arabic Text**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1124,6 +1154,8 @@ public class ReshapeArabicText {
 ```
  
   </div>
+</div>
+
 </div>
 
 In the code above, the reshape_arabic_text() function uses the get_display() function from the <span class="hl">bidi.algorithm</span> module of the python-bidi library. This function reshapes the Arabic text by applying the Unicode Bidirectional Algorithm, which correctly handles the bidirectional layout of the text.. The output will be the original Arabic text 'مرحبا بكم' in its reshaped form.
@@ -1662,15 +1694,17 @@ By utilizing Unicode libraries like ICU and others, you can perform advanced Uni
 
 The examples below demonstrate how to perform Unicode string manipulations, such as normalization and removing diacritical marks, using language-specific libraries (<span class="hl">java.text.Normalizer</span> in Java and <span class="hl">unicodedata, regex</span> libraries in Python) as well as ICU (International Components for Unicode) versions of Java and Python. The normalization process ensures that the strings are in a standardized form, while removing diacritical marks allows working with accent-insensitive text.
 
-<span class="hl">Prerequisites to run the codes:</span>
+<div class="obs-card">
 
-- <span class="hl">Java examples:</span>
+**Prerequisites to run the codes:**
+
+- **Java examples:**
   - For the Java ICU example, you need to install the icu4j library or include the library in your project's dependencies.
-- <span class="hl">Python examples:</span>
+- **Python examples:**
   - For the Python ICU example, you need to install the PyICU package.
   - For the Python regex library example, you need to have the regex library installed.
 
-- <span class="hl">Example: Unicode String Manipulations in Java using Built-in Library.</span>
+**Example: Unicode String Manipulations in Java using Built-in Library.**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1705,6 +1739,8 @@ public class UnicodeExampleICU {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Note:</span>
@@ -1713,7 +1749,9 @@ public class UnicodeExampleICU {
 
 </div>
 
-- <span class="hl">Example: Java - Using the java.text.Normalizer class for Unicode Normalization:</span>
+<div class="obs-card">
+
+**Example: Java - Using the java.text.Normalizer class for Unicode Normalization:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1742,7 +1780,11 @@ public class UnicodeStringManipulationJava {
   </div>
 </div>
 
-- <span class="hl">Example: Java - Using ICU (icu4j) for Unicode Normalization and Case Folding:</span>
+</div>
+
+<div class="obs-card">
+
+**Example: Java - Using ICU (icu4j) for Unicode Normalization and Case Folding:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1775,7 +1817,11 @@ public class UnicodeStringManipulationICUJava {
   </div>
 </div>
 
-- <span class="hl">Example: Python - Using the unicodedata Module for Unicode Normalization and Character properties:</span>
+</div>
+
+<div class="obs-card">
+
+**Example: Python - Using the unicodedata Module for Unicode Normalization and Character properties:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1801,7 +1847,12 @@ print("Without Diacritics:", without_diacritics)
   </div>
 </div>
 
-- <span class="hl">Example: Python - Using the PyICU library for Unicode Normalization and Case Folding:</span>
+
+</div>
+
+<div class="obs-card">
+
+**Example: Python - Using the PyICU library for Unicode Normalization and Case Folding:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1828,6 +1879,8 @@ print("Without Diacritics:", without_diacritics)
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output</span>
@@ -1838,7 +1891,9 @@ Without Diacritics: مرحبا
 
 </div>
 
-- <span class="hl">Example: Python - Using the regex Library for Unicode Normalization and Case Folding:</span>
+<div class="obs-card">
+
+**Example: Python - Using the regex Library for Unicode Normalization and Case Folding:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1861,6 +1916,8 @@ print("Without Diacritics:", removed_diacritics)
 ```
 
   </div>
+</div>
+
 </div>
 
 <div class="info-card">
@@ -1891,9 +1948,11 @@ Without Diacritics: Cafe
 <details>
 <summary>Text Normalization:</summary>
 
+<div class="obs-card">
+
 Is the process of transforming text into a canonical or normalized form. ICU provides normalization functions based on Unicode normalization forms.
 
-- <span class="hl">Example: Third ICU Library in Python for Text Normalization:</span>
+**Example: Third ICU Library in Python for Text Normalization:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1915,6 +1974,8 @@ print("Normalized Text:", normalized_text)
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output:</span>
@@ -1930,9 +1991,11 @@ In the above example, the icu.Normalizer class is used to normalize the text to 
 <details>
 <summary>Text Collation:</summary>
 
+<div class="obs-card">
+
 Text collation is the process of comparing and sorting text based on linguistic rules. ICU provides collation functionality to compare and sort text according to various locales and collation rules.
 
-- <span class="hl">Example: Generic ICU Library in Python for Text Collation:</span>
+**Example: Generic ICU Library in Python for Text Collation:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -1987,6 +2050,8 @@ public class StringComparison {
 ```
 
   </div>
+</div>
+
 </div>
 
 <div class="info-card">

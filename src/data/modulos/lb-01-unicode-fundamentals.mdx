@@ -259,7 +259,7 @@ The character data type commonly used for representing Unicode code points is `c
  
 In Java, the char data type is used to represent a single code unit. Java supports Unicode by using the UTF-16 encoding scheme, where each Unicode code point is represented by one or two char values. It is designed to store Unicode characters and uses 16 bits (2 bytes) of memory. This 16-bit size allows the char data type to cover a wide range of Unicode code points.
 
-<div class="meta-card">
+<div class="obs-card">
 
 The following Java code demonstrates how char data type can be used in Java to store Unicode characters.
  
@@ -440,7 +440,7 @@ Java's String class supports the creation of strings containing Unicode characte
 
 </div>
 
-<div class="info-card">
+<div class="obs-card">
  
 <span class="hl">Example: Examples on Creating Unicode Strings.</span>
  
@@ -504,7 +504,7 @@ The accompanying Unicode string for "Hello" represents "World" in Chinese, Ethio
  
 The length() method of the String class returns the number of Unicode code units (16-bit char values) in the string. However, note that this may not be the same as the number of Unicode characters or code points.
 
-<div class="info-card">
+<div class="obs-card">
 
 <span class="hl">Example: Examples on Creating Unicode Strings.</span>
  
@@ -546,7 +546,7 @@ System.out.println("The emoji string length is: " + length);
  
 To obtain the number of Unicode code points in a string, you can use the codePointCount() method of the String class. This method considers surrogate pairs as a single code point.
 
-<div class="info-card">
+<div class="obs-card">
 
 <span class="hl">Example: Examples on Creating Unicode Strings.</span>
  
@@ -588,7 +588,7 @@ System.out.println("Code points count is: " + codePointCountEmoji);
  
 The <span class="hl">charAt()</span> method of the String class returns the 16-bit char value at the specified index. However, to access individual Unicode code points, including those represented by surrogate pairs, you can use the <span class="hl">codePointAt()</span> method. This method returns the code point at the given index, taking into account surrogate pairs.
 
-<div class="info-card">
+<div class="obs-card">
  
 <span class="hl">Example:</span> <span class="hl">To find the code point at a given index:</span>
  
@@ -650,7 +650,7 @@ The following are key Python features for handling Unicode characters:
  
 The accompanying Unicode string for "Hello" represents "World" in Chinese, Ethiopic (Amharic), and Arabic respectively.
 
-<div class="info-card">
+<div class="obs-card">
 
 <span class="hl">Example: Examples on Unicode String Creation:</span>
  
@@ -722,7 +722,7 @@ print(unicode_str)
 
 In Python, you can determine the length of a Unicode string using the len() function. The len() function returns the number of Unicode characters in the string.
 
-<div class="info-card">
+<div class="obs-card">
 
 <span class="hl">Example: To Find the Number of Unicode Characters in a Unicode String.</span>
  
@@ -751,7 +751,7 @@ print("Character counts is: ", length)
  
 In Python, the len() function can be used to count the number of Unicode code points in a string.
 
-<div class="info-card">
+<div class="obs-card">
 
 <span class="hl">Example: To Find the Number of Code Points in a Unicode String.</span>
  
@@ -780,7 +780,7 @@ print("Code point count is: ", length)
  
 In Python, you can access individual code points in a Unicode string using indexing. The <span class="hl">ord()</span> function is used to access the Unicode code point of a character at a specified indexing of a string. It converts the character to its corresponding Unicode code point.
 
-<div class="info-card">
+<div class="obs-card">
 
 <span class="hl">Example: To Find the Code Point at a Given Index.</span>
  
@@ -878,7 +878,7 @@ In Java, similar to string concatenation in ASCII, Unicode string concatenation 
  
 You can concatenate Unicode strings using the <span class="hl">"+"</span> operator just like any other strings.
 
-<div class="info-card">
+<div class="obs-card">
  
 <span class="hl">Example: Concatenating Unicode string Using the "+" operator:</span>
  
@@ -922,7 +922,7 @@ print(concatenated_str)
 - You can use the append() method of StringBuilder to append Unicode strings.
 - After appending all the strings, you can convert the StringBuilder back to a regular string using the toString() method.
 
-<div class="info-card">
+<div class="obs-card">
  
 <span class="hl">Example: Concatenating Unicode string Using the StringBuilder class.</span>
  
@@ -1015,7 +1015,7 @@ The following steps need to be applied in your Java code in order to store Unico
 - Create a Writer object, such as BufferedWriter or PrintWriter, and wrap it with an OutputStreamWriter specifying the UTF-8 encoding.
 - Open the file for writing and start writing the Unicode text to the file using the Writer object.
 
-<div class="info-card">
+<div class="obs-card">
  
 <span class="hl">Example: Storing Unicode Data in a UTF-8 File.</span>
  
@@ -1074,7 +1074,7 @@ The following steps need to be applied in your Java code in order to read UTF-8 
 - Create a Reader object, such as BufferedReader or Scanner, and wrap it with an InputStreamReader specifying the UTF-8 encoding.
 - Open the file for reading and read the Unicode text from the file using the Reader object.
 
-<div class="info-card">
+<div class="obs-card">
  
 <span class="hl">Example: Reading Unicode Data from a UTF-8 File.</span>
  

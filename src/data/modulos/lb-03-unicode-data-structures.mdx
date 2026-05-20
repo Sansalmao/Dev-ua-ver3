@@ -66,13 +66,11 @@ Unicode is a character encoding standard that aims to provide a universal repres
 <details>
 <summary>Lists:</summary>
 
-<div class="meta-card">
+<div class="obs-card">
 
 Lists are ordered collections of elements. You can include local language strings as elements in a list. This is useful when you need to maintain a sequence of items in various languages. For example, you might have a list of phrases or sentences in different languages.
 
-</div>
-
-<span class="hl">Example: Creating Lists with Unicode Strings in Python.</span>
+**Example: Creating Lists with Unicode Strings in Python.**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -112,18 +110,18 @@ In the above example, we create a list unicode_list that contains Unicode string
 
 In the above code snippet, we import the necessary classes (ArrayList and List) from the java.util package. We create an ArrayList object called unicodeList, which stores Unicode strings. We finally add Unicode strings in different languages using the add method.
 
+</div>
+
 </details>
 
 <details>
 <summary>Dictionaries:</summary>
 
-<div class="meta-card">
+<div class="obs-card">
 
 Dictionaries store key-value pairs. With Unicode, you can use local language strings as keys or values in dictionaries. This is beneficial when you need to associate information in different languages. For instance, you might have a dictionary where the keys represent words in one language and the values represent their translations in another language.
 
-</div>
-
-<span class="hl">Example: Creating Dictionaries with Unicode strings in Python:</span>
+**Example: Creating Dictionaries with Unicode strings in Python:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -163,18 +161,18 @@ In the above code snippet, we create a dictionary unicode_dict that contains key
 
 In the above code snippet, we import the necessary classes (<span class="hl">HashMap</span> and <span class="hl">Map</span>) from the <span class="hl">java.util</span> package. We create a <span class="hl">HashMap</span> object called unicodeDictionary, which stores Unicode strings as keys and values. We add key-value pairs of Unicode strings in different languages using the put method.
 
+</div>
+
 </details>
 
 <details>
 <summary>Sets:</summary>
 
-<div class="meta-card">
+<div class="obs-card">
 
 Sets are unordered collections of unique elements. You can include local language strings in sets to represent a collection of distinct items from various languages.
 
-</div>
-
-<span class="hl">Example: Creating Sets with Unicode Strings in Python:</span>
+**Example: Creating Sets with Unicode Strings in Python:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -214,18 +212,18 @@ The above code snippet demonstrates how you can use sets to store and manipulate
 
 In the above code snippet, we import the necessary classes (ArrayList and List) from the <span class="hl">ava.util</span> package. We create an <span class="hl">ArrayList</span> object called <span class="hl">unicodeList</span>, which stores Unicode strings. We add Unicode strings in different languages using the add method as we would any strings.
 
+</div>
+
 </details>
 
 <details>
 <summary>Trees:</summary>
 
-<div class="meta-card">
+<div class="obs-card">
 
 Trees are hierarchical data structures where each node can have child nodes. Unicode enables you to use local language strings as labels for nodes in a tree.
 
-</div>
-
-<span class="hl">Example: Creating Trees with Unicode Strings in Python:</span>
+**Example: Creating Trees with Unicode Strings in Python:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -291,6 +289,8 @@ In this example, we define a TreeNode class within the UnicodeStringTreeExample 
 
 We create a tree by instantiating TreeNode objects and setting their data values to Unicode strings in different languages. We construct the tree structure by assigning the appropriate child nodes to each node.
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Note:</span>
@@ -306,13 +306,11 @@ In fact, the Trees data structure is often used to represent hierarchical relati
 <details>
 <summary>Graphs:</summary>
 
-<div class="meta-card">
+<div class="obs-card">
 
 Graphs consist of vertices and edges that represent relationships or connections. Unicode supports local language strings as labels for vertices and edges in a graph. This enables you to represent relationships or connections labeled in multiple languages. For example, you might create a social network graph where the vertices represent individuals with names in different languages.
 
-</div>
-
-<span class="hl">Example: Creating Graphs with Unicode Strings in Python:</span>
+**Example: Creating Graphs with Unicode Strings in Python:**
 
 <div class="code-switcher">
   <div class="lang-switcher">
@@ -376,6 +374,8 @@ The add_vertex method adds a new vertex to the graph by creating a new key-value
 In this example, we use a HashMap called graph to represent the graph. The keys in the map are Unicode strings representing the vertices, and the values are lists of neighbor vertices.
 
 We add vertices using the addVertex method. It creates an entry in the graph map with an empty list of neighbors for the given vertex. Edges are added using the addEdge method. It retrieves the lists of neighbors for the source and destination vertices and adds each vertex to the other's list.
+
+</div>
 
 <div class="info-card">
 
@@ -466,6 +466,8 @@ Create an instance of the collator for the desired locale or language. Specify t
 
 </details>
 
+<div class="obs-card">
+
 <span class="hl">Example: Sorting of Strings Using UCA in Python:</span>
 
 <div class="code-switcher">
@@ -529,6 +531,8 @@ public class UnicodeCollationExample {
 ```
 
   </div>
+</div>
+
 </div>
 
 In the above example, we create a <span class="hl">Collator</span> instance using <span class="hl">Collator.getInstance(Locale.getDefault())</span>, which retrieves the default collator for the current locale. The <span class="hl">Collator</span> class provides support for the Unicode Collation Algorithm. We define an array of Unicode strings to be sorted, representing text in various languages. We then use <span class="hl">Arrays.sort()</span> to sort the strings using the collator. The collator takes into account the Unicode Collation Algorithm rules and the language-specific sorting conventions provided by the locale.
@@ -634,6 +638,8 @@ The following are some of the sorting algorithms commonly used in data structure
 
 <details>
 <summary>Bubble Sort:</summary>
+
+<div class="obs-card">
 
 - For Unicode strings, you can use Unicode-aware comparison functions to compare and swap strings correctly based on their Unicode code points or collation order.
 - Additionally, consider using Unicode normalization to ensure consistent handling of composed and decomposed characters during the comparison process.
@@ -741,6 +747,8 @@ public class UnicodeAwareBubbleSort {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
@@ -757,6 +765,8 @@ It normalizes the strings using Unicode normalization (NFD) to ensure consistent
 
 <details>
 <summary>Selection Sort:</summary>
+
+<div class="obs-card">
 
 - Similar to Bubble Sort, use Unicode-aware comparison functions to compare and select the appropriate string based on Unicode code points or collation order.
 - Apply Unicode normalization to ensure consistent sorting results.
@@ -850,6 +860,8 @@ public class UnicodeAwareSelectionSort {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
@@ -866,6 +878,8 @@ The selection_sort() and selectionSort() functions iterate through the list and 
 
 <details>
 <summary>Insertion Sort:</summary>
+
+<div class="obs-card">
 
 - Utilize Unicode-aware comparison functions to compare and insert strings into their correct positions within the sorted portion of the list.
 - Normalize Unicode strings using Unicode normalization to maintain consistency during the insertion process.
@@ -966,6 +980,8 @@ public class StringComparator {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
@@ -982,6 +998,8 @@ The compare_strings() and compareStrings() functions are used for the Unicode-aw
 
 <details>
 <summary>Merge Sort:</summary>
+
+<div class="obs-card">
 
 - When merging Unicode string lists during the merge step, employ Unicode-aware comparison functions to merge the lists based on Unicode code points or collation order.
 - Normalize Unicode strings to ensure consistent results during the merging process.
@@ -1068,6 +1086,8 @@ public static int compareStrings(String str1, String str2) {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
@@ -1086,6 +1106,8 @@ The <span class="hl">merge()</span> function is responsible for merging the two 
 
 <details>
 <summary>Quick Sort:</summary>
+
+<div class="obs-card">
 
 - Customize the partitioning step to handle Unicode strings correctly using Unicode-aware  comparison functions or collation keys.
 - Apply Unicode normalization to ensure consistent partitioning and sorting results.
@@ -1176,6 +1198,8 @@ public class UStringQuickSorter {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
@@ -1194,6 +1218,8 @@ The compare_strings() and compareStrings() functions are used for the Unicode-aw
 
 <details>
 <summary>Heap Sort:</summary>
+
+<div class="obs-card">
 
 - Use Unicode-aware comparison functions or collation keys when building the heap and extracting elements to maintain the correct sorting order.
 - Normalize Unicode strings during the heap construction phase to ensure consistent results.
@@ -1291,6 +1317,8 @@ public class UStringHeapSorter {
   </div>
 </div>
 
+</div>
+
 <div class="info-card">
 
 <span class="hl">Output: The Python and Java codes above produce the same output shown below.</span>
@@ -1309,6 +1337,8 @@ The <span class="hl">compare_strings()</span> and <span class="hl">compareString
 
 <details>
 <summary>Tim Sort:</summary>
+
+<div class="obs-card">
 
 - Tim Sort is a hybrid sorting algorithm that works well with various types of data, including Unicode strings.
 - Employ Unicode-aware comparison functions or collation keys during the sorting process to ensure accurate sorting of Unicode strings.
@@ -1438,6 +1468,8 @@ public class UStringTimSorter {
 ```
 
   </div>
+</div>
+
 </div>
 
 <div class="info-card">

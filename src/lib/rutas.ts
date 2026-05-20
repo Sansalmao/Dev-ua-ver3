@@ -123,6 +123,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Advanced analysis of IDN concepts and techniques, focused on identifying and addressing the limitations of the IDNA2008 protocol.",
         icon: "doc",
+        slug: "ea-04-advanced-idns",
       },
       {
         id: "ea-05",
@@ -132,6 +133,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Explore The fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.",
         icon: "api",
+        slug: "ea-05-eai-programming",
       },
       {
         id: "ea-06",
@@ -140,6 +142,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Explore the essential aspects of Unicode character sets and their significance in mobile apps.",
         icon: "flask",
+        slug: "ea-06-mobile-apps",
       },
       {
         id: "ea-07",
@@ -295,7 +298,7 @@ export const RUTAS: Record<string, RutaData> = {
   },
 };
 
-// ── Textos dinámicos del Paso 2 del modal (varían según el rol) ───────────────
+// ── Textos dinámicos que varían según el rol ───────────────
 
 export const BASICA_POR_ROL: Record<string, BasicaPorRolData> = {
   educator: {
@@ -312,9 +315,6 @@ export const BASICA_POR_ROL: Record<string, BasicaPorRolData> = {
 
 // ── Función de resolución de ruta ─────────────────────────────────────────────
 
-/**
- * Convierte la combinación rol+ruta en la clave del objeto RUTAS.
- */
 export function resolverRuta(rol: string, ruta: string): string {
   if (ruta === "avanzada") {
     return rol === "educator" ? "educator_avanzada" : "learner_avanzada";
