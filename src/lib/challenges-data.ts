@@ -1,49 +1,40 @@
 import { z } from "zod";
 
-/* ══════════════════════════════════════════════════════════════════════════
-   TIPOS BÁSICOS
-══════════════════════════════════════════════════════════════════════════ */
-
+// Tipos básicos
 export interface ChallengeModule {
-  id: string; // "mod1" … "mod5"
-  title: string; // "Module 1"
-  subtitle: string; // "Unicode Programming Fundamentals"
+  id: string;
+  title: string;
+  subtitle: string;
   accentHex: string;
   lightHex: string;
   borderHex: string;
 }
 
 export interface ChallengeCard {
-  id: string; // "c1" … "c4"
+  id: string;
   title: string;
-  lang: string; // "java", "javascript", "sql", etc.
+  lang: string;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   SCHEMA ZOD — frontmatter de los MDX en src/data/retos/
-   (común para ambos perfiles)
-══════════════════════════════════════════════════════════════════════════ */
-
+// RetoFrontmatter — schema de validación para el frontmatter de los retos
 export const retoFrontmatterSchema = z.object({
-  moduleId: z.string(), // "mod1"
-  challengeId: z.string(), // "c1"
+  moduleId: z.string(),
+  challengeId: z.string(),
   moduleTitle: z.string(),
   moduleDesc: z.string(),
-  exerciseNum: z.string(), // "Exercise 1"
+  exerciseNum: z.string(),
   exerciseTitle: z.string(),
   exerciseItems: z.array(z.string()),
-  solutionLang: z.enum(["java", "javascript", "python", "sql"]),
+  solutionLang: z.enum(["java", "javascript", "python", "sql", "text"]),
   solutionCode: z.string(),
   draft: z.boolean().default(false),
 });
 
 export type RetoFrontmatter = z.infer<typeof retoFrontmatterSchema>;
 
-/* ══════════════════════════════════════════════════════════════════════════
-   CONFIGURACIÓN PARA PERFIL EDUCATOR (profesor / instructor)
-   5 módulos × 4 retos = 20 retos
-══════════════════════════════════════════════════════════════════════════ */
-
+// ─────────────────────────────────────────────────────────────
+// EDUCATOR (profesor) – rutas básica y avanzada
+// ─────────────────────────────────────────────────────────────
 export const EDUCATOR_CHALLENGE_MODULES: ChallengeModule[] = [
   {
     id: "mod1",
@@ -120,11 +111,9 @@ export const EDUCATOR_CHALLENGE_CARDS: Record<string, ChallengeCard[]> = {
   ],
 };
 
-/* ══════════════════════════════════════════════════════════════════════════
-   CONFIGURACIÓN PARA PERFIL LEARNER (estudiante / profesional)
-   4 módulos × 4 retos = 16 retos (sin el módulo 5)
-══════════════════════════════════════════════════════════════════════════ */
-
+// ─────────────────────────────────────────────────────────────
+// LEARNER (estudiante) – ruta básica (módulos 1-4 con cantidades variables)
+// ─────────────────────────────────────────────────────────────
 export const LEARNER_CHALLENGE_MODULES: ChallengeModule[] = [
   {
     id: "mod1",
@@ -171,57 +160,162 @@ export const LEARNER_CHALLENGE_CARDS: Record<string, ChallengeCard[]> = {
     { id: "c1", title: "Exercise 1", lang: "java" },
     { id: "c2", title: "Exercise 2", lang: "java" },
     { id: "c3", title: "Exercise 3", lang: "java" },
-    { id: "c4", title: "Exercise 4", lang: "java" },
   ],
   mod3: [
     { id: "c1", title: "Exercise 1", lang: "java" },
     { id: "c2", title: "Exercise 2", lang: "java" },
-    { id: "c3", title: "Exercise 3", lang: "java" },
-    { id: "c4", title: "Exercise 4", lang: "java" },
   ],
   mod4: [
+    { id: "c1", title: "Exercise 1", lang: "sql" },
+    { id: "c2", title: "Exercise 2", lang: "sql" },
+    { id: "c3", title: "Exercise 3", lang: "sql" },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────
+// LEARNER – ruta avanzada (Implementación Técnica) – módulos 5-8
+// ─────────────────────────────────────────────────────────────
+export const LEARNER_ADVANCED_MODULES: ChallengeModule[] = [
+  {
+    id: "mod5",
+    title: "Module 5",
+    subtitle: "Introducing Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod6",
+    title: "Module 6",
+    subtitle: "Programming with Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod7",
+    title: "Module 7",
+    subtitle: "Email Address Internationalization (EAI)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod8",
+    title: "Module 8",
+    subtitle: "Advanced Topics in Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod9",
+    title: "Module 9",
+    subtitle: "Advanced Topics in Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod10",
+    title: "Module 10",
+    subtitle: "Advanced Topics in Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod11",
+    title: "Module 11",
+    subtitle: "Advanced Topics in Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+  {
+    id: "mod12",
+    title: "Module 12",
+    subtitle: "Advanced Topics in Internationalized Domain Names (IDNs)",
+    accentHex: "#e5621a",
+    lightHex: "#fff7ed",
+    borderHex: "#fed7aa",
+  },
+];
+
+export const LEARNER_ADVANCED_CARDS: Record<string, ChallengeCard[]> = {
+  mod5: [
+    { id: "c1", title: "Exercise 1", lang: "text" },
+    { id: "c2", title: "Exercise 2", lang: "text" },
+    { id: "c3", title: "Exercise 3", lang: "text" },
+    { id: "c4", title: "Exercise 4", lang: "text" },
+    { id: "c5", title: "Exercise 5", lang: "text" },
+  ],
+  mod6: [
+    { id: "c1", title: "Exercise 1", lang: "java" },
+    { id: "c2", title: "Exercise 2", lang: "java" },
+  ],
+  mod7: [
+    { id: "c1", title: "Exercise 1", lang: "text" },
+    { id: "c2", title: "Exercise 2", lang: "text" },
+    { id: "c3", title: "Exercise 3", lang: "text" },
+  ],
+  mod8: [
     { id: "c1", title: "Exercise 1", lang: "java" },
     { id: "c2", title: "Exercise 2", lang: "java" },
     { id: "c3", title: "Exercise 3", lang: "java" },
     { id: "c4", title: "Exercise 4", lang: "java" },
   ],
+  mod9: [
+    { id: "c1", title: "Exercise 1", lang: "python" },
+    { id: "c2", title: "Exercise 2", lang: "java" },
+  ],
+  mod10: [
+    { id: "c1", title: "Exercise 1", lang: "java" },
+    { id: "c2", title: "Exercise 2", lang: "java" },
+  ],
+  mod11: [
+    { id: "c1", title: "Exercise 1", lang: "text" },
+    { id: "c2", title: "Exercise 2", lang: "text" },
+    { id: "c3", title: "Exercise 3", lang: "text" },
+  ],
+  mod12: [
+    { id: "c1", title: "Exercise 1", lang: "bash" },
+    { id: "c2", title: "Exercise 2", lang: "bash" },
+    { id: "c3", title: "Exercise 3", lang: "text" },
+  ],
 };
 
-/* ══════════════════════════════════════════════════════════════════════════
-   HELPERS Y EXPORTACIONES PARA USO EN COMPONENTES
-══════════════════════════════════════════════════════════════════════════ */
-
-export const CHALLENGES_PER_MODULE = 4;
-
-// Mapas para acceso rápido (útiles si se necesitan en el servidor)
-export const EDUCATOR_MODULE_MAP: Record<string, ChallengeModule> =
-  EDUCATOR_CHALLENGE_MODULES.reduce(
-    (acc, m) => ({ ...acc, [m.id]: m }),
-    {} as Record<string, ChallengeModule>,
-  );
-
-export const LEARNER_MODULE_MAP: Record<string, ChallengeModule> =
-  LEARNER_CHALLENGE_MODULES.reduce(
-    (acc, m) => ({ ...acc, [m.id]: m }),
-    {} as Record<string, ChallengeModule>,
-  );
-
-// Función para obtener la configuración completa según el perfil
-export function getChallengeConfig(profile: "educator" | "learner") {
+// ─────────────────────────────────────────────────────────────
+// HELPERS – calcular totales por perfil/ruta
+// ─────────────────────────────────────────────────────────────
+export function getTotalChallenges(
+  profile: "educator" | "learner",
+  routeType: "basica" | "avanzada" = "basica",
+): number {
   if (profile === "educator") {
-    return {
-      modules: EDUCATOR_CHALLENGE_MODULES,
-      cards: EDUCATOR_CHALLENGE_CARDS,
-      moduleMap: EDUCATOR_MODULE_MAP,
-      totalChallenges:
-        EDUCATOR_CHALLENGE_MODULES.length * CHALLENGES_PER_MODULE,
-    };
+    return Object.values(EDUCATOR_CHALLENGE_CARDS).reduce(
+      (sum, cards) => sum + cards.length,
+      0,
+    );
   } else {
-    return {
-      modules: LEARNER_CHALLENGE_MODULES,
-      cards: LEARNER_CHALLENGE_CARDS,
-      moduleMap: LEARNER_MODULE_MAP,
-      totalChallenges: LEARNER_CHALLENGE_MODULES.length * CHALLENGES_PER_MODULE,
-    };
+    if (routeType === "avanzada") {
+      return Object.values(LEARNER_ADVANCED_CARDS).reduce(
+        (sum, cards) => sum + cards.length,
+        0,
+      );
+    } else {
+      return Object.values(LEARNER_CHALLENGE_CARDS).reduce(
+        (sum, cards) => sum + cards.length,
+        0,
+      );
+    }
   }
 }
+
+// Mapas para acceso rápido (no usados en cliente pero se exportan por si acaso)
+export const EDUCATOR_MODULE_MAP: Record<string, ChallengeModule> =
+  EDUCATOR_CHALLENGE_MODULES.reduce((acc, m) => ({ ...acc, [m.id]: m }), {});
+export const LEARNER_MODULE_MAP: Record<string, ChallengeModule> =
+  LEARNER_CHALLENGE_MODULES.reduce((acc, m) => ({ ...acc, [m.id]: m }), {});
+export const LEARNER_ADVANCED_MODULE_MAP: Record<string, ChallengeModule> =
+  LEARNER_ADVANCED_MODULES.reduce((acc, m) => ({ ...acc, [m.id]: m }), {});

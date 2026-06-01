@@ -1,0 +1,52 @@
+---
+moduleId: "mod1"
+challengeId: "c2"
+moduleTitle: "Module 1 – Unicode Programming Fundamentals"
+moduleDesc: "Provide the basic understanding of Unicode and its applications."
+exerciseNum: "Exercise 2"
+exerciseTitle: "Develop a code in Java to detect which of the following three domains contains non-Latin characters: example.com, example.com, еxample.com."
+exerciseItems:
+  - "Use the `Character.UnicodeScript` enum to identify the script of each character."
+  - "Check each of the three domain strings for any character that is not Latin or Common."
+  - "Print which string(s) contain non-Latin characters."
+solutionLang: "java"
+solutionCode: |
+  public class Mod1_Exercise2 {
+      public static void main(String[] args) {
+          String string1 = "example.com";
+          String string2 = "example.com";
+          String string3 = "еxample.com";
+  
+          // Check string1
+          for (int idx = 0; idx < string1.codePointCount(0, string1.length()); idx++) {
+              int cp = string1.codePointAt(idx);
+              Character.UnicodeScript script = Character.UnicodeScript.of(cp);
+              if (script != Character.UnicodeScript.LATIN && script != Character.UnicodeScript.COMMON) {
+                  System.out.println("String 1 contains non-Latin characters.");
+                  System.exit(0);
+              }
+          }
+  
+          // Check string2
+          for (int idx = 0; idx < string2.codePointCount(0, string2.length()); idx++) {
+              int cp = string2.codePointAt(idx);
+              Character.UnicodeScript script = Character.UnicodeScript.of(cp);
+              if (script != Character.UnicodeScript.LATIN && script != Character.UnicodeScript.COMMON) {
+                  System.out.println("String 2 contains non-Latin characters.");
+                  System.exit(0);
+              }
+          }
+  
+          // Check string3
+          for (int idx = 0; idx < string3.codePointCount(0, string3.length()); idx++) {
+              int cp = string3.codePointAt(idx);
+              Character.UnicodeScript script = Character.UnicodeScript.of(cp);
+              if (script != Character.UnicodeScript.LATIN && script != Character.UnicodeScript.COMMON) {
+                  System.out.println("String 3 contains non-Latin characters.");
+                  System.exit(0);
+              }
+          }
+      }
+  }
+draft: false
+---

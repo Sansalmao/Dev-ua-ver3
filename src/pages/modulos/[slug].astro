@@ -4,7 +4,7 @@ import { moduleFrontmatterSchema } from "../../lib/module-schema";
 
 export async function getStaticPaths() {
     // 1. Importar todos los MDX de la MISMA carpeta (./*.mdx)
-    const modules = import.meta.glob("../../data/modulos/*.mdx", {
+    const modules = import.meta.glob("../../data/modulos/**/*.mdx", {
         eager: true,
     });
 

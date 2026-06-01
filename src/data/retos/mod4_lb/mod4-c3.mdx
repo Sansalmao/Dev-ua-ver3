@@ -1,0 +1,26 @@
+---
+moduleId: "mod4"
+challengeId: "c3"
+moduleTitle: "Module 4 – Unicode in Database Systems"
+moduleDesc: "Concise introduction to essential concepts and considerations when working with Unicode character data in database systems."
+exerciseNum: "Exercise 3"
+exerciseTitle: "Using MySQL statements, execute the following operations on the `books` table: sort books by title, perform a case‑insensitive search for an author, and perform a case‑sensitive search for a title."
+exerciseItems:
+  - "Sort all books by `title` using the default collation (which is case‑insensitive and accent‑insensitive)."
+  - "Search for author 'harper lee' using a case‑insensitive collation (`utf8mb4_unicode_ci`)."
+  - "Search for title 'Les Misérables' using a binary case‑sensitive collation (`utf8mb4_bin`)."
+solutionLang: "sql"
+solutionCode: |
+  -- Sort books by title
+  SELECT * FROM books
+  ORDER BY title;
+
+  -- Case‑insensitive search for author (using the default collation)
+  SELECT * FROM books
+  WHERE author COLLATE utf8mb4_unicode_ci = 'harper lee';
+
+  -- Case‑sensitive search for title
+  SELECT * FROM books
+  WHERE title COLLATE utf8mb4_bin = 'Les Misérables';
+draft: false
+---

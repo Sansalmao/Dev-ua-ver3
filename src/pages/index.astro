@@ -9,6 +9,14 @@ import Toast from "../components/Toast.astro";
 import ProgressPanel from "../components/ProgressPanel.astro";
 import ChallengesPanel from "../components/ChallengesPanel.astro";
 import ChallengeFlow from "../components/ChallengeFlow.astro";
+import { getTotalChallenges } from "../lib/challenges-data";
+
+const totals = {
+    educator_basica: getTotalChallenges("educator", "basica"),
+    educator_avanzada: getTotalChallenges("educator", "avanzada"),
+    learner_basica: getTotalChallenges("learner", "basica"),
+    learner_avanzada: getTotalChallenges("learner", "avanzada"),
+};
 ---
 
 <BaseLayout
@@ -550,27 +558,32 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
     }
 </style>
 
-<script>
+<script define:vars={{ totals }}>
     "use strict";
     (function () {
         var UA_STORAGE_KEY = "ua-challenges-v1";
-        var CHALLENGES_PER_MODULE = 4;
-        var TOTAL_CHALLENGES = 16; // 4 módulos × 4 retos
 
-        /* ── Leer progreso de retos desde localStorage ─────────────────── */
         function getChallengesProgress() {
             try {
                 var badgeEl = document.getElementById("grid-badge");
-                var profile = "learner"; // por defecto
+                var profile = "learner";
+                var routeType = "basica";
                 if (badgeEl) {
                     var label = badgeEl.textContent.trim();
                     profile = label.includes("Profesores")
                         ? "educator"
                         : "learner";
+                    routeType = label.includes("SysAdmins & Devs")
+                        ? "avanzada"
+                        : "basica";
                 }
-                var storageKey = "ua-challenges-v1-" + profile;
+                var key = profile + "_" + routeType;
+                var total = totals[key];
+                var storageKey =
+                    "ua-challenges-v1-" +
+                    profile +
+                    (routeType === "avanzada" ? "-advanced" : "");
                 var raw = localStorage.getItem(storageKey);
-                var total = profile === "educator" ? 20 : 16;
                 if (!raw) {
                     return { done: 0, total: total, pct: 0 };
                 }
@@ -587,7 +600,7 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                     pct: Math.round((done / total) * 100) || 0,
                 };
             } catch (e) {
-                return { done: 0, total: 16, pct: 0 };
+                return { done: 0, total: totals.learner_basica, pct: 0 };
             }
         }
 
@@ -603,10 +616,39 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
             if (pctEl) pctEl.textContent = p.pct + "% COMPLETADO";
         }
 
+        function openChallenges() {
+            var grid = document.getElementById("view-grid");
+            var challenges = document.getElementById("view-challenges");
+            if (!grid || !challenges) return;
+
+            var badgeEl = document.getElementById("grid-badge");
+            var profileLabel = badgeEl ? badgeEl.textContent.trim() : "";
+            var profile = profileLabel.includes("Profesores")
+                ? "educator"
+                : "learner";
+            var routeType = profileLabel.includes("SysAdmins & Devs")
+                ? "avanzada"
+                : "basica";
+
+            grid.style.animation = "gridExit 220ms ease forwards";
+            setTimeout(function () {
+                grid.classList.remove("visible");
+                grid.style.animation = "";
+                document.dispatchEvent(
+                    new CustomEvent("challenges:open", {
+                        detail: {
+                            profileLabel: profileLabel,
+                            profile: profile,
+                            routeType: routeType,
+                        },
+                    }),
+                );
+            }, 220);
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             updateEntryCard();
 
-            // Observar cambios en el badge del grid
             var badgeEl = document.getElementById("grid-badge");
             if (badgeEl) {
                 var badgeObserver = new MutationObserver(function () {
@@ -619,7 +661,6 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                 });
             }
 
-            // El resto de tu código (listeners de la tarjeta, etc.)
             var card = document.getElementById("challenges-entry-card");
             if (card) {
                 card.addEventListener("click", function () {
@@ -637,50 +678,6 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
             }
         });
 
-        /* ── Actualizar el challenges-entry-card ──────────────────────── */
-        function updateEntryCard() {
-            var p = getChallengesProgress();
-            var doneEl = document.getElementById("cpc-done");
-            var totEl = document.getElementById("cpc-total");
-            var barEl = document.getElementById("cpc-bar");
-            var pctEl = document.getElementById("cpc-pct");
-            if (doneEl) doneEl.textContent = p.done;
-            if (totEl) totEl.textContent = "/" + p.total;
-            if (barEl) barEl.style.width = p.pct + "%";
-            if (pctEl) pctEl.textContent = p.pct + "% COMPLETADO";
-        }
-
-        /* ── Apertura del ChallengesPanel ─────────────────────────────── */
-        function openChallenges() {
-            var grid = document.getElementById("view-grid");
-            var challenges = document.getElementById("view-challenges");
-            if (!grid || !challenges) return;
-
-            // Leer el badge del perfil del DOM actual
-            var badgeEl = document.getElementById("grid-badge");
-            var profileLabel = badgeEl ? badgeEl.textContent.trim() : "";
-            var profile = profileLabel.includes("Profesores")
-                ? "educator"
-                : "learner";
-
-            // Ocultar grid con animación
-            grid.style.animation = "gridExit 220ms ease forwards";
-            setTimeout(function () {
-                grid.classList.remove("visible");
-                grid.style.animation = "";
-                // Emitir evento para que ChallengesPanel arranque
-                document.dispatchEvent(
-                    new CustomEvent("challenges:open", {
-                        detail: {
-                            profileLabel: profileLabel,
-                            profile: profile,
-                        },
-                    }),
-                );
-            }, 220);
-        }
-
-        /* ── Cierre del ChallengesPanel (volver a la ruta) ────────────── */
         document.addEventListener("challenges:closed", function () {
             var grid = document.getElementById("view-grid");
             if (!grid) return;
@@ -690,99 +687,6 @@ import ChallengeFlow from "../components/ChallengeFlow.astro";
                 grid.style.animation = "";
             }, 260);
             updateEntryCard();
-
-            var badgeEl = document.getElementById("grid-badge");
-            if (badgeEl) {
-                var badgeObserver = new MutationObserver(function () {
-                    updateEntryCard();
-                });
-                badgeObserver.observe(badgeEl, {
-                    childList: true,
-                    characterData: true,
-                    subtree: true,
-                });
-            }
-        });
-
-        /* ── Bind del challenges-entry-card ───────────────────────────── */
-        document.addEventListener("DOMContentLoaded", function () {
-            updateEntryCard();
-
-            var card = document.getElementById("challenges-entry-card");
-            if (card) {
-                card.addEventListener("click", function () {
-                    // Solo abrir si estamos en view-grid
-                    var grid = document.getElementById("view-grid");
-                    if (grid && grid.classList.contains("visible")) {
-                        openChallenges();
-                    }
-                });
-                card.addEventListener("keydown", function (e) {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        card.click();
-                    }
-                });
-            }
-        });
-
-        // Observar cambios en el badge del grid para ocultar/mostrar la tarjeta de retos
-        function initChallengesCardObserver() {
-            const badgeEl = document.getElementById("grid-badge");
-            const challengesCard = document.getElementById(
-                "challenges-entry-card",
-            );
-            if (!badgeEl || !challengesCard) return;
-
-            const observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    if (
-                        mutation.type === "childList" ||
-                        mutation.type === "characterData"
-                    ) {
-                        const text = badgeEl.textContent.trim();
-                        // Si es ruta avanzada (SysAdmins & Devs), ocultar la tarjeta
-                        if (text.includes("SysAdmins & Devs")) {
-                            challengesCard.style.display = "none";
-                        } else {
-                            challengesCard.style.display = "block";
-                        }
-                    }
-                });
-            });
-            observer.observe(badgeEl, {
-                childList: true,
-                characterData: true,
-                subtree: true,
-            });
-            // También ejecutar una vez al inicio
-            const initialText = badgeEl.textContent.trim();
-            if (initialText.includes("SysAdmins & Devs")) {
-                challengesCard.style.display = "none";
-            } else {
-                challengesCard.style.display = "block";
-            }
-        }
-
-        // Llamar a esta función cuando el DOM esté listo y también cada vez que se muestre el grid
-        // Por simplicidad, la llamamos dentro del DOMContentLoaded y también al abrir el grid
-        document.addEventListener(
-            "DOMContentLoaded",
-            initChallengesCardObserver,
-        );
-        // También cuando se muestre el grid (por si el badge se actualiza después)
-        document.addEventListener("challenges:closed", function () {
-            // Al cerrar el panel de retos, el grid se vuelve visible; actualizar visibilidad
-            const badgeEl = document.getElementById("grid-badge");
-            const challengesCard = document.getElementById(
-                "challenges-entry-card",
-            );
-            if (badgeEl && challengesCard) {
-                const text = badgeEl.textContent.trim();
-                challengesCard.style.display = text.includes("SysAdmins & Devs")
-                    ? "none"
-                    : "block";
-            }
         });
     })();
 </script>

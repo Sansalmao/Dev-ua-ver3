@@ -5,12 +5,13 @@ import {
     EDUCATOR_CHALLENGE_CARDS,
     LEARNER_CHALLENGE_MODULES,
     LEARNER_CHALLENGE_CARDS,
-    CHALLENGES_PER_MODULE,
+    LEARNER_ADVANCED_MODULES,
+    LEARNER_ADVANCED_CARDS,
 } from "../lib/challenges-data";
 import type { RetoFrontmatter } from "../lib/challenges-data";
 
 // Cargar todos los MDX de retos en build time
-const retoFiles = import.meta.glob("../data/retos/*.mdx", { eager: true });
+const retoFiles = import.meta.glob("../data/retos/**/*.mdx", { eager: true });
 
 const retosMap: Record<string, RetoFrontmatter> = {};
 
@@ -181,7 +182,8 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
         EDUCATOR_CARDS: EDUCATOR_CHALLENGE_CARDS,
         LEARNER_MODULES: LEARNER_CHALLENGE_MODULES,
         LEARNER_CARDS: LEARNER_CHALLENGE_CARDS,
-        CHALLENGES_PER_MODULE,
+        LEARNER_ADVANCED_MODULES,
+        LEARNER_ADVANCED_CARDS,
     }}
 >
     "use strict";
@@ -239,39 +241,48 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
         }
 
         /* ── INICIALIZACIÓN SEGÚN PERFIL ────────────────────────────────────── */
-        function setProfile(profile) {
+        function setProfile(profile, routeType) {
             currentProfile = profile;
             if (profile === "educator") {
                 MODULES = EDUCATOR_MODULES;
                 CHALLENGES = EDUCATOR_CARDS;
                 STORAGE_KEY = "ua-challenges-v1-educator";
             } else {
-                MODULES = LEARNER_MODULES;
-                CHALLENGES = LEARNER_CARDS;
-                STORAGE_KEY = "ua-challenges-v1-learner";
+                // learner
+                if (routeType === "avanzada") {
+                    MODULES = LEARNER_ADVANCED_MODULES;
+                    CHALLENGES = LEARNER_ADVANCED_CARDS;
+                    STORAGE_KEY = "ua-challenges-v1-learner-advanced";
+                } else {
+                    MODULES = LEARNER_MODULES;
+                    CHALLENGES = LEARNER_CARDS;
+                    STORAGE_KEY = "ua-challenges-v1-learner";
+                }
             }
-            // Reconstruir MODULE_MAP
             MODULE_MAP = {};
             MODULES.forEach(function (m) {
                 MODULE_MAP[m.id] = m;
             });
-            // Inicializar estado y refrescar UI
             initState();
             renderAll();
         }
 
         function buildDefault() {
             var modules = {};
+            var firstModuleId = MODULES[0] ? MODULES[0].id : "mod1";
             MODULES.forEach(function (mod, mi) {
-                var challenges = CHALLENGES[mod.id].map(function (c, ci) {
-                    return {
-                        id: c.id,
-                        status: mi === 0 && ci === 0 ? "available" : "locked",
-                    };
+                var challengesList = CHALLENGES[mod.id];
+                var challenges = challengesList.map(function (c, ci) {
+                    var status = mi === 0 && ci === 0 ? "available" : "locked";
+                    return { id: c.id, status: status };
                 });
                 modules[mod.id] = { progress: 0, challenges: challenges };
             });
-            return { currentModuleId: "mod1", modules: modules };
+            return {
+                currentModuleId: firstModuleId,
+                modules: modules,
+                version: 6,
+            };
         }
 
         function initState() {
@@ -283,6 +294,11 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
                     return;
                 }
                 var stored = JSON.parse(raw);
+                if (!stored.version || stored.version < 6) {
+                    state = def;
+                    saveState();
+                    return;
+                }
                 var merged = {};
                 MODULES.forEach(function (m) {
                     merged[m.id] =
@@ -290,9 +306,15 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
                             ? stored.modules[m.id]
                             : def.modules[m.id];
                 });
+                // Usar el módulo almacenado si existe, sino el primero de la lista actual
+                var defaultId = MODULES[0] ? MODULES[0].id : "mod1";
                 state = {
-                    currentModuleId: stored.currentModuleId || "mod1",
+                    currentModuleId:
+                        stored.currentModuleId && merged[stored.currentModuleId]
+                            ? stored.currentModuleId
+                            : defaultId,
                     modules: merged,
+                    version: stored.version,
                 };
             } catch (e) {
                 state = def;
@@ -317,10 +339,12 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
 
         /* ── ENGINE ────────────────────────────────────────────────────────── */
         function recalcProgress(moduleId) {
+            var challengesList = CHALLENGES[moduleId];
+            var total = challengesList.length;
             var done = state.modules[moduleId].challenges.filter(function (c) {
                 return c.status === "completed";
             }).length;
-            var pct = Math.round((done / CHALLENGES_PER_MODULE) * 100);
+            var pct = total > 0 ? Math.round((done / total) * 100) : 0;
             state.modules[moduleId].progress = pct;
             return pct;
         }
@@ -349,17 +373,15 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
 
             ch.status = "completed";
 
-            // 🔒 DESBLOQUEO DESACTIVADO – No se desbloquea el siguiente reto
-            /*
+            // Desbloquear el siguiente reto dentro del mismo módulo
             var nextCh = modState.challenges[idx + 1];
             if (nextCh && nextCh.status === "locked")
                 nextCh.status = "available";
-            */
 
             var newPct = recalcProgress(moduleId);
-            // 🔒 Tampoco se desbloquea el siguiente módulo
-            // var unlockedMod = newPct >= 100 ? unlockNextModule(moduleId) : null;
-            var unlockedMod = null;
+
+            // Desbloquear el siguiente módulo si este se completó al 100%
+            var unlockedMod = newPct >= 100 ? unlockNextModule(moduleId) : null;
 
             saveState();
 
@@ -382,13 +404,9 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
                 var done = modState.challenges.filter(function (c) {
                     return c.status === "completed";
                 }).length;
+                var total = CHALLENGES[moduleId].length;
                 showToast(
-                    '✓ "' +
-                        meta.title +
-                        '" completado — ' +
-                        done +
-                        "/" +
-                        CHALLENGES_PER_MODULE,
+                    '✓ "' + meta.title + '" completado — ' + done + "/" + total,
                 );
             }
         }
@@ -696,16 +714,18 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
             var moduleId = state.currentModuleId;
             var mod = MODULE_MAP[moduleId];
             var modState = state.modules[moduleId];
+            var challengesList = CHALLENGES[moduleId];
+            var total = challengesList.length;
             var done = modState.challenges.filter(function (c) {
                 return c.status === "completed";
             }).length;
-            var pct = Math.round((done / CHALLENGES_PER_MODULE) * 100);
+            var pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
             var el;
             if ((el = document.getElementById("vc-prog-done")))
                 el.textContent = done;
             if ((el = document.getElementById("vc-prog-total")))
-                el.textContent = "/" + CHALLENGES_PER_MODULE;
+                el.textContent = "/" + total;
             if ((el = document.getElementById("vc-prog-bar")))
                 el.style.width = pct + "%";
             if ((el = document.getElementById("vc-prog-pct")))
@@ -754,22 +774,24 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
             var levelEl = document.querySelector(".vc-level-badge");
             if (dotEl) dotEl.style.background = mod.accentHex;
             if (ttlEl) ttlEl.textContent = mod.subtitle;
-            if (levelEl) levelEl.textContent = mod.subtitle; // o "Conceptos básicos" según módulo
+            if (levelEl) levelEl.textContent = mod.subtitle;
         }
 
         function updateHeaderCounter() {
-            var total = 0;
+            var totalCompleted = 0;
+            var totalRetos = 0;
             MODULES.forEach(function (m) {
-                total += state.modules[m.id].challenges.filter(function (c) {
-                    return c.status === "completed";
-                }).length;
+                totalCompleted += state.modules[m.id].challenges.filter(
+                    function (c) {
+                        return c.status === "completed";
+                    },
+                ).length;
+                totalRetos += CHALLENGES[m.id].length;
             });
             var elDone = document.getElementById("vc-header-done");
             var elTotal = document.getElementById("vc-total-retos");
-            if (elDone) elDone.textContent = total;
-            if (elTotal)
-                elTotal.textContent =
-                    "/" + MODULES.length * CHALLENGES_PER_MODULE + " retos";
+            if (elDone) elDone.textContent = totalCompleted;
+            if (elTotal) elTotal.textContent = "/" + totalRetos + " retos";
         }
 
         function renderAll() {
@@ -815,8 +837,10 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
             if (!shell) return;
             boot();
             var profile = e.detail && e.detail.profile;
+            var routeType = e.detail && e.detail.routeType;
             if (!profile) profile = "learner";
-            setProfile(profile);
+            if (!routeType) routeType = "basica";
+            setProfile(profile, routeType);
             if (e.detail && e.detail.profileLabel) {
                 var badgeEl = document.getElementById("vc-profile-badge");
                 if (badgeEl) badgeEl.textContent = e.detail.profileLabel;
