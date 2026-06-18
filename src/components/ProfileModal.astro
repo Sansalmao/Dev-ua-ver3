@@ -739,7 +739,7 @@
         // Bloqueo solo para ruta avanzada del perfil de estudiante/profesional (esto es temporal)
         let bloqueado = false;
         if (esAvanzada && profile === "learner") {
-            bloqueado = true;
+            bloqueado = index >= 2;
         }
 
         if (bloqueado) {

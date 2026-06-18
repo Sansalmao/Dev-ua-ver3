@@ -220,12 +220,13 @@ export const RUTAS: Record<string, RutaData> = {
     temas: [
       {
         id: "la-01",
-        titulo: "Module 5 - Introducing Internationalized Domain Names (IDNs)",
+        titulo: "Module 5 - Introducing Internationalized Domain Names (IDNs)",
         nivel: "Avanzado",
         duracion: "104 min",
         descripcion:
           "Introduction to IDNs and their significance in the global Internet ecosystem.",
         icon: "server",
+        slug: "la-01-idn-introduction",
       },
       {
         id: "la-02",
@@ -236,6 +237,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.",
         icon: "mail",
+        slug: "la-02-idn-programming",
       },
       {
         id: "la-03",
