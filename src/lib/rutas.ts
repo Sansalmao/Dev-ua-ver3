@@ -247,6 +247,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Email Address Internationalization (EAI) and its significance in today's globalized communication landscape.",
         icon: "code",
+        slug: "la-03-eai",
       },
       {
         id: "la-04",
@@ -257,6 +258,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Advanced analysis of IDN concepts and techniques, focused on identifying and addressing the limitations of the IDNA2008 protocol.",
         icon: "doc",
+        slug: "la-04-advanced-idns",
       },
       {
         id: "la-05",

@@ -25,7 +25,7 @@ export const retoFrontmatterSchema = z.object({
   exerciseNum: z.string(),
   exerciseTitle: z.string(),
   exerciseItems: z.array(z.string()),
-  solutionLang: z.enum(["java", "javascript", "python", "sql", "text"]),
+  solutionLang: z.enum(["java", "javascript", "python", "sql", "text", "bash"]),
   solutionCode: z.string(),
   draft: z.boolean().default(false),
 });
