@@ -67,8 +67,9 @@
 
 <script>
     function initToast() {
-        const el = document.getElementById("toast");
-        if (!el) return;
+        const elRaw = document.getElementById("toast");
+        if (!elRaw) return;
+        const el = elRaw as HTMLElement;
 
         let hideTimer: ReturnType<typeof setTimeout>;
 

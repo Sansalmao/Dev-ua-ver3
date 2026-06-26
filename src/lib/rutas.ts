@@ -91,6 +91,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "ea-01",
         titulo: "Guide 5 - Introducing Internationalized Domain Names (IDNs)",
         nivel: "Avanzado",
+        duracion: "104 min",
         descripcion:
           "Introduction to IDNs and their significance in the global Internet ecosystem.",
         icon: "server",
@@ -101,6 +102,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Guide 6 - Programming with Internationalized Domain Names (IDNs).",
         nivel: "Avanzado",
+        duracion: "60 min",
         descripcion:
           "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages.",
         icon: "mail",
@@ -110,6 +112,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "ea-03",
         titulo: "Guide 7 - Email Address Internationalization (EAI).",
         nivel: "Avanzado",
+        duracion: "68 min",
         descripcion:
           "Email Address Internationalization (EAI) and its significance in today's globalized communication landscape.",
         icon: "code",
@@ -120,6 +123,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Guide 8 - Advanced Topics in Internationalized Domain Names (IDNs).",
         nivel: "Avanzado",
+        duracion: "93 min",
         descripcion:
           "Advanced analysis of IDN concepts and techniques, focused on identifying and addressing the limitations of the IDNA2008 protocol.",
         icon: "doc",
@@ -130,6 +134,7 @@ export const RUTAS: Record<string, RutaData> = {
         titulo:
           "Guide 9 - Programming in Email Address Internationalization(EAI).",
         nivel: "Avanzado",
+        duracion: "185 min",
         descripcion:
           "Explore The fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.",
         icon: "api",
@@ -139,6 +144,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "ea-06",
         titulo: "Guide 10 - Processing IDNs and EAI In Mobile Apps",
         nivel: "Avanzado",
+        duracion: "94 min",
         descripcion:
           "Explore the essential aspects of Unicode character sets and their significance in mobile apps.",
         icon: "flask",
@@ -148,6 +154,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "ea-07",
         titulo: "Guide 11 - IDN Security",
         nivel: "Avanzado",
+        duracion: "130 min",
         descripcion:
           "Explore the security vulnerabilities and challenges associated with Unicode, specifically in the context of Internationalized Domain Names (IDNs).",
         icon: "shield",
@@ -157,6 +164,7 @@ export const RUTAS: Record<string, RutaData> = {
         id: "ea-08",
         titulo: "Guide 12 - Unicode, IDNs and EAI Support in Operating Systems",
         nivel: "Avanzado",
+        duracion: "127 min",
         descripcion:
           "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems.",
         icon: "chart",
@@ -269,6 +277,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Explore The fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.",
         icon: "api",
+        slug: "la-05-eai-programming",
       },
       {
         id: "la-06",
@@ -278,6 +287,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Explore the essential aspects of Unicode character sets and their significance in mobile apps.",
         icon: "flask",
+        slug: "la-06-mobile-apps",
       },
       {
         id: "la-07",
@@ -287,6 +297,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Explore the security vulnerabilities and challenges associated with Unicode, specifically in the context of Internationalized Domain Names (IDNs).",
         icon: "shield",
+        slug: "la-07-idn-security",
       },
       {
         id: "la-08",

@@ -329,8 +329,9 @@ const defaultActive = activePanel ?? sections[0]?.items[0]?.panelId ?? "";
     // ── INIT ──────────────────────────────────────────────────────────────────
 
     function initTabsNav() {
-        const nav = document.getElementById("tabs-nav");
-        if (!nav) return;
+        const navEl = document.getElementById("tabs-nav");
+        if (!navEl) return;
+        const nav = navEl as HTMLElement;
 
         // ── COLAPSO / EXPANSIÓN ───────────────────────────────────────────────
 

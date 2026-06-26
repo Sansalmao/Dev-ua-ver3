@@ -48,8 +48,9 @@ const { defaultPanel = "" } = Astro.props;
 
 <script>
     function initTabsPanel() {
-        const container = document.getElementById("tabs-panels");
-        if (!container) return;
+        const containerEl = document.getElementById("tabs-panels");
+        if (!containerEl) return;
+        const container = containerEl as HTMLElement;
 
         // Recopilar todos los <h2 id="..."> del MDX renderizado ──
         //

@@ -401,23 +401,33 @@ interface Props {
 <script>
     "use strict";
     (function () {
-        var fase = 0;
-        var currentModuleId = null;
-        var currentChallengeId = null;
+        var fase: number = 0;
+        var currentModuleId: string | null = null;
+        var currentChallengeId: string | null = null;
 
         /* ── DOM refs ─────────────────────────────────────────────────────── */
         var shell = document.getElementById("view-challenge-flow");
-        var btnStart = document.getElementById("cf-btn-start");
-        var btnSubmit = document.getElementById("cf-btn-submit");
-        var btnEnviar = document.getElementById("cf-btn-enviar");
-        var btnSolucion = document.getElementById("cf-btn-solucion");
+        var btnStart = document.getElementById(
+            "cf-btn-start",
+        ) as HTMLButtonElement | null;
+        var btnSubmit = document.getElementById(
+            "cf-btn-submit",
+        ) as HTMLButtonElement | null;
+        var btnEnviar = document.getElementById(
+            "cf-btn-enviar",
+        ) as HTMLButtonElement | null;
+        var btnSolucion = document.getElementById(
+            "cf-btn-solucion",
+        ) as HTMLButtonElement | null;
         var btnBackRetos = document.getElementById("cf-btn-back-retos");
         var modal1 = document.getElementById("cf-modal1");
         var modal2 = document.getElementById("cf-modal2");
         var codeBlock = document.getElementById("cf-code-block");
         var codeInject = document.getElementById("cf-code-inject");
         var compBanner = document.getElementById("cf-completion-banner");
-        var repoInput = document.getElementById("cf-repo-url");
+        var repoInput = document.getElementById(
+            "cf-repo-url",
+        ) as HTMLInputElement | null;
         var toast = document.getElementById("cf-toast");
         var toastMsg = document.getElementById("cf-toast-msg");
 
@@ -451,13 +461,13 @@ interface Props {
             ' stroke-linecap="round"/></svg>';
 
         /* ── Helpers de estado ────────────────────────────────────────────── */
-        function setDone(btn, label) {
+        function setDone(btn: HTMLButtonElement, label: string) {
             btn.className = "cf-flow-btn cf-btn-done";
             btn.disabled = true;
             btn.innerHTML = SVG_CHECK + " $ " + label;
         }
 
-        function setActive(btn, ico, label) {
+        function setActive(btn: HTMLButtonElement, ico: string, label: string) {
             btn.className = "cf-flow-btn cf-btn-active";
             btn.disabled = false;
             btn.innerHTML = ico + " $ " + label;
@@ -473,19 +483,25 @@ interface Props {
                 '<rect x="8" y="3" width="6" height="10" rx="1.5"' +
                 ' fill="currentColor" opacity="0.6"/></svg>';
 
-            setActive(btnStart, startIco, "Start Working");
+            if (btnStart) setActive(btnStart, startIco, "Start Working");
 
-            btnSubmit.className = "cf-flow-btn cf-btn-inactive";
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = ICO_SUBMIT + " $ Submit Solution";
+            if (btnSubmit) {
+                btnSubmit.className = "cf-flow-btn cf-btn-inactive";
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = ICO_SUBMIT + " $ Submit Solution";
+            }
 
-            btnEnviar.className = "cf-flow-btn cf-btn-inactive";
-            btnEnviar.disabled = true;
-            btnEnviar.innerHTML = ICO_ENVIAR + " $ Enviar";
+            if (btnEnviar) {
+                btnEnviar.className = "cf-flow-btn cf-btn-inactive";
+                btnEnviar.disabled = true;
+                btnEnviar.innerHTML = ICO_ENVIAR + " $ Enviar";
+            }
 
-            btnSolucion.className = "cf-flow-btn cf-btn-inactive";
-            btnSolucion.disabled = true;
-            btnSolucion.innerHTML = ICO_SOL + " $ Solución";
+            if (btnSolucion) {
+                btnSolucion.className = "cf-flow-btn cf-btn-inactive";
+                btnSolucion.disabled = true;
+                btnSolucion.innerHTML = ICO_SOL + " $ Solución";
+            }
 
             if (compBanner) compBanner.classList.remove("cf-banner-show");
             if (codeBlock) {
@@ -499,7 +515,7 @@ interface Props {
         }
 
         /* ── Helpers de código ────────────────────────────────────────────── */
-        function escapeHtml(str) {
+        function escapeHtml(str: string): string {
             return str
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -507,14 +523,14 @@ interface Props {
                 .replace(/"/g, "&quot;");
         }
 
-        function processCodeEl(codeEl) {
+        function processCodeEl(codeEl: HTMLElement) {
             if (codeEl.querySelector(".code-line")) return;
             var raw = codeEl.textContent || "";
             var lines = raw.split("\n");
             if (lines[lines.length - 1] === "") lines.pop();
 
             var html = lines
-                .map(function (line, i) {
+                .map(function (line: string, i: number) {
                     return (
                         '<span class="code-line">' +
                         '<span class="code-line-num">' +
@@ -531,11 +547,11 @@ interface Props {
             codeEl.innerHTML = html;
         }
 
-        function copyText(text) {
+        function copyText(text: string): Promise<void> {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 return navigator.clipboard.writeText(text);
             }
-            return new Promise(function (resolve) {
+            return new Promise<void>(function (resolve) {
                 var ta = document.createElement("textarea");
                 ta.value = text;
                 ta.style.cssText = "position:fixed;opacity:0";
@@ -547,21 +563,21 @@ interface Props {
             });
         }
 
-        function getCodeText(container) {
+        function getCodeText(container: HTMLElement): string {
             var activeBlock = container.querySelector(".lang-block.active");
             var lines = activeBlock
                 ? activeBlock.querySelectorAll(".code-line-content")
                 : [];
             if (lines.length > 0) {
                 return Array.from(lines)
-                    .map(function (l) {
+                    .map(function (l: Element) {
                         return l.textContent || "";
                     })
                     .join("\n");
             }
             return (
                 (activeBlock && activeBlock.querySelector("code")
-                    ? activeBlock.querySelector("code").textContent
+                    ? activeBlock.querySelector("code")!.textContent
                     : null) ||
                 (activeBlock ? activeBlock.textContent : "") ||
                 ""
@@ -569,7 +585,7 @@ interface Props {
         }
 
         /* ── Pill fusionado para el bloque de solución ────────────────────── */
-        var LANG_LABELS = {
+        var LANG_LABELS: Record<string, string> = {
             java: "Java",
             python: "Python",
             sql: "SQL",
@@ -589,19 +605,23 @@ interface Props {
             );
         }
 
-        function buildCfPill(switcher) {
+        function buildCfPill(switcher: HTMLElement) {
             if (switcher.querySelector(".cs-pill")) return;
 
-            var blocks = Array.from(switcher.querySelectorAll(".lang-block"));
-            var langs = blocks.map(function (b) {
-                return b.dataset.lang || "";
+            var blocks = Array.from(
+                switcher.querySelectorAll(".lang-block"),
+            ) as HTMLElement[];
+            var langs = blocks.map(function (b: HTMLElement) {
+                return (
+                    (b as HTMLElement & { dataset: DOMStringMap }).dataset
+                        .lang || ""
+                );
             });
             var multiLang = langs.length > 1;
-            var activeLang = (
-                switcher.querySelector(".lang-block.active") || {}
-            ).dataset
-                ? switcher.querySelector(".lang-block.active").dataset.lang
-                : langs[0] || "java";
+            var activeLangEl =
+                switcher.querySelector<HTMLElement>(".lang-block.active");
+            var activeLang: string =
+                activeLangEl?.dataset.lang ?? langs[0] ?? "java";
 
             // Eliminar barra antigua si existe
             var oldBar = switcher.querySelector(".lang-switcher");
@@ -611,7 +631,7 @@ interface Props {
             var dropdownHtml = multiLang
                 ? '<div class="cs-dropdown" role="menu">' +
                   langs
-                      .map(function (lang) {
+                      .map(function (lang: string) {
                           return (
                               '<button class="cs-dd-item' +
                               (lang === activeLang ? " active" : "") +
@@ -671,18 +691,23 @@ interface Props {
             switcher.insertAdjacentHTML("afterbegin", pillHtml);
 
             // ── Refs ──────────────────────────────────────────────────────
-            var pillWrap = switcher.querySelector(".cs-pill-wrap");
-            var langBtn = pillWrap.querySelector(".cs-pill-lang");
-            var copyBtn = pillWrap.querySelector(".cs-pill-copy");
-            var copyLabel = pillWrap.querySelector(".cs-copy-label");
-            var dropdown = pillWrap.querySelector(".cs-dropdown");
-            var ddItems = pillWrap.querySelectorAll(".cs-dd-item");
+            var pillWrap =
+                switcher.querySelector<HTMLElement>(".cs-pill-wrap")!;
+            var langBtn =
+                pillWrap.querySelector<HTMLButtonElement>(".cs-pill-lang")!;
+            var copyBtn =
+                pillWrap.querySelector<HTMLButtonElement>(".cs-pill-copy")!;
+            var copyLabel =
+                pillWrap.querySelector<HTMLElement>(".cs-copy-label")!;
+            var dropdown = pillWrap.querySelector<HTMLElement>(".cs-dropdown");
+            var ddItems =
+                pillWrap.querySelectorAll<HTMLButtonElement>(".cs-dd-item");
 
             // ── Dropdown ──────────────────────────────────────────────────
             if (multiLang && dropdown) {
-                langBtn.addEventListener("click", function (e) {
+                langBtn.addEventListener("click", function (e: MouseEvent) {
                     e.stopPropagation();
-                    var isOpen = dropdown.classList.toggle("open");
+                    var isOpen = dropdown!.classList.toggle("open");
                     langBtn.setAttribute(
                         "aria-expanded",
                         isOpen ? "true" : "false",
@@ -690,21 +715,21 @@ interface Props {
                 });
 
                 document.addEventListener("click", function () {
-                    dropdown.classList.remove("open");
+                    dropdown!.classList.remove("open");
                     langBtn.setAttribute("aria-expanded", "false");
                 });
 
-                ddItems.forEach(function (item) {
-                    item.addEventListener("click", function (e) {
+                ddItems.forEach(function (item: HTMLButtonElement) {
+                    item.addEventListener("click", function (e: MouseEvent) {
                         e.stopPropagation();
                         var lang = item.dataset.lang || "";
                         if (!lang) return;
 
                         // Actualizar pill
-                        var icon = langBtn.querySelector(
+                        var icon = langBtn.querySelector<HTMLElement>(
                             "[data-role='pill-icon']",
                         );
-                        var label = langBtn.querySelector(
+                        var label = langBtn.querySelector<HTMLElement>(
                             "[data-role='pill-label']",
                         );
                         if (icon)
@@ -717,26 +742,27 @@ interface Props {
                         );
 
                         // Marcar item activo
-                        ddItems.forEach(function (i) {
+                        ddItems.forEach(function (i: HTMLButtonElement) {
                             i.classList.remove("active");
                         });
                         item.classList.add("active");
 
                         // Mostrar bloque correcto
-                        blocks.forEach(function (b) {
+                        blocks.forEach(function (b: HTMLElement) {
                             b.classList.remove("active");
                         });
-                        var target = switcher.querySelector(
+                        var target = switcher.querySelector<HTMLElement>(
                             '.lang-block[data-lang="' + lang + '"]',
                         );
                         if (target) {
                             target.classList.add("active");
-                            var code = target.querySelector("pre code");
+                            var code =
+                                target.querySelector<HTMLElement>("pre code");
                             if (code) processCodeEl(code);
                         }
 
                         // Cerrar
-                        dropdown.classList.remove("open");
+                        dropdown!.classList.remove("open");
                         langBtn.setAttribute("aria-expanded", "false");
                     });
                 });
@@ -756,7 +782,20 @@ interface Props {
         }
 
         /* ── Inyección de contenido dinámico ─────────────────────────────── */
-        function injectContent(data) {
+        interface ChallengeData {
+            moduleId?: string;
+            challengeId?: string;
+            moduleTitle?: string;
+            moduleDesc?: string;
+            exerciseNum?: string;
+            exerciseTitle?: string;
+            exerciseItems?: string[];
+            solutionLang?: string;
+            solutionCode?: string;
+            solutions?: Record<string, string>;
+        }
+
+        function injectContent(data: ChallengeData) {
             var t = document.getElementById("cf-page-title");
             var s = document.getElementById("cf-page-sub");
             var n = document.getElementById("cf-exercise-num");
@@ -770,7 +809,7 @@ interface Props {
 
             if (ei && data.exerciseItems && data.exerciseItems.length) {
                 ei.innerHTML = data.exerciseItems
-                    .map(function (item) {
+                    .map(function (item: string) {
                         return "<li>" + item + "</li>";
                     })
                     .join("");
@@ -779,8 +818,10 @@ interface Props {
             if (!codeInject) return;
 
             // ── Determinar lenguajes disponibles ──────────────────────────
-            var solutions = data.solutions || {};
-            var activeLang = data.solutionLang || "java";
+            var solutions: Record<string, string> = data.solutions
+                ? { ...data.solutions }
+                : {};
+            var activeLang: string = data.solutionLang || "java";
 
             // Retrocompatibilidad: solutionCode (string único)
             if (data.solutionCode && !solutions[activeLang]) {
@@ -794,7 +835,7 @@ interface Props {
 
             // ── Construir bloques ─────────────────────────────────────────
             var blocksHtml = langs
-                .map(function (lang) {
+                .map(function (lang: string) {
                     return (
                         '<div class="lang-block' +
                         (lang === activeLang ? " active" : "") +
@@ -816,10 +857,11 @@ interface Props {
             codeInject.innerHTML = switcherHtml;
 
             // Procesar líneas de código
-            var switcher = codeInject.querySelector(".code-switcher");
+            var switcher =
+                codeInject.querySelector<HTMLElement>(".code-switcher")!;
             switcher
-                .querySelectorAll(".lang-block pre code")
-                .forEach(function (code) {
+                .querySelectorAll<HTMLElement>(".lang-block pre code")
+                .forEach(function (code: HTMLElement) {
                     processCodeEl(code);
                 });
 
@@ -828,30 +870,30 @@ interface Props {
         }
 
         /* ── Modal helpers ────────────────────────────────────────────────── */
-        function openModal(el) {
+        function openModal(el: HTMLElement) {
             el.classList.remove("cf-overlay-hidden");
             document.body.style.overflow = "hidden";
-            var first = el.querySelector("button, [href], input");
+            var first = el.querySelector<HTMLElement>("button, [href], input");
             if (first)
                 setTimeout(function () {
-                    first.focus();
+                    first!.focus();
                 }, 50);
         }
 
-        function closeModal(el) {
+        function closeModal(el: HTMLElement) {
             el.classList.add("cf-overlay-hidden");
             document.body.style.overflow = "";
         }
 
         /* ── Toast ────────────────────────────────────────────────────────── */
-        var toastTimer;
-        function showToast(msg) {
+        var toastTimer: ReturnType<typeof setTimeout> | undefined;
+        function showToast(msg: string) {
             if (!toastMsg || !toast) return;
             toastMsg.textContent = msg;
             toast.classList.add("cf-toast-show");
             clearTimeout(toastTimer);
             toastTimer = setTimeout(function () {
-                toast.classList.remove("cf-toast-show");
+                toast!.classList.remove("cf-toast-show");
             }, 3000);
         }
 
@@ -860,16 +902,17 @@ interface Props {
         // PASO 1: Start Working
         if (btnStart) {
             btnStart.addEventListener("click", function () {
-                if (fase === 0) openModal(modal1);
+                if (fase === 0 && modal1) openModal(modal1);
             });
         }
 
         var m1Close = document.getElementById("cf-modal1-close");
         if (m1Close) {
             m1Close.addEventListener("click", function () {
-                closeModal(modal1);
-                setDone(btnStart, "Start Working");
-                setActive(btnSubmit, ICO_SUBMIT, "Submit Solution");
+                if (modal1) closeModal(modal1);
+                if (btnStart) setDone(btnStart, "Start Working");
+                if (btnSubmit)
+                    setActive(btnSubmit, ICO_SUBMIT, "Submit Solution");
                 fase = 1;
                 showToast("Reto iniciado — ¡a construir!");
             });
@@ -878,14 +921,14 @@ interface Props {
         // PASO 2: Submit Solution
         if (btnSubmit) {
             btnSubmit.addEventListener("click", function () {
-                if (fase === 1) openModal(modal2);
+                if (fase === 1 && modal2) openModal(modal2);
             });
         }
 
         var m2Close = document.getElementById("cf-modal2-close");
         if (m2Close) {
             m2Close.addEventListener("click", function () {
-                closeModal(modal2);
+                if (modal2) closeModal(modal2);
             });
         }
 
@@ -898,16 +941,16 @@ interface Props {
                         repoInput.classList.add("cf-input-error");
                         repoInput.focus();
                         setTimeout(function () {
-                            repoInput.classList.remove("cf-input-error");
+                            repoInput!.classList.remove("cf-input-error");
                         }, 1500);
                     }
                     return;
                 }
                 if (repoInput) repoInput.classList.remove("cf-input-error");
-                closeModal(modal2);
-                setDone(btnSubmit, "Submit Solution");
-                setDone(btnEnviar, "Enviar");
-                setActive(btnSolucion, ICO_SOL, "Solución");
+                if (modal2) closeModal(modal2);
+                if (btnSubmit) setDone(btnSubmit, "Submit Solution");
+                if (btnEnviar) setDone(btnEnviar, "Enviar");
+                if (btnSolucion) setActive(btnSolucion, ICO_SOL, "Solución");
                 fase = 2;
                 showToast("Solución enviada correctamente");
             });
@@ -917,7 +960,7 @@ interface Props {
         if (btnSolucion) {
             btnSolucion.addEventListener("click", function () {
                 if (fase !== 2) return;
-                setDone(btnSolucion, "Solución");
+                setDone(btnSolucion!, "Solución");
                 fase = 3;
 
                 if (currentModuleId && currentChallengeId) {
@@ -955,17 +998,17 @@ interface Props {
 
         /* ── Cerrar modales con backdrop / Escape ─────────────────────────── */
         if (modal1) {
-            modal1.addEventListener("click", function (e) {
-                if (e.target === modal1) closeModal(modal1);
+            modal1.addEventListener("click", function (e: MouseEvent) {
+                if (e.target === modal1) closeModal(modal1!);
             });
         }
         if (modal2) {
-            modal2.addEventListener("click", function (e) {
-                if (e.target === modal2) closeModal(modal2);
+            modal2.addEventListener("click", function (e: MouseEvent) {
+                if (e.target === modal2) closeModal(modal2!);
             });
         }
 
-        document.addEventListener("keydown", function (e) {
+        document.addEventListener("keydown", function (e: KeyboardEvent) {
             if (e.key !== "Escape") return;
             if (modal1 && !modal1.classList.contains("cf-overlay-hidden"))
                 closeModal(modal1);
@@ -981,14 +1024,14 @@ interface Props {
         }
 
         /* ── Apertura: escucha 'challenge-flow:open' ──────────────────────── */
-        document.addEventListener("challenge-flow:open", function (e) {
+        document.addEventListener("challenge-flow:open", function (e: Event) {
             if (!shell) return;
             resetFlow();
 
-            var data =
-                e.detail && e.detail.challengeData
-                    ? e.detail.challengeData
-                    : {};
+            var customEvent = e as CustomEvent<{
+                challengeData?: ChallengeData;
+            }>;
+            var data: ChallengeData = customEvent.detail?.challengeData ?? {};
 
             currentModuleId = data.moduleId || null;
             currentChallengeId = data.challengeId || null;

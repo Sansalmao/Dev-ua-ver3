@@ -620,10 +620,14 @@
 
     // ── GUARD: solo ejecutar en index.astro ──────────────────────────────────────
 
-    const overlay = document.getElementById("modal-overlay");
-    const viewHome = document.getElementById("view-home");
-    const viewGrid = document.getElementById("view-grid");
-    const topicsCont = document.getElementById("topics-container");
+    const overlay = document.getElementById(
+        "modal-overlay",
+    ) as HTMLElement | null;
+    const viewHome = document.getElementById("view-home") as HTMLElement | null;
+    const viewGrid = document.getElementById("view-grid") as HTMLElement | null;
+    const topicsCont = document.getElementById(
+        "topics-container",
+    ) as HTMLElement | null;
 
     if (!overlay || !viewHome || !viewGrid || !topicsCont) {
         throw new Error(
@@ -674,16 +678,16 @@
     // ── MODAL ────────────────────────────────────────────────────────────────────
 
     function abrirModal() {
-        overlay.classList.add("open");
+        overlay!.classList.add("open");
         document.body.style.overflow = "hidden";
 
         // Foco al primer elemento interactivo para accesibilidad
-        const primerBoton = overlay.querySelector<HTMLElement>("[data-rol]");
+        const primerBoton = overlay!.querySelector<HTMLElement>("[data-rol]");
         primerBoton?.focus();
     }
 
     function cerrarModal() {
-        overlay.classList.remove("open");
+        overlay!.classList.remove("open");
         document.body.style.overflow = "";
         setTimeout(irAPaso1, 300);
     }
@@ -725,7 +729,7 @@
     // ── GRID ─────────────────────────────────────────────────────────────────────
 
     function construirCard(
-        t,
+        t: (typeof RUTAS)[string]["temas"][number],
         esAvanzada = false,
         index = 0,
         profile = "educator",
@@ -830,7 +834,7 @@
     }
 
     async function mostrarGrid(
-        claveRuta,
+        claveRuta: string,
         sinTransicion = false,
         soloRefresh = false,
     ) {
@@ -844,18 +848,20 @@
             ? "educator"
             : "learner";
 
-        document.getElementById("grid-titulo").textContent = ruta.titulo;
-        document.getElementById("grid-badge").textContent =
-            `✦ ${ruta.subtitulo}`;
-        document.getElementById("grid-desc").textContent = ruta.desc;
+        const gridTitulo = document.getElementById("grid-titulo");
+        const gridBadge = document.getElementById("grid-badge");
+        const gridDesc = document.getElementById("grid-desc");
+        if (gridTitulo) gridTitulo.textContent = ruta.titulo;
+        if (gridBadge) gridBadge.textContent = `✦ ${ruta.subtitulo}`;
+        if (gridDesc) gridDesc.textContent = ruta.desc;
 
-        topicsCont.innerHTML = ruta.temas
+        topicsCont!.innerHTML = ruta.temas
             .map((t, idx) => construirCard(t, esAvanzada, idx, profile))
             .join("");
         actualizarProgreso(ruta.temas);
 
         if (soloRefresh) {
-            topicsCont
+            topicsCont!
                 .querySelectorAll<HTMLElement>(".topic-card")
                 .forEach((card, i) => {
                     setTimeout(() => {
@@ -870,17 +876,17 @@
 
         // ... animaciones
         if (sinTransicion) {
-            viewHome.classList.add("oculto");
-            viewGrid.classList.add("visible");
+            viewHome!.classList.add("oculto");
+            viewGrid!.classList.add("visible");
         } else {
-            await runAnim(viewHome, "homeExit", 210);
-            viewHome.classList.add("oculto");
-            viewGrid.classList.add("visible");
-            await runAnim(viewGrid, "gridEnter", 360);
+            await runAnim(viewHome!, "homeExit", 210);
+            viewHome!.classList.add("oculto");
+            viewGrid!.classList.add("visible");
+            await runAnim(viewGrid!, "gridEnter", 360);
         }
 
         const delay = sinTransicion ? 80 : 40;
-        topicsCont
+        topicsCont!
             .querySelectorAll<HTMLElement>(".topic-card")
             .forEach((card, i) => {
                 setTimeout(() => {
@@ -894,16 +900,16 @@
     }
 
     async function volverAlHome() {
-        await runAnim(viewGrid, "gridExit", 210);
-        viewGrid.classList.remove("visible");
-        viewHome.classList.remove("oculto");
-        await runAnim(viewHome, "homeEnter", 320);
+        await runAnim(viewGrid!, "gridExit", 210);
+        viewGrid!.classList.remove("visible");
+        viewHome!.classList.remove("oculto");
+        await runAnim(viewHome!, "homeEnter", 320);
     }
 
     // ── BOTONES DE CARDS ─────────────────────────────────────────────────────────
 
     function registrarBotones(temas: (typeof RUTAS)[string]["temas"]) {
-        topicsCont
+        topicsCont!
             .querySelectorAll<HTMLButtonElement>("button.btn-iniciar")
             .forEach((btn) => {
                 btn.addEventListener("click", (e) => {
@@ -930,7 +936,7 @@
                 });
             });
 
-        topicsCont
+        topicsCont!
             .querySelectorAll<HTMLAnchorElement>("a.btn-iniciar")
             .forEach((enlace) => {
                 enlace.addEventListener("click", () => {
