@@ -602,27 +602,53 @@ canvas {
     color: var(--accent-hover);
 }
 
+.module-content details {
+    position: relative;
+}
+
+.module-content details[open]::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 36px;
+    bottom: 4px;
+    width: 3px;
+    background: var(--accent-border-light);
+    border-radius: 2px;
+}
+
 .module-content details > *:not(summary) {
-    padding: 4px 0 8px 26px;
-    border-left: 3px solid var(--accent-border-light);
-    margin-left: 6px;
+    padding: 2px 0 8px 0;
+    margin-left: 24px;
+}
+
+.module-content details > .info-card,
+.module-content details > .obs-card {
+    margin-left: 24px;
 }
 
 .module-content details details {
-    margin: 0.2rem 0;
+    margin: 0.2rem 0 0.4rem 20px;
+}
+
+.module-content details details[open]::after {
+    left: 3px;
+    top: 32px;
+    width: 2px;
+    background: var(--border);
 }
 
 .module-content details details > *:not(summary) {
-    padding: 3px 0 6px 22px;
-    border-left: 2px solid var(--border);
-    margin-left: 6px;
+    padding: 8px 0 5px 0;
+    margin-left: 20px;
 }
 
 .module-content details ul,
 .module-content details ol {
-    padding-left: 2.5rem;
+    padding-left: 1.2rem;
     margin: 0.5rem 0;
     list-style: disc;
+    list-style-position: inside;
 }
 
 .module-content details li {
@@ -646,8 +672,8 @@ canvas {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 18px 22px;
-    margin: 1.25rem 0;
+    padding: 14px 28px;
+    margin: 1rem 0;
 }
 
 .module-content .info-card p {

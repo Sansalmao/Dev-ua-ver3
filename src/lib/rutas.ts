@@ -308,6 +308,7 @@ export const RUTAS: Record<string, RutaData> = {
         descripcion:
           "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems.",
         icon: "chart",
+        slug: "la-08-unicode-os",
       },
     ],
   },

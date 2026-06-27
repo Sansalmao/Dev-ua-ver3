@@ -620,14 +620,10 @@
 
     // ── GUARD: solo ejecutar en index.astro ──────────────────────────────────────
 
-    const overlay = document.getElementById(
-        "modal-overlay",
-    ) as HTMLElement | null;
+    const overlay = document.getElementById("modal-overlay") as HTMLElement | null;
     const viewHome = document.getElementById("view-home") as HTMLElement | null;
     const viewGrid = document.getElementById("view-grid") as HTMLElement | null;
-    const topicsCont = document.getElementById(
-        "topics-container",
-    ) as HTMLElement | null;
+    const topicsCont = document.getElementById("topics-container") as HTMLElement | null;
 
     if (!overlay || !viewHome || !viewGrid || !topicsCont) {
         throw new Error(
@@ -740,41 +736,27 @@
         let botonHtml = "";
         let progHtml = "";
 
-        // Bloqueo solo para ruta avanzada del perfil de estudiante/profesional (esto es temporal)
-        let bloqueado = false;
-        if (esAvanzada && profile === "learner") {
-            bloqueado = index >= 4;
+        const btnLabel = est.completado
+            ? "$ revisar"
+            : est.visitado
+              ? "$ continuar"
+              : "$ iniciar";
+        if (t.slug) {
+            botonHtml = `<a href="/modulos/${t.slug}" class="btn-iniciar" data-id="${t.id}" data-slug="${t.slug}">${btnLabel}</a>`;
+        } else {
+            botonHtml = `<button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>`;
         }
 
-        if (bloqueado) {
-            botonHtml = `
-                <button type="button" class="btn-iniciar btn-disabled" disabled data-id="${t.id}">
-                    🔒 Próximamente
-                </button>
-            `;
-        } else {
-            const btnLabel = est.completado
-                ? "$ revisar"
-                : est.visitado
-                  ? "$ continuar"
-                  : "$ iniciar";
-            if (t.slug) {
-                botonHtml = `<a href="/modulos/${t.slug}" class="btn-iniciar" data-id="${t.id}" data-slug="${t.slug}">${btnLabel}</a>`;
-            } else {
-                botonHtml = `<button type="button" class="btn-iniciar" data-id="${t.id}">${btnLabel}</button>`;
-            }
-
-            if (est.visitado) {
-                progHtml = `
-                    <div class="tc-prog">
-                        <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
-                        <div class="tc-prog-bg">
-                            <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
-                                 style="width:${est.completado ? 100 : 60}%"></div>
-                        </div>
+        if (est.visitado) {
+            progHtml = `
+                <div class="tc-prog">
+                    <div class="tc-prog-lbl">Progreso: ${est.completado ? "100" : "60"}%</div>
+                    <div class="tc-prog-bg">
+                        <div class="tc-prog-fill ${est.completado ? "green" : "orange"}"
+                             style="width:${est.completado ? 100 : 60}%"></div>
                     </div>
-                `;
-            }
+                </div>
+            `;
         }
 
         const cardClass = est.completado
