@@ -30,9 +30,16 @@ model User {
   // Valores esperados: 'PENDING' | 'VERIFIED' | 'REJECTED'
   teacherVerificationStatus String @default("PENDING")
 
+  // T4.4 — progreso del preview de la Ruta A. Depende de la confirmación de
+  // producto (E5). El endpoint route-preview-progress.js lo usa.
+  hasCompletedRouteAPreview Boolean @default(false)
+
   ownedCommunities Community[] @relation("CommunityOwner")
   joinRequests     JoinRequest[] @relation("JoinRequester")
   reviewedRequests JoinRequest[] @relation("JoinReviewer")
+
+  submissions         Submission[] @relation("SubmissionAuthor")
+  reviewedSubmissions Submission[] @relation("SubmissionReviewer")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,8 +124,55 @@ model Challenge {
   community   Community @relation(fields: [communityId], references: [id])
   communityId String
 
+  submissions Submission[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([communityId, requiredStage])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SUBMISSION  (soluciones/entregas de los miembros a un reto)
+//
+//  Conecta con el ChallengeFlow del frontend: el estudiante envía el repo de
+//  su solución. La entrega nace PENDING y alguien del staff de la comunidad la
+//  aprueba/rechaza (por ahora, el dueño; con la capa de roles se ampliará a
+//  otros roles internos como "manager").
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Submission {
+  id String @id @default(cuid())
+
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  challengeId String
+
+  author   User   @relation("SubmissionAuthor", fields: [authorId], references: [id])
+  authorId String
+
+  // URL del repositorio / solución entregada.
+  repoUrl String
+
+  // Lenguaje elegido. Valores esperados: 'java' | 'python' | 'sql' | ...
+  language String?
+
+  // Valores esperados: 'PENDING' | 'APPROVED' | 'REJECTED'
+  status String @default("PENDING")
+
+  // Calificación opcional que asigna quien revisa (0–5).
+  rating Float?
+
+  rejectReason String?
+
+  reviewedBy   User?     @relation("SubmissionReviewer", fields: [reviewedById], references: [id])
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Un autor tiene una sola entrega por reto (puede actualizarla, no duplicarla).
+  @@unique([challengeId, authorId])
+  @@index([challengeId, status])
+  @@index([authorId, status])
 }

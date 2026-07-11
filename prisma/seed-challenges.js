@@ -1,19 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 
-const url =
-  process.env.TURSO_DATABASE_URL ||
-  process.env.DATABASE_URL ||
-  "file:./dev.db";
-const authToken = process.env.TURSO_AUTH_TOKEN;
-
-const libsql = createClient({ url, authToken });
-const adapter = new PrismaLibSQL(libsql);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱  Añadiendo retos de prueba…");
+  console.log("Añadiendo retos de prueba…");
 
   const communities = await prisma.community.findMany({
     select: { id: true, name: true, stage: true },
@@ -66,7 +56,58 @@ async function main() {
   });
 
   const total = await prisma.challenge.count();
-  console.log(`✅  Listo. Total de retos en la base: ${total}`);
+  console.log(`Retos sembrados. Total en la base: ${total}`);
+
+  // ── ENTREGAS DE PRUEBA (soluciones) ────────────────────────────────────────
+  // Sembramos algunas entregas de miembros aprobados de commWeb, en distintos
+  // estados, para probar la vista de soluciones y el progreso derivado.
+  const martin = await prisma.user.findUnique({
+    where: { email: "martin.solis@ua.edu" },
+    select: { id: true },
+  });
+
+  // Retos de commWeb que ya existen.
+  const retosWeb = await prisma.challenge.findMany({
+    where: { communityId: commWeb.id },
+    select: { id: true, requiredStage: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (martin && retosWeb.length >= 2) {
+    // Primera entrega: aprobada (cuenta para progreso).
+    await prisma.submission.upsert({
+      where: {
+        challengeId_authorId: { challengeId: retosWeb[0].id, authorId: martin.id },
+      },
+      create: {
+        challengeId: retosWeb[0].id,
+        authorId: martin.id,
+        repoUrl: "https://github.com/martin/solucion-1",
+        language: "python",
+        status: "APPROVED",
+        rating: 4.8,
+      },
+      update: {},
+    });
+
+    // Segunda entrega: pendiente de revisión.
+    await prisma.submission.upsert({
+      where: {
+        challengeId_authorId: { challengeId: retosWeb[1].id, authorId: martin.id },
+      },
+      create: {
+        challengeId: retosWeb[1].id,
+        authorId: martin.id,
+        repoUrl: "https://github.com/martin/solucion-2",
+        language: "java",
+        status: "PENDING",
+      },
+      update: {},
+    });
+
+    const totalSub = await prisma.submission.count();
+    console.log(`✅  Entregas sembradas. Total en la base: ${totalSub}`);
+  }
 }
 
 main()
