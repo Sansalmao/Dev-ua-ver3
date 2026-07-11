@@ -1,43 +1,59 @@
-# Astro Starter Kit: Minimal
-
-```sh
-npm create astro@latest -- --template minimal
+# Backend UA WG LACNOG
+ 
+Backend de la plataforma de comunidades de práctica: autenticación, roles,
+comunidades por perfil/etapa y retos. Construido con **Astro (server) + Prisma
+(driver adapter libSQL) + Turso/SQLite + JWT**.
+ 
+---
+ 
+## Requisitos
+ 
+- Node.js **>= 22.12**
+- npm
+## Puesta en marcha local
+ 
+```bash
+# 1. Dependencias
+npm install
+npm install prisma @prisma/client @libsql/client @prisma/adapter-libsql bcryptjs jsonwebtoken
+ 
+# 2. Variables de entorno
+cp .env.example .env
+#   Para desarrollo, deja:
+#     DATABASE_URL="file:./dev.db"
+#     JWT_SECRET="<genera una cadena larga>"
+#   Generar el secret:
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+ 
+# 3. Base de datos
+npx prisma migrate dev --name init     # crea el esquema
+node prisma/seed.js                     # datos de prueba
+node prisma/seed-challenges.js          # retos de prueba (opcional)
+ 
+# 4. Levantar
+npm run dev                             # http://localhost:4321
+ 
+# 5. Verificar
+curl http://localhost:4321/api/health   # → {"status":"ok"}
 ```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+ 
+Usuarios sembrados (contraseña **`password123`**):
+ 
+| Email | Rol | Estado |
+| ----- | --- | ------ |
+| admin@ua.edu | Admin de plataforma | — |
+| helena.cruz@ua.edu | Profesor | VERIFIED (tiene comunidades) |
+| daniel.reyes@ua.edu | Profesor | PENDING (para probar aprobación) |
+| martin.solis@ua.edu … | Estudiantes | — |
+ 
+## Pasar a Turso (producción)
+ 
+`turso dev` da una réplica local; para la nube, en `.env`:
+ 
 ```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+TURSO_DATABASE_URL="libsql://tu-base.turso.io"
+TURSO_AUTH_TOKEN="tu-token"
+```
+ 
+Si esas dos variables están presentes, tienen prioridad sobre `DATABASE_URL`.
+**No hay que cambiar código**: `src/lib/prisma.js` resuelve la conexión solo.
