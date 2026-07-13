@@ -1,17 +1,15 @@
-import { prisma } from "../../lib/prisma.js";
+import { prisma } from "@lib/prisma.js";
 
 export async function GET() {
   try {
-    // Consulta trivial: si la conexión falla, saltará al catch.
     await prisma.$queryRaw`SELECT 1`;
-
-    return new Response(JSON.stringify({ status: "ok" }), {
+    return new Response(JSON.stringify({ status: "ok", db: "ok" }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (err) {
     return new Response(
-      JSON.stringify({ status: "error", detail: String(error) }),
+      JSON.stringify({ status: "degraded", db: "error", message: String(err?.message ?? err) }),
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }
