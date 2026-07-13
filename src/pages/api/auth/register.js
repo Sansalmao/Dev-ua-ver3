@@ -1,4 +1,5 @@
 import { auth } from "@lib/auth-server.js";
+import { verifyTurnstileToken, getClientIp } from "@lib/turnstile.js";
 
 const PROFILE_TYPES = ["PROFESOR", "ESTUDIANTE"];
 
@@ -17,9 +18,9 @@ export async function POST({ request }) {
     return json({ error: "Body JSON inválido." }, 400);
   }
 
-  const { email, password, profileType, displayName } = body ?? {};
+  const { email, password, profileType, displayName, turnstileToken } = body ?? {};
 
-  // ── Validación de forma ────
+  // ── Validación ────
   if (!email || typeof email !== "string" || !email.includes("@")) {
     return json({ error: "Email inválido." }, 400);
   }
@@ -28,6 +29,16 @@ export async function POST({ request }) {
   }
   if (!PROFILE_TYPES.includes(profileType)) {
     return json({ error: "profileType debe ser PROFESOR o ESTUDIANTE." }, 400);
+  }
+
+  // ── Turnstile ──────────────────────────────────────────
+  const { success: humanVerified, errors: turnstileErrors } = await verifyTurnstileToken(
+    turnstileToken,
+    getClientIp(request),
+  );
+  if (!humanVerified) {
+    console.warn("[auth/register] Turnstile rechazado:", turnstileErrors);
+    return json({ error: "Verificación anti-bot fallida. Intenta de nuevo." }, 400);
   }
 
   try {
