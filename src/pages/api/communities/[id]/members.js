@@ -33,6 +33,7 @@ export async function GET({ params, locals }) {
       select: {
         reviewedAt: true,
         createdAt: true,
+        role: true,
         requester: {
           select: {
             id: true,
@@ -45,8 +46,6 @@ export async function GET({ params, locals }) {
       orderBy: { reviewedAt: "asc" },
     });
 
-    // Forma unificada. El dueño va primero con rol OWNER.
-    // El progreso se DERIVA de las entregas aprobadas (ver lib/progress.js).
     const communityRef = { id: community.id, stage: community.stage };
 
     const ownerProgress = await getMemberProgress(community.teacher.id, communityRef);
@@ -55,8 +54,9 @@ export async function GET({ params, locals }) {
         id: community.teacher.id,
         email: community.teacher.email,
         displayName: community.teacher.displayName,
-        inCommunityRole: "OWNER",
-        joinedAt: null, // el dueño no tiene fila de ingreso
+        role: "ADMIN",
+        isOwner: true,
+        joinedAt: null,
         progress: ownerProgress.percent,
       },
     ];
@@ -67,7 +67,8 @@ export async function GET({ params, locals }) {
         id: jr.requester.id,
         email: jr.requester.email,
         displayName: jr.requester.displayName,
-        inCommunityRole: "MEMBER",
+        role: jr.role,
+        isOwner: false,
         joinedAt: jr.reviewedAt ?? jr.createdAt,
         progress: p.percent,
       });
