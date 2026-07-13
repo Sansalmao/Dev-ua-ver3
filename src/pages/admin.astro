@@ -1,0 +1,27 @@
+---
+import "../styles/global.css";
+import PendingTeachersPanel from "../components/PendingTeachersPanel.astro";
+---
+
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Admin · UA WG LACNOG</title>
+    </head>
+    <body class="min-h-screen bg-neutral-50 text-neutral-900">
+        <header class="border-b border-neutral-200 bg-white">
+            <div class="mx-auto max-w-3xl px-4 py-4">
+                <h1 class="text-xl font-bold">Consola de administración</h1>
+                <p class="text-sm text-neutral-500">
+                    Verificación de profesores de la plataforma.
+                </p>
+            </div>
+        </header>
+
+        <main class="py-6">
+            <PendingTeachersPanel />
+        </main>
+    </body>
+</html>

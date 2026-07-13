@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../src/lib/prisma.js";
 
 async function main() {
   console.log("Añadiendo retos de prueba…");
@@ -11,9 +9,8 @@ async function main() {
 
   const byName = (n) => communities.find((c) => c.name === n);
 
-  const commWeb = byName("UA WG LACNOG"); // IMPLEMENTACION_TECNICA
-  const commNoSql = byName("Bases de Datos NoSQL"); // CONCEPTOS_CLAVE
-
+  const commWeb = byName("UA WG LACNOG");
+  const commNoSql = byName("Bases de Datos NoSQL");
   if (!commWeb || !commNoSql) {
     console.error(
       "❌  Faltan comunidades del seed principal. Corre primero node prisma/seed.js",
@@ -23,7 +20,7 @@ async function main() {
 
   await prisma.challenge.createMany({
     data: [
-      // Comunidad avanzada (impl): tiene retos de ambas etapas → miembro ve todo.
+      // Comunidad avanzada (impl)
       {
         title: "Normalización Unicode en pipelines",
         summary: "Reto de conceptos clave.",
@@ -37,7 +34,7 @@ async function main() {
         communityId: commWeb.id,
       },
 
-      // Comunidad en conceptos clave: un reto de impl que NO debe verse (T4.3).
+      // Comunidad en conceptos clave
       {
         title: "Conceptos: qué es un IDN",
         summary: "Reto visible para conceptos clave.",
@@ -66,7 +63,7 @@ async function main() {
     select: { id: true },
   });
 
-  // Retos de commWeb que ya existen.
+  // Retos
   const retosWeb = await prisma.challenge.findMany({
     where: { communityId: commWeb.id },
     select: { id: true, requiredStage: true },
@@ -106,7 +103,7 @@ async function main() {
     });
 
     const totalSub = await prisma.submission.count();
-    console.log(`✅  Entregas sembradas. Total en la base: ${totalSub}`);
+    console.log(`Entregas sembradas. Total en la base: ${totalSub}`);
   }
 }
 

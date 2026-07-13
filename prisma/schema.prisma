@@ -3,13 +3,16 @@
 // ============================================================================
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  // En Prisma 7 los driver adapters son GA: ya NO se declara "driverAdapters"
+  // en previewFeatures (hacerlo provoca un error de validación).
+  provider = "prisma-client-js"
 }
 
 datasource db {
+  // Prisma 7: la datasource del schema solo lleva `provider`.
+  // La URL de conexión para Migrate vive ahora en prisma.config.ts, y el
+  // runtime se conecta con el `adapter` (ver src/lib/prisma.js).
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

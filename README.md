@@ -13,20 +13,18 @@ comunidades por perfil/etapa y retos. Construido con **Astro (server) + Prisma
 ## Puesta en marcha local
  
 ```bash
-# 1. Dependencias
+# 1. Dependencias (todas están en package.json)
 npm install
-npm install prisma @prisma/client @libsql/client @prisma/adapter-libsql bcryptjs jsonwebtoken
  
 # 2. Variables de entorno
 cp .env.example .env
-#   Para desarrollo, deja:
-#     DATABASE_URL="file:./dev.db"
-#     JWT_SECRET="<genera una cadena larga>"
+#   Para desarrollo deja DATABASE_URL="file:./dev.db" y define JWT_SECRET.
 #   Generar el secret:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
  
 # 3. Base de datos
-npx prisma migrate dev --name init     # crea el esquema
+npx prisma generate                     # genera el cliente (Prisma 7)
+npx prisma migrate dev                  # aplica las migraciones
 node prisma/seed.js                     # datos de prueba
 node prisma/seed-challenges.js          # retos de prueba (opcional)
  
@@ -34,8 +32,21 @@ node prisma/seed-challenges.js          # retos de prueba (opcional)
 npm run dev                             # http://localhost:4321
  
 # 5. Verificar
-curl http://localhost:4321/api/health   # → {"status":"ok"}
+curl http://localhost:4321/api/health           # → {"status":"ok"}
+curl http://localhost:4321/api/debug/sentry-check # dispara un error de prueba en Sentry
 ```
+
+> **Prisma 7:** el cliente es "Rust-free", por lo que usa el driver adapter
+> libSQL (ver `src/lib/prisma.js`). No declares `driverAdapters` en
+> `previewFeatures`: en la v7 es GA y rompería la validación del schema.
+
+## Monitoreo con Sentry
+
+- El DSN es público y ya viene por defecto; el `SENTRY_AUTH_TOKEN` (secreto,
+  para subir source maps) se define solo como variable de entorno.
+- Config de runtime en `sentry.client.config.js` y `sentry.server.config.js`.
+- Verificación: `GET /api/debug/sentry-check` lanza un error a propósito.
+  Bórralo cuando confirmes que aparece en el dashboard.
  
 Usuarios sembrados (contraseña **`password123`**):
  

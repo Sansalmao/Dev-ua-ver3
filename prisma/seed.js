@@ -1,13 +1,10 @@
 // ============================================================================
-//  prisma/seed.js  —  Datos de prueba (Corregido para SQLite local)
+//  prisma/seed.js  —  Datos de prueba
 // ============================================================================
 
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-// Usamos el cliente estándar. Prisma detectará automáticamente el archivo
-// dev.db gracias a la variable de entorno DATABASE_URL.
-const prisma = new PrismaClient();
+import { prisma } from "../src/lib/prisma.js";
 
 const DEV_PASSWORD = "password123";
 
@@ -17,6 +14,7 @@ async function main() {
   const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
 
   // ── Limpieza ──────────────────────────────────────────────────────────────
+  await prisma.submission.deleteMany();
   await prisma.joinRequest.deleteMany();
   await prisma.challenge.deleteMany();
   await prisma.community.deleteMany();
@@ -72,7 +70,7 @@ async function main() {
         passwordHash,
         displayName: e.displayName,
         profileType: "ESTUDIANTE",
-        teacherVerificationStatus: "PENDING", // Valor por defecto
+        teacherVerificationStatus: "PENDING",
       },
     });
     estudiantes.push(est);

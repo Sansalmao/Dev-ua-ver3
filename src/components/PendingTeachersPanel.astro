@@ -76,7 +76,7 @@
 
     async function verify(id, action, li) {
         const buttons = li.querySelectorAll("button");
-        buttons.forEach((b) => (b.disabled = true)); // estado de carga (T4.6)
+        buttons.forEach((b) => (b.disabled = true)); // estado de carga
         try {
             const res = await fetch(API_VERIFY(id), {
                 method: "PATCH",

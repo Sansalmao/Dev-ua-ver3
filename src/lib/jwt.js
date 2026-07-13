@@ -8,9 +8,6 @@ dotenv.config();
 const SECRET = process.env.JWT_SECRET;
 const EXPIRES_IN = "7d";
 
-// Debug: imprime esto para confirmar
-console.log("DEBUG: JWT_SECRET cargado:", SECRET ? "SÍ" : "NO");
-
 if (!SECRET) {
   throw new Error("[jwt] Falta la variable de entorno JWT_SECRET. Agrégala en tu .env.");
 }
