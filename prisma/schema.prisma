@@ -20,11 +20,18 @@ datasource db {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  displayName  String?
+  id String @id @default(cuid())
 
+  // ── Campos "core" que Better Auth requiere en el modelo user ─────────────
+  // `displayName` hace las veces del campo `name` de Better Auth (mapeado en
+  // src/lib/auth-server.ts vía `user.fields.name = "displayName"`, para no
+  // duplicar columnas ni tocar los endpoints que ya leen `displayName`).
+  displayName   String?
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+
+  // ── Campos propios de la app (auditoría v2.2 + informe v2.0) ─────────────
   // Valores esperados: 'PROFESOR' | 'ESTUDIANTE'
   profileType  String
 
@@ -36,6 +43,10 @@ model User {
   // T4.4 — progreso del preview de la Ruta A. Depende de la confirmación de
   // producto (E5). El endpoint route-preview-progress.js lo usa.
   hasCompletedRouteAPreview Boolean @default(false)
+
+  // ── Relaciones de Better Auth (sesión + credenciales) ─────────────────────
+  sessions Session[]
+  accounts Account[]
 
   ownedCommunities Community[] @relation("CommunityOwner")
   joinRequests     JoinRequest[] @relation("JoinRequester")
@@ -49,6 +60,65 @@ model User {
 
   @@index([profileType])
   @@index([teacherVerificationStatus])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  BETTER AUTH — Session / Account / Verification
+//  Nombres y campos siguen el esquema "core" que espera el adapter de Prisma
+//  (@better-auth/prisma-adapter). No renombrar sin actualizar auth-server.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Credenciales por proveedor. Para email+password, Better Auth crea una fila
+// con providerId = "credential" y guarda el hash en `password` (NO en User).
+model Account {
+  id         String @id @default(cuid())
+  accountId  String
+  providerId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  accessToken            String?
+  refreshToken           String?
+  idToken                String?
+  accessTokenExpiresAt   DateTime?
+  refreshTokenExpiresAt  DateTime?
+  scope                  String?
+  password               String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Tokens de verificación de email / reset de password / etc.
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([identifier])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

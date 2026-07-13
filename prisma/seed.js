@@ -2,18 +2,28 @@
 //  prisma/seed.js  —  Datos de prueba
 // ============================================================================
 
-import bcrypt from "bcryptjs";
-
+import { auth } from "../src/lib/auth-server.js";
 import { prisma } from "../src/lib/prisma.js";
 
 const DEV_PASSWORD = "password123";
 
+/** Crea un usuario vía Better Auth y devuelve el registro ya actualizado. */
+async function createUser({ email, password = DEV_PASSWORD, displayName, profileType, extra = {} }) {
+  const { user } = await auth.api.signUpEmail({
+    body: { email, password, name: displayName, profileType },
+  });
+
+  return prisma.user.update({
+    where: { id: user.id },
+    data: { displayName, ...extra },
+  });
+}
+
 async function main() {
   console.log("Sembrando base de datos…");
 
-  const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
-
   // ── Limpieza ──────────────────────────────────────────────────────────────
+  // Session/Account se borran solos por onDelete: Cascade al borrar User.
   await prisma.submission.deleteMany();
   await prisma.joinRequest.deleteMany();
   await prisma.challenge.deleteMany();
@@ -21,36 +31,26 @@ async function main() {
   await prisma.user.deleteMany();
 
   // ── ADMIN ────────────────────────────────────────────────────────────────
-  const admin = await prisma.user.create({
-    data: {
-      email: "admin@ua.edu",
-      passwordHash,
-      displayName: "Admin de Plataforma",
-      profileType: "PROFESOR",
-      teacherVerificationStatus: "VERIFIED",
-      isAdmin: true,
-    },
+  const admin = await createUser({
+    email: "admin@ua.edu",
+    displayName: "Admin de Plataforma",
+    profileType: "PROFESOR",
+    extra: { teacherVerificationStatus: "VERIFIED", isAdmin: true },
   });
 
   // ── PROFESORES ─────────────────────────────────────────────────────────────
-  const profVerificado = await prisma.user.create({
-    data: {
-      email: "helena.cruz@ua.edu",
-      passwordHash,
-      displayName: "Prof. Helena Cruz",
-      profileType: "PROFESOR",
-      teacherVerificationStatus: "VERIFIED",
-    },
+  const profVerificado = await createUser({
+    email: "helena.cruz@ua.edu",
+    displayName: "Prof. Helena Cruz",
+    profileType: "PROFESOR",
+    extra: { teacherVerificationStatus: "VERIFIED" },
   });
 
-  const profPendiente = await prisma.user.create({
-    data: {
-      email: "daniel.reyes@ua.edu",
-      passwordHash,
-      displayName: "Prof. Daniel Reyes",
-      profileType: "PROFESOR",
-      teacherVerificationStatus: "PENDING",
-    },
+  const profPendiente = await createUser({
+    email: "daniel.reyes@ua.edu",
+    displayName: "Prof. Daniel Reyes",
+    profileType: "PROFESOR",
+    extra: { teacherVerificationStatus: "PENDING" },
   });
 
   // ── ESTUDIANTES ────────────────────────────────────────────────────────────
@@ -64,14 +64,10 @@ async function main() {
 
   const estudiantes = [];
   for (const e of estudiantesData) {
-    const est = await prisma.user.create({
-      data: {
-        email: e.email,
-        passwordHash,
-        displayName: e.displayName,
-        profileType: "ESTUDIANTE",
-        teacherVerificationStatus: "PENDING",
-      },
+    const est = await createUser({
+      email: e.email,
+      displayName: e.displayName,
+      profileType: "ESTUDIANTE",
     });
     estudiantes.push(est);
   }
@@ -135,6 +131,8 @@ async function main() {
   });
 
   console.log("  Listo. Base de datos poblada correctamente.");
+  console.log(`  Login de prueba: cualquier email de arriba + password "${DEV_PASSWORD}"`);
+  console.log(`  Admin: admin@ua.edu`);
 }
 
 main()

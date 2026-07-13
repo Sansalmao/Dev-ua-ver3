@@ -1,29 +1,18 @@
 import { defineMiddleware } from "astro:middleware";
-import { verifySession, SESSION_COOKIE } from "./lib/jwt.js";
+import { auth } from "./lib/auth-server.js";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  // 1) Cookie httpOnly
-  let token = context.cookies.get(SESSION_COOKIE)?.value;
+  const result = await auth.api.getSession({
+    headers: context.request.headers,
+  });
 
-  // 2) Fallback: header Authorization
-  if (!token) {
-    const auth = context.request.headers.get("authorization");
-    if (auth?.startsWith("Bearer ")) {
-      token = auth.slice("Bearer ".length).trim();
-    }
-  }
-
-  // 3) Verificar y poblar locals
-  const payload = token ? verifySession(token) : null;
-
-  context.locals.user =
-    payload && typeof payload === "object"
-      ? {
-          userId: payload.userId,
-          profileType: payload.profileType,
-          isAdmin: Boolean(payload.isAdmin),
-        }
-      : null;
+  context.locals.user = result?.user
+    ? {
+        userId: result.user.id,
+        profileType: (result.user as Record<string, unknown>).profileType as string,
+        isAdmin: Boolean((result.user as Record<string, unknown>).isAdmin),
+      }
+    : null;
 
   return next();
 });

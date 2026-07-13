@@ -1,5 +1,4 @@
-import bcrypt from "bcryptjs";
-import { prisma } from "@lib/prisma.js";
+import { auth } from "@lib/auth-server.js";
 
 const PROFILE_TYPES = ["PROFESOR", "ESTUDIANTE"];
 
@@ -18,9 +17,9 @@ export async function POST({ request }) {
     return json({ error: "Body JSON inválido." }, 400);
   }
 
-  const { email, password, profileType } = body ?? {};
+  const { email, password, profileType, displayName } = body ?? {};
 
-  // ── Validación ────────────────────────────────────────────────────────────
+  // ── Validación de forma ────
   if (!email || typeof email !== "string" || !email.includes("@")) {
     return json({ error: "Email inválido." }, 400);
   }
@@ -31,32 +30,48 @@ export async function POST({ request }) {
     return json({ error: "profileType debe ser PROFESOR o ESTUDIANTE." }, 400);
   }
 
-  // ── Email único ─────────────────────────────────────────────────────────────
-  const existing = await prisma.user.findUnique({
-    where: { email: email.toLowerCase() },
-    select: { id: true },
-  });
-  if (existing) {
-    return json({ error: "Ya existe una cuenta con ese email." }, 409);
+  try {
+    const response = await auth.api.signUpEmail({
+      asResponse: true,
+      body: {
+        email: String(email).toLowerCase(),
+        password,
+        name: displayName ?? String(email).split("@")[0],
+        profileType,
+      },
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const status = response.status === 422 ? 409 : response.status;
+      const message =
+        errBody?.code === "USER_ALREADY_EXISTS"
+          ? "Ya existe una cuenta con ese email."
+          : errBody?.message ?? "No se pudo completar el registro.";
+      return json({ error: message }, status);
+    }
+
+    const data = await response.json();
+    const user = data?.user ?? {};
+
+    const headers = new Headers({ "Content-Type": "application/json" });
+    for (const [key, value] of response.headers) {
+      if (key.toLowerCase() === "set-cookie") headers.append("Set-Cookie", value);
+    }
+
+    return new Response(
+      JSON.stringify({
+        user: {
+          id: user.id,
+          email: user.email,
+          profileType: user.profileType,
+          teacherVerificationStatus: user.teacherVerificationStatus,
+        },
+      }),
+      { status: 201, headers },
+    );
+  } catch (error) {
+    console.error("[auth/register] Error inesperado:", error);
+    return json({ error: "Error interno del servidor." }, 500);
   }
-
-  // ── Crear ───────────────────────────────────────────────────────────────────
-  const passwordHash = await bcrypt.hash(password, 10);
-
-  const user = await prisma.user.create({
-    data: {
-      email: email.toLowerCase(),
-      passwordHash,
-      profileType,
-      teacherVerificationStatus: "PENDING",
-    },
-    select: {
-      id: true,
-      email: true,
-      profileType: true,
-      teacherVerificationStatus: true,
-    },
-  });
-
-  return json({ user }, 201);
 }
