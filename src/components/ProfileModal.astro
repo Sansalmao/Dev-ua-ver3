@@ -576,6 +576,7 @@
 
 <script>
     import { RUTAS, BASICA_POR_ROL, ICONS, resolverRuta } from "../lib/rutas";
+    import { getSession } from "../lib/api-client";
 
     // ── STORAGE ──────────────────────────────────────────────────────────────────
 
@@ -640,6 +641,9 @@
     const footS2 = document.getElementById("foot-s2") as HTMLElement;
     const progFill = document.getElementById("modal-prog-fill") as HTMLElement;
     let rolActual: string | null = null;
+    // Rol derivado de la cuenta (PROFESOR→educator, ESTUDIANTE→learner) cuando
+    // hay sesión. Un usuario logueado NO elige rol libremente: viene de su cuenta.
+    let accountRol: string | null = null;
 
     // ── TOAST ────────────────────────────────────────────────────────────────────
 
@@ -676,6 +680,14 @@
     function abrirModal() {
         overlay!.classList.add("open");
         document.body.style.overflow = "hidden";
+
+        // Usuario logueado: el rol viene de la cuenta → salta la selección de
+        // rol y va directo a elegir la ruta.
+        if (accountRol) {
+            rolActual = accountRol;
+            irAPaso2(accountRol);
+            return;
+        }
 
         // Foco al primer elemento interactivo para accesibilidad
         const primerBoton = overlay!.querySelector<HTMLElement>("[data-rol]");
@@ -721,6 +733,27 @@
         progFill.style.width = "100%";
         setTimeout(() => step2El.classList.remove("step-enter"), 300);
     }
+
+    // ── Sincronización con la cuenta ──────────────────────────────────────────
+    // Si hay sesión, el rol lo fija la cuenta (profileType), no la elección libre
+    // del modal. Invitado sin sesión → comportamiento actual (elige libremente).
+    getSession()
+        .then((user) => {
+            if (!user) return;
+            accountRol =
+                user.profileType === "PROFESOR" ? "educator" : "learner";
+            if (store.rol !== accountRol) setStore({ rol: accountRol });
+            // Si el modal ya está abierto en el paso 1 cuando resuelve la sesión,
+            // saltar al paso 2 con el rol de la cuenta.
+            if (
+                overlay!.classList.contains("open") &&
+                !step1El.classList.contains("hidden")
+            ) {
+                rolActual = accountRol;
+                irAPaso2(accountRol);
+            }
+        })
+        .catch(() => {});
 
     // ── GRID ─────────────────────────────────────────────────────────────────────
 
