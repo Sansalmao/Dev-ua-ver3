@@ -25,14 +25,6 @@
             <span class="seg">- INICIO</span>
         </a>
         <a class="nav-link" href="#">
-            <span class="prefix">$ cd</span>
-            <span class="seg">/ blog</span>
-        </a>
-        <a class="nav-link" href="#">
-            <span class="prefix">$ watch</span>
-            <span class="seg">Eventos</span>
-        </a>
-        <a class="nav-link" href="#">
             <span class="prefix">$ man</span>
             <span class="seg">—proyecto</span>
         </a>
@@ -56,6 +48,17 @@
                 ></path>
             </svg>
         </button>
+
+        <!-- Se llena en el cliente (getSession()): "Ingresar" o email + "Salir". -->
+        <div id="nav-auth" class="nav-auth" aria-live="polite">
+            <button
+                type="button"
+                class="btn-auth-login"
+                data-open-auth-modal="register"
+            >
+                $ Registrarse
+            </button>
+        </div>
 
         <button type="button" class="btn-lang" aria-label="Cambiar idioma">
             <svg
@@ -84,6 +87,45 @@
             sessionStorage.setItem("ua_force_home", "1");
         });
     });
+</script>
+
+<script>
+    import { getSession, logout } from "../lib/api-client";
+
+    async function renderAuthState() {
+        const container = document.getElementById("nav-auth");
+        if (!container) return;
+
+        const user = await getSession();
+
+        if (!user) {
+            container.innerHTML = `
+                <button type="button" class="btn-auth-login" data-open-auth-modal="register">
+                    $ Registrarse
+                </button>
+            `;
+            return;
+        }
+
+        const label = user.displayName || user.email;
+        container.innerHTML = `
+            <span class="auth-user" title="${user.email}">${label}</span>
+            <button type="button" class="btn-auth-logout" id="btn-nav-logout">Salir</button>
+        `;
+
+        document
+            .getElementById("btn-nav-logout")
+            ?.addEventListener("click", async () => {
+                try {
+                    await logout();
+                } finally {
+                    location.reload();
+                }
+            });
+    }
+
+    renderAuthState();
+    document.addEventListener("auth:changed", renderAuthState);
 </script>
 
 <style>
@@ -221,6 +263,58 @@
     .btn-lang:hover {
         background: var(--accent-soft);
         color: var(--text);
+    }
+
+    .nav-auth {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 4px;
+        padding-left: 12px;
+        border-left: 1px solid var(--border);
+    }
+
+    .btn-auth-login,
+    .btn-auth-logout {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 8px;
+        white-space: nowrap;
+        transition:
+            background var(--transition-fast),
+            color var(--transition-fast);
+    }
+
+    .btn-auth-login {
+        background: transparent;
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    .btn-auth-login:hover {
+        color: var(--accent-hover);
+        background: var(--accent-soft);
+    }
+
+    .btn-auth-logout {
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+    }
+
+    .btn-auth-logout:hover {
+        background: var(--accent-soft);
+        color: var(--text);
+    }
+
+    .auth-user {
+        font-size: 12px;
+        color: var(--text-secondary);
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     @media (max-width: 900px) {

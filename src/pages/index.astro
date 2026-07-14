@@ -6,6 +6,7 @@ import HeroSection from "../components/HeroSection.astro";
 import DecoCard from "../components/DecoCard.astro";
 import ReadmeCard from "../components/ReadmeCard.astro";
 import ProfileModal from "../components/ProfileModal.astro";
+import AuthModal from "../components/AuthModal.astro";
 import Toast from "../components/Toast.astro";
 import ProgressPanel from "../components/ProgressPanel.astro";
 import ChallengesPanel from "../components/ChallengesPanel.astro";
@@ -222,6 +223,7 @@ const totals = {
 
     <!-- Modal -->
     <ProfileModal />
+    <AuthModal />
 
     <!-- Toast singleton — gestionado por Toast.astro via evento "toast:show" -->
     <Toast />

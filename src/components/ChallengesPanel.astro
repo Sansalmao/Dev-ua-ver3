@@ -166,6 +166,48 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
 
             <!-- Grid de retos — renderizado por JS -->
             <div class="vc-grid" id="vc-challenge-grid"></div>
+
+            <!--
+                Bloqueo de registro: se muestra encima de los retos (que quedan
+                visibles pero bloqueados) cuando el visitante NO está registrado.
+                getSession() decide; el vínculo abre el AuthModal en registro.
+            -->
+            <div
+                id="vc-register-lock"
+                class="vc-register-lock"
+                aria-hidden="true"
+            >
+                <div class="vc-register-lock-card">
+                    <div class="vc-register-lock-icon" aria-hidden="true">
+                        <svg
+                            width="26"
+                            height="26"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="3" y="11" width="18" height="11" rx="2"
+                            ></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <p class="vc-register-lock-msg">
+                        Forma parte de nuestra comunidad de práctica. Regístrate
+                        gratis para acceder a todos los retos de código y
+                        avanzar en tu ruta.
+                    </p>
+                    <button
+                        type="button"
+                        class="vc-register-lock-link"
+                        data-open-auth-modal="register"
+                    >
+                        regístrate aquí
+                    </button>
+                </div>
+            </div>
         </main>
     </div>
 </div>
@@ -872,5 +914,99 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
             if (!state) initState();
             handleChallengeClick(moduleId, challengeId);
         });
+    })();
+</script>
+
+<style>
+    /* Overlay de bloqueo de registro sobre los retos (pieza nueva → estilos propios). */
+    .vc-main {
+        position: relative;
+    }
+    .vc-register-lock {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(247, 242, 234, 0.72);
+        backdrop-filter: blur(3px);
+        z-index: 20;
+    }
+    .vc-register-lock[aria-hidden="false"] {
+        display: flex;
+    }
+    .vc-register-lock-card {
+        max-width: 420px;
+        text-align: center;
+        background: var(--card-bg, #fff);
+        border: 1px solid var(--border, #ede8df);
+        border-radius: 20px;
+        padding: 34px 32px;
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.14);
+    }
+    .vc-register-lock-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        border-radius: 16px;
+        color: var(--accent, #e5621a);
+        background: var(--accent-soft, rgba(229, 98, 26, 0.1));
+    }
+    .vc-register-lock-msg {
+        color: var(--text-secondary, #4b5563);
+        font-size: 1.02rem;
+        line-height: 1.6;
+        text-align: center;
+        margin: 0 auto 22px;
+        max-width: 34ch;
+    }
+    .vc-register-lock-link {
+        display: inline-block;
+        background: var(--accent, #e5621a);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 26px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(229, 98, 26, 0.28);
+        transition:
+            background 0.15s ease,
+            transform 0.1s ease;
+    }
+    .vc-register-lock-link:hover {
+        background: var(--accent-hover, #c94f10);
+        transform: translateY(-1px);
+    }
+</style>
+
+<script>
+    import { getSession } from "../lib/api-client";
+
+    (function () {
+        const lock = document.getElementById("vc-register-lock");
+        if (!lock) return;
+
+        async function refresh() {
+            let user = null;
+            try {
+                user = await getSession();
+            } catch {
+                user = null;
+            }
+            // Sin sesión → mostrar bloqueo; con sesión → ocultarlo.
+            // lock ya se validó arriba (if !lock return); aserción por el closure.
+            lock!.setAttribute("aria-hidden", user ? "true" : "false");
+        }
+
+        // Al abrir el panel de retos, decidir si mostrar el bloqueo.
+        document.addEventListener("challenges:open", refresh);
+        // Si la sesión cambia mientras está abierto, re-evaluar.
+        document.addEventListener("auth:changed", refresh);
     })();
 </script>
