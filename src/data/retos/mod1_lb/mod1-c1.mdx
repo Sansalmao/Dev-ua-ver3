@@ -1,0 +1,70 @@
+---
+moduleId: "mod1"
+challengeId: "c1"
+moduleTitle: "Module 1 – Unicode Programming Fundamentals"
+moduleDesc: "Provide the basic understanding of Unicode and its applications."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Write individual pieces of code in Java that execute the following tasks with Unicode strings:"
+exerciseItems:
+  - "Calculate and print the number of Unicode code points in a string containing emojis"
+  - "Obtain and print the Unicode code point of the character at a specified index in a string"
+  - "Concatenate and print two Unicode strings"
+  - "Write into a file a text with Unicode strings"
+  - "Read a file containing text with Unicode strings and print it"
+solutionLang: "java"
+solutionCode: |
+  import java.io.BufferedReader;
+  import java.io.BufferedWriter;
+  import java.io.FileInputStream;
+  import java.io.FileOutputStream;
+  import java.io.IOException;
+  import java.io.InputStreamReader;
+  import java.io.OutputStreamWriter;
+  import java.io.Reader;
+  import java.io.Writer;
+
+  public class Mod1_Exercise1 {
+      public static void main(String[] args) {
+          // Calculate and print the number of Unicode code points in a string containing emojis
+          String emoji = "Hello \uD83D\uDE2E\u200D\uD83D\uDCA8";
+          System.out.println(emoji.codePointCount(0, emoji.length()));
+
+          // Obtain and print the Unicode code point of the character at a specified index in a string
+          String greeting = "Hello \u4e16\u754c!";
+          System.out.println(greeting.codePointAt(7));
+
+          // Concatenate and print two Unicode strings
+          String greeting1 = "Hello, ";
+          String greeting2 = "\u0639\u0627\u0644\u0645!";
+          StringBuilder stringBuilder = new StringBuilder();
+          stringBuilder.append(greeting1);
+          stringBuilder.append(greeting2);
+          String newGreeting = stringBuilder.toString();
+          System.out.println(newGreeting);
+
+          // Write into a file a text with Unicode strings
+          try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                  new FileOutputStream("unicode.txt"), "UTF-8"))) {
+              String unicodeText = "Hello \u0639\u0627\u0644\u0645! Hello \u4e16\u754c!";
+              writer.write(unicodeText);
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+
+          // Read a file containing text with Unicode strings and print it
+          try (Reader reader = new BufferedReader(new InputStreamReader(
+                  new FileInputStream("unicode.txt"), "UTF-8"))) {
+              StringBuilder sbr = new StringBuilder();
+              int c;
+              while ((c = reader.read()) != -1) {
+                  sbr.append((char) c);
+              }
+              String unicodeText = sbr.toString();
+              System.out.println(unicodeText);
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+      }
+  }
+draft: false
+---

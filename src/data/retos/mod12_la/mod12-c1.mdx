@@ -1,0 +1,24 @@
+---
+moduleId: "mod12"
+challengeId: "c1"
+moduleTitle: "Module 12 – Unicode, IDNs and EAI Support in Operating Systems"
+moduleDesc: "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Domain name conversion (ASCII, Unicode, Punycode) using shell"
+exerciseItems:
+  - "Write a shell script that takes a domain name as input and executes the following operations:"
+  - "If the domain name is in ASCII, it returns the domain name as it is."
+  - "If the domain name is in Unicode, it returns the domain name in Punycode."
+  - "If the domain name is in Punycode, it returns the domain name in Unicode."
+solutionLang: "bash"
+solutionCode: |
+  #!/bin/bash
+  domain="xn--tkvs6ms8gqpywye3ma.xn--6qq986b3xl"
+  punycode=$(idn2 "$domain")
+  if [ "$domain" == "$punycode" ]; then
+      echo $(idn2 -d "$domain")
+  else
+      echo $punycode
+  fi
+draft: false
+---

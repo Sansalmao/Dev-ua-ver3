@@ -1,0 +1,56 @@
+---
+interface Props {
+    padre: string; // Texto del enlace padre (ej: "fundamentos")
+    padreHref: string; // URL del enlace padre (ej: "/fundamentos")
+    actual: string; // Nombre del módulo activo (sin enlace)
+}
+
+const { padre, padreHref, actual } = Astro.props;
+---
+
+<nav class="breadcrumb" aria-label="Ruta de navegación">
+    <span class="breadcrumb__prompt" aria-hidden="true">$</span>
+    <a class="breadcrumb__link" href={padreHref}>{padre}</a>
+    <span class="breadcrumb__sep" aria-hidden="true">/</span>
+    <span class="breadcrumb__current">{actual}</span>
+</nav>
+
+<style>
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Signo $ — ancla visual de la metáfora de terminal */
+    .breadcrumb__prompt {
+        color: var(--accent);
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    /* Enlace al nivel padre */
+    .breadcrumb__link {
+        color: var(--text-secondary);
+        transition: color 0.15s;
+    }
+
+    .breadcrumb__link:hover {
+        color: var(--accent);
+    }
+
+    /* Separador / con opacidad reducida */
+    .breadcrumb__sep {
+        color: var(--text-muted);
+        opacity: 0.4;
+    }
+
+    /* Módulo activo — no es enlace */
+    .breadcrumb__current {
+        color: var(--text);
+        font-weight: 600;
+    }
+</style>

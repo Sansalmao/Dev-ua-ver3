@@ -1,0 +1,65 @@
+---
+moduleId: "mod9"
+challengeId: "c1"
+moduleTitle: "Module 9 – Programming in Email Address Internationalization (EAI)"
+moduleDesc: "Explore the fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Send EAI Emails using Python"
+exerciseItems:
+  - "Develop a code in Python for sending EAI emails."
+solutionLang: "python"
+solutionCode: |
+  # Import libraries for creating/sending email and handling EAIs
+  from email.message import EmailMessage
+  import smtplib
+  import unicodedata
+  import idna
+  import logging
+  from email_validator import validate_email
+  
+  logger = logging.getLogger(__name__)
+  
+  try:
+      to = 'شخص١@تجربة.البحرين'
+  
+      # Converting the domain name to punycode
+      local_part, domain = to.rsplit('@', 1)
+      domain_normalized = unicodedata.normalize('NFC', domain)
+      to = '@'.join((local_part, idna.encode(domain_normalized).decode('ascii')))
+  
+      validated = validate_email(to, check_deliverability=True)
+      if validated:
+          # SMTP server credentials
+          host = 'smtp.your-provider.com'
+          port = 587
+          user = 'شخص٢@تجربة.البحرين'
+          password = 'your_password'
+  
+          # Connect to the SMTP server and log in.
+          smtp = smtplib.SMTP(host, port)
+          smtp.starttls()
+          smtp.login(user, password)
+  
+          # Create the email message.
+          msg = EmailMessage()
+          msg.set_content('This is the content of the email.')
+          msg['Subject'] = 'A subject'
+          msg['From'] = user
+          msg['To'] = to
+  
+          # Send the email and close the connection.
+          smtp.send_message(msg)
+          smtp.quit()
+          logger.info(f"Email sent to '{to}'")
+  
+  # Raising an error if the SMTP server does not support SMTPUTF8
+  except smtplib.SMTPNotSupportedError:
+      logger.warning("The SMTP server does not support SMTPUTF8 for international characters.")
+      raise
+  
+  # Catches other potential errors, like a wrong password or network issue.
+  except Exception as e:
+      logger.error(f"An error occurred: {e}")
+      raise
+draft: false
+---

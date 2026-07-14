@@ -1,0 +1,1195 @@
+---
+title: "Module 10 - Processing IDNs and EAI in Mobile Apps"
+description: "Explores the essential aspects of Unicode character sets and their significance in mobile apps — covering text layout and rendering, bidirectional text and complex scripts, Python and Java based mobile development frameworks, ICU usage, IDN processing, and EAI support in mobile apps."
+difficulty: "Básico"
+duration: "105 min"
+objective: "Understand the significance of Unicode in mobile app development, explain text layout and rendering challenges for RTL and complex scripts, use Python-based Kivy and Java-based Android Studio for rendering, and explore libraries for IDN processing and EAI support in mobile apps."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Introduction"
+        panelId: "introduction"
+      - title: "Objetives"
+        panelId: "objetives"
+  - title: "Unicode in Mobile Apps"
+    items:
+      - title: "Unicode Character Set Support in Mobile Apps"
+        panelId: "unicode-character-set-support-in-mobile-apps"
+      - title: "Unicode Text Layout and Rendering"
+        panelId: "unicode-text-layout-and-rendering-in-mobile-apps"
+      - title: "Rendering Bidirectional Text and Complex Scripts"
+        panelId: "rendering-bidirectional-text-and-complex-scripts-in-mobile-apps"
+  - title: "Frameworks and ICU"
+    items:
+      - title: "Python and Java Based Mobile Apps Development Frameworks"
+        panelId: "python-and-java-based-mobile-apps-development-frameworks"
+      - title: "Leveraging ICU for Bidirectional Text and Complex Scripts"
+        panelId: "leveraging-icu-for-bidirectional-text-and-complex-scripts-in-mobile-apps"
+  - title: "Rendering Examples"
+    items:
+      - title: "Rendering Bidirectional Text with Kivy and Android Studio"
+        panelId: "rendering-bidirectional-text-with-mobile-apps-development-frameworks-kivy-and-android-studio"
+      - title: "Example 1 — Full Code for RTL Rendering in Python"
+        panelId: "example-1-full-code-for-rtl-and-complex-scripts-rendering-in-mobile-apps-using-python"
+      - title: "Example 2 — RTL Rendering in Java Android"
+        panelId: "example-2-rtl-and-complex-scripts-rendering-in-mobile-apps-using-java-android"
+  - title: "IDN Processing"
+    items:
+      - title: "Mobile IDN Processing: Libraries and Examples"
+        panelId: "mobile-idn-processing-libraries-and-examples"
+      - title: "Example 3 — IDN Processing in Python"
+        panelId: "example-3-code-snippet-for-idn-processing-in-mobile-apps-using-the-idna-library-in-python"
+      - title: "Example 4 — IDN Parsing from URL in Python"
+        panelId: "example-4-code-snippet-for-idn-parsing-from-url-in-mobile-apps-in-python"
+      - title: "Example 5 — IDN Processing in Java"
+        panelId: "example-5-code-snippet-for-idn-processing-in-mobile-apps-using-the-idna-library-in-java"
+  - title: "EAI in Mobile Apps"
+    items:
+      - title: "EAI Support in Mobile Apps — Libraries and Examples"
+        panelId: "eai-support-in-mobile-apps--libraries-and-examples"
+      - title: "Example 6 — EAI Support in Python"
+        panelId: "example-6-eai-support-in-mobile-app-in-python"
+      - title: "Example 7 — EAI Support in Java Android"
+        panelId: "example-7-eai-support-in-mobile-app-in-java-android"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "reference--author"
+---
+
+## Introduction
+
+<div class="info-card">
+
+In this module, we will explore the essential aspects of Unicode character sets and their significance in mobile apps. We will delve into various topics, including text layout and rendering, with a focus on handling bidirectional text and complex scripts effectively. Furthermore, we will examine popular mobile app development frameworks such as Python-based Kivy and Java-based Android Studio, gaining insights into how they handle bidirectional text rendering. Finally, we will discuss the importance of Internationalized Domain Name (IDN) processing and explore libraries and practical examples that facilitate Email Address Internationalization (EAI) in mobile apps.
+
+</div>
+
+---
+
+## Objetives
+
+<div class="info-card">
+
+Upon completion of this micro-learning UA module, students will be able to:
+
+- Understand the significance of Unicode character sets in mobile app development;
+- Explain the challenges and considerations involved in text layout and rendering in mobile apps for RTL and complex scripts;
+- Demonstrate an understanding of bidirectional text and complex script rendering in mobile apps;
+- Learn how to use Python-based Kivy and Java-based Android Studio mobile app development frameworks for RTL and complex scripts rendering;
+- Identify the importance of Internationalized Domain Name (IDN) processing in mobile apps; and
+- Explore libraries and examples for IDN processing and Email Address Internationalization (EAI) in mobile apps.
+
+</div>
+
+---
+
+## Unicode Character Set Support in Mobile Apps
+
+Unicode character set support in mobile apps is essential for enabling the display, input, and processing of a wide range of characters from various languages and scripts. 
+Key considerations for ensuring Unicode character set support in mobile apps include:
+
+<div class="obs-card">
+
+<details>
+<summary>Font and Rendering:</summary>
+
+- Mobile apps should utilize Unicode-compliant fonts that can correctly render characters from different scripts. This ensures that users can view and interact with text content in their preferred languages.
+- Ensure that the app's rendering engine supports complex scripts and diacritic marks, providing accurate display of characters.
+
+</details>
+
+<details>
+<summary>Input Methods and Keyboards:</summary>
+
+Mobile apps should provide robust text input and editing capabilities that allow users to enter and manipulate Unicode characters. This includes support for virtual keyboards, input methods, and text manipulation operations (e.g. editing, deleting, selecting) for Unicode text.
+
+</details>
+
+<details>
+<summary>Text Layout and Bi-Directional Support:</summary>
+
+Mobile apps should handle complex text layout scenarios, such as bidirectional text (e.g., Arabic and Hebrew) and scripts with special layout requirements (e.g., Indic scripts). Proper handling of these cases ensures that the text is displayed correctly and maintains its intended meaning.
+
+</details>
+
+<details>
+<summary>String Manipulation and Processing:</summary>
+
+Mobile app developers should use Unicode-aware string manipulation and processing functions to ensure correct handling of Unicode characters. This includes operations such as string concatenation, substring extraction, and searching.
+
+</details>
+
+<details>
+<summary>Localization and Internationalization:</summary>
+
+Mobile apps should support localization and internationalization features, allowing the app interface, content, and text strings to be translated into different languages. This involves proper handling of Unicode characters in resource files and providing mechanisms for localized content to be displayed correctly.
+
+</details>
+
+<details>
+<summary>Character Encoding:</summary>
+
+Mobile apps should utilize Unicode encoding (e.g., UTF-8) for handling and storing text data. This encoding ensures that characters from various scripts can be represented and processed accurately.
+
+</details>
+
+<details>
+<summary>Testing and Device Compatibility:</summary>
+
+Mobile apps should be thoroughly tested on different devices, operating systems, and language settings to verify Unicode character set support. It is important to ensure that the app functions correctly across various platforms and displays text consistently.
+
+</details>
+
+</div>
+
+---
+
+## Unicode Text Layout and Rendering in Mobile Apps
+
+Unicode text layout and rendering involve the correct display and positioning of characters from different scripts and languages. Here are some key aspects to consider when handling Unicode text layout and rendering in mobile apps:
+
+<div class="info-card">
+
+<details>
+<summary>Font Selection:</summary>
+
+Choose Unicode-compliant fonts that support a wide range of characters and scripts. Ensure that the fonts used in your mobile app have appropriate glyphs for the specific characters and scripts you need to display.
+
+</details>
+
+<details>
+<summary>Glyph Shaping and Rendering:</summary>
+
+Many scripts, such as Arabic, Indic, and Thai, require complex shaping rules to combine and position individual characters into properly formed ligatures and conjuncts. Utilize libraries or text layout engines that support OpenType or Graphite font technologies to handle these shaping and rendering requirements.
+
+</details>
+
+<details>
+<summary>Bi-Directional Text:</summary>
+
+Bidirectional text, such as Arabic or Hebrew mixed with English, requires proper handling of text directionality. Implement algorithms or libraries that correctly order and display text with different directionalities, ensuring that the flow of the text remains appropriate.
+
+</details>
+
+<details>
+<summary>Line Breaks and Word Wrapping:</summary>
+
+Determine appropriate line breaks and word wrapping points for different scripts and languages. Consider the script-specific rules for hyphenation, line justification, and spacing to ensure visually pleasing and readable text.
+
+</details>
+
+<details>
+<summary>Complex Script Layout:</summary>
+
+Some scripts, like Indic scripts, have specific layout requirements, such as stacking characters or contextual shaping. Utilize libraries or frameworks that support these script-specific layout rules to ensure accurate rendering.
+
+</details>
+
+<details>
+<summary>Text Rendering Performance:</summary>
+
+Efficient text rendering is crucial for smooth scrolling and user experience. Utilize hardware acceleration, caching, and text rendering optimizations provided by the mobile platform to render text efficiently and achieve optimal performance.
+
+</details>
+
+<details>
+<summary>Accessibility:</summary>
+
+Ensure that Unicode text in your mobile app is accessible to users with visual impairments or different accessibility needs. Consider providing options for larger text sizes, adjustable font styles, and compatibility with screen readers and other assistive technologies.
+
+</details>
+
+<details>
+<summary>Testing and Localization:</summary>
+
+Thoroughly test your mobile app's text layout and rendering with different languages, scripts, and text sizes to verify correct rendering and display. Consider localized content and ensure that the app handles different writing systems and scripts appropriately.
+
+</details>
+
+</div>
+
+By addressing these aspects, mobile app developers can ensure accurate and visually pleasing rendering of Unicode text, supporting a wide range of languages, scripts, and cultural contexts within their applications.
+
+---
+
+## Rendering Bidirectional Text and Complex Scripts in Mobile Apps
+
+Handling bidirectional text and scripts with special layout requirements in mobile apps involves implementing proper text rendering, layout, and user interaction mechanisms. Here are some approaches to consider:
+
+<div class="obs-card">
+
+<details>
+<summary>Text Rendering:</summary>
+
+Mobile apps should utilize Unicode-compliant fonts that support bidirectional text and special scripts. These fonts ensure that characters are displayed correctly and maintain their intended visual representation.
+
+</details>
+
+<details>
+<summary>Bi-Directional Text Support:</summary>
+
+Mobile apps should implement algorithms and libraries that handle bidirectional text. These algorithms determine the correct order of characters and apply appropriate shaping and positioning rules for bidirectional scripts, such as Arabic and Hebrew. Libraries like ICU (International Components for Unicode) provide functions to handle bidirectional text rendering and layout.
+
+</details>
+
+<details>
+<summary>Text Layout:</summary>
+
+Mobile apps should support proper text layout for bidirectional text. This includes handling line breaks, word wrapping, and text alignment for mixed bidirectional content. The app should adjust the layout based on the directionality of the text and ensure that the visual flow is maintained.
+
+</details>
+
+<details>
+<summary>User Interaction:</summary>
+
+Mobile apps should provide intuitive user interaction for bidirectional text. This includes support for cursor movement, selection, and editing operations that consider the bidirectional nature of the text. Users should be able to interact with the text in a way that aligns with their language and script conventions.
+
+</details>
+
+<details>
+<summary>Special Script Layout Requirements:</summary>
+
+Mobile apps should handle special layout requirements for scripts like Indic scripts, which may have complex glyph shaping and stacking rules. Implementing libraries or frameworks that support the OpenType standard can help ensure proper rendering of such scripts.
+
+</details>
+
+<details>
+<summary>Testing and Localization:</summary>
+
+- **Testing and Localization** — Mobile apps should be thoroughly tested with different languages, including bidirectional and special script content, to verify proper rendering and layout. Localization testing should include languages that require bidirectional support to ensure the app behaves correctly in various language settings.
+
+</details>
+
+<details>
+<summary>Accessibility Considerations:</summary>
+
+Mobile apps should adhere to accessibility guidelines, ensuring that users with visual impairments or assistive technologies can navigate bidirectional text and scripts with ease. Providing appropriate text-to-speech support and ensuring proper screen reader compatibility is crucial.
+
+</details>
+
+</div>
+
+By implementing these techniques, mobile app developers can ensure proper handling of bidirectional text and scripts with special layout requirements, providing users with a seamless and culturally appropriate experience.
+
+---
+
+## Python and Java Based Mobile Apps Development Frameworks
+
+Since Python and Java are the main focus of this micro-learning module, we will discuss mobile application development frameworks specifically designed for these languages.
+
+When it comes to developing mobile applications, developers have a variety of frameworks at their disposal for both Python and Java. These frameworks provide a range of tools, libraries, and APIs that streamline the development process and enable the creation of high-quality mobile apps. In this section, we will explore some of the popular Python and Java-based mobile application development frameworks. These frameworks offer different approaches and features, allowing developers to build mobile apps for various platforms, including iOS and Android. Whether you prefer Python or Java, there are options available to suit your programming language preference and meet your specific mobile app development needs.
+
+There are several popular frameworks for developing mobile applications using Python and Java. The following are some of the notable ones:
+
+<div class="obs-card">
+
+<details>
+<summary>Python:</summary>
+
+- **Kivy:** An open-source Python framework for developing multi-touch applications, including mobile apps, that run on multiple platforms, including iOS, Android, Windows, macOS, and Linux.
+- **BeeWare:** A collection of tools and libraries for building native user interfaces. With BeeWare, you can write your app in Python and deploy it as a native mobile app on iOS and Android.
+
+</details>
+
+</div>
+
+<div class="obs-card">
+
+<details>
+<summary>Java:</summary>
+
+- **Android Studio (Java):** It is the official integrated development environment (IDE) for Android app development. It provides a comprehensive set of tools, libraries, and APIs for building Android applications using Java.
+- **Flutter (Dart with Java interoperability):** Although Flutter primarily uses the Dart programming language, it also supports Java interoperability, allowing you to write Android-specific code in Java while leveraging Flutter's UI framework for cross-platform development.
+- **Codename One (Java):** A cross-platform framework that allows you to write Java code and generate native applications for iOS, Android, Windows, and other platforms. It provides a wide range of UI components and integrates with native APIs.
+- **React Native (Java with JavaScript/TypeScript):** Although primarily associated with JavaScript/TypeScript, React Native also supports Java for Android-specific development. It enables you to build mobile apps using a combination of JavaScript/TypeScript and Java.
+
+</details>
+
+</div>
+
+These frameworks provide different approaches and capabilities for developing mobile applications using Python and Java. The choice of framework depends on factors such as your familiarity with the programming language, specific platform requirements, desired level of code sharing, and the UI/UX requirements of your app.
+
+Remember to explore the documentation, community support, and compatibility with your target platforms when considering a mobile application development framework.
+
+---
+
+## Leveraging ICU for Bidirectional Text and Complex Scripts in Mobile Apps
+
+Mobile app developers can use ICU for efficient handling of bidirectional text and complex scripts. ICU provides a comprehensive set of APIs and tools for handling various aspects of internationalization and localization, including support for bidirectional text and complex scripts. 
+The following are important points for consideration for using the ICU library for developing mobile apps:
+
+<div class="info-card">
+
+<details>
+<summary>Incorporate ICU Library:</summary>
+
+Integrate the ICU library into your mobile application. ICU is available for multiple programming languages, including Java, Python, and C/C++ making it suitable for Android, iOS, and cross-platform development.
+
+</details>
+
+<details>
+<summary>Unicode Character Handling:</summary>
+
+Utilize ICU's Unicode character handling capabilities to correctly process and manipulate characters from bidirectional and complex scripts. 
+ICU offers functions for character classification, normalization, and conversion, ensuring accurate handling of various scripts and characters.
+
+</details>
+
+<details>
+<summary>Bidirectional Text Layout:</summary>
+
+Use ICU's bidirectional algorithm implementation to handle bidirectional text layout, ensuring correct ordering and rendering of text that combines LTR and RTL scripts. 
+ICU provides APIs for resolving the visual order of characters and words based on Unicode Bidirectional Algorithm rules.
+
+</details>
+
+<details>
+<summary>Complex Script Rendering and Shaping:</summary>
+
+Leverage ICU's complex text layout and shaping capabilities to properly render complex scripts, such as Indic, Thai, or Arabic. 
+ICU includes advanced font shaping engines and OpenType features support for accurate rendering of ligatures, diacritic marks, and character stacking.
+
+</details>
+
+<details>
+<summary>Locale and Language Support:</summary>
+
+Utilize ICU's locale and language-related functionalities to support internationalization and localization in your mobile app. 
+ICU provides APIs for language detection, locale-specific formatting, and handling of language-specific rules, which are essential for supporting bidirectional and complex scripts.
+
+</details>
+
+<details>
+<summary>Text Input and Editing:</summary>
+
+Leverage ICU's input method framework to enable bidirectional text input and editing capabilities in your mobile app. ICU offers support for keyboard layouts, input methods, and text editing functions specific to bidirectional and complex scripts.
+
+</details>
+
+<details>
+<summary>Testing and Quality Assurance:</summary>
+
+Thoroughly test your mobile app using ICU's testing and validation tools to ensure proper handling of bidirectional text and complex script rendering. ICU provides tools for testing text layout, character handling, and internationalization features, helping you identify and address any issues or inconsistencies.
+
+</details>
+
+<details>
+<summary>Documentation and Resources:</summary>
+
+Refer to ICU's comprehensive documentation, tutorials, and code samples to understand and utilize its features effectively. Take advantage of the ICU community and forums for support and guidance on specific implementation scenarios.
+
+</details>
+
+</div>
+
+In summary, ICU simplifies the development process, ensuring accurate and consistent rendering across different platforms and languages, and improving the internationalization capabilities of your mobile app.
+
+---
+
+## Rendering Bidirectional Text with Mobile Apps Development Frameworks: Kivy and Android Studio
+
+Python and Java programming languages are the two focus of the UA micro-learning module and to run the example codes showcased below, make sure to install the required dependencies in advance:
+
+<div class="info-card">
+
+<details>
+<summary>Python</summary>
+
+Icu or PyICU, Kivy and python-bidi libraries. Make sure to include the necessary dependencies for icu or PyICU in your project.
+
+</details>
+
+<details>
+<summary>Java</summary>
+
+Icu, android library. Make sure to include the necessary dependencies for ICU4J in your project.
+
+</details>
+
+</div>
+
+The following is a break down of the code snippets for a simple example that demonstrates the usage of ICU for complex script rendering:
+
+<div class="obs-card">
+
+<details>
+<summary>Import Statements:</summary>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="impstmt"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="impstmt">
+
+```python
+import icu
+import bidi.algorithm as bidi
+from kivy.lang import Builder
+from kivy.uix.label import Label
+from kivy.app import App
+```
+
+  </div>
+</div>
+
+The above code snippet imports necessary modules and classes for working with Unicode and Kivy in the Python script.
+
+</details>
+
+<details>
+<summary>Function for Rendering Bidirectional Text:</summary>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="renderfn"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="renderfn">
+
+```python
+def render_bidirectional_text(text, locale):
+    # Create an ICU BreakIterator for line breaking
+    break_iterator = icu.BreakIterator.createLineInstance(icu.Locale(locale))
+    # Perform bidirectional analysis using python-bidi
+    bidi_text = bidi.get_display(text)
+    # Break the text into lines
+    lines = []
+    start = break_iterator.first()
+    for end in break_iterator:
+        lines.append(bidi_text[start:end])
+        start = end
+    # Render the lines
+    rendered_text = "".join(lines)
+    return rendered_text
+```
+
+  </div>
+</div>
+
+The above code snippet defines a function render_bidirectional_text to handle bidirectional text rendering using ICU (International Components for Unicode) and python-bidi.
+
+</details>
+
+<details>
+<summary>Kivy App Definition and Layout:</summary>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="kvlayout"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="kvlayout">
+
+```python
+kv = """
+BoxLayout:
+    orientation: 'vertical'
+    Label:
+        id: rendered_label
+        text: ''
+    Button:
+        text: 'Render Text'
+        on_release: app.render_text()
+"""
+```
+
+  </div>
+</div>
+
+Defines a Kivy language string (kv) that specifies the layout of the app. It includes a BoxLayout, a Label for displaying rendered text, and a Button to trigger text rendering.
+
+</details>
+
+<details>
+<summary>Kivy App Implementation:</summary>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="kvimpl"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="kvimpl">
+
+```python
+class MyApp(App):
+    def build(self):
+        self.root = Builder.load_string(kv)
+        return self.root
+    def render_text(self):
+        input_text = "ሀሎ مرحبًا Hello 你好,ආයුබෝවන්"
+        locale = "ar"  # Arabic locale
+        rendered_text = render_bidirectional_text(input_text, locale)
+        self.root.ids.rendered_label.text = rendered_text
+
+MyApp().run()
+```
+
+  </div>
+</div>
+
+The above code snippet performs the following activities:
+- Defines a Kivy app class MyApp that inherits from App.
+- Implements the build method to create the app's layout.
+- Implements the render_text method to render bidirectional text when the button is pressed.
+- Instantiates and runs the MyApp class to launch the Kivy app.
+
+</details>
+
+</div>
+
+---
+
+## Example 1: Full Code for RTL and Complex Scripts Rendering in Mobile Apps Using Python
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex1">
+
+```python
+import icu
+import bidi.algorithm as bidi
+from kivy.lang import Builder
+from kivy.uix.label import Label
+from kivy.app import App
+
+def render_bidirectional_text(text, locale):
+    # Create an ICU BreakIterator for line breaking
+    break_iterator = icu.BreakIterator.createLineInstance(icu.Locale(locale))
+    # Perform bidirectional analysis using python-bidi
+    bidi_text = bidi.get_display(text)
+    # Break the text into lines
+    break_iterator.setText(bidi_text)
+    lines = []
+    start = break_iterator.first()
+    for end in break_iterator:
+        lines.append(bidi_text[start:end])
+        start = end
+    # Render the lines
+    rendered_text = "".join(lines)
+
+    return rendered_text
+
+# Example usage in a Kivy app
+kv = """
+BoxLayout:
+    orientation: 'vertical'
+    Label:
+        id: rendered_label
+        text: ''
+    Button:
+        text: 'Render Text'
+        on_release: app.render_text()
+"""
+
+class MyApp(App):
+    def build(self):
+        self.root = Builder.load_string(kv)
+        return self.root
+    def render_text(self):
+        input_text = "ሀሎ مرحبًا Hello 你好,ආයුබෝවන්"
+        locale = "ar"  # Arabic locale
+        rendered_text = render_bidirectional_text(input_text, locale)
+        self.root.ids.rendered_label.text = rendered_text
+
+MyApp().run()
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">The following is a summary of how the above Python code works:</span>
+
+The import statements bring in the necessary libraries and modules for the script. `icu` is the ICU library for handling internationalization and Unicode text. `bidi.algorithm` is a module from python-bidi library for bidirectional text handling. `Builder`, `Label`, and `App` are modules from Kivy, a Python framework for creating multi-touch applications.
+
+The `render_bidirectional_text()` method takes two parameters: `text` (the input text to be rendered) and locale (the `locale` used for rendering). Inside the function, it performs the following steps:
+
+- Creates an ICU `BreakIterator` for line breaking.
+- Uses `bidi.get_display()` from python-bidi to perform bidirectional analysis on the input text.
+
+The `MyApp` class is a subclass of `App` from Kivy. It provides the `build()` method that loads the kv string using `Builder.load_string()` and sets it as the root widget of the app. The `render_text()` method sets the input text and locale, calls the `render_bidirectional_text()` function, and updates the Label with the rendered text.
+
+When you run the above Python code, it will create a Kivy app with a vertical box layout containing a label and a button. The label initially has no text. When you click the "Render Text" button, the render_text() method is called, which renders the bidirectional text using the render_bidirectional_text() function and updates the label with the rendered text.
+
+<span class="hl">Generating the Output:</span>
+The output of the code would be a Kivy application window with a vertical box layout. Inside the layout, there will be a Label and a Button. 
+Initially, the Label will be empty because the text property is set to an empty string in the kv string. The Button will display the text "Render Text". 
+When you click the "Render Text" button, the render_text() method will be called. It will render the bidirectional text "ሀሎ مرحبًا Hello 你好,ආයුබෝවන්" using the render_bidirectional_text() function and update the Label with the rendered text. 
+The rendered text will depend on the bidirectional rules and the specified locale ("ar" for Arabic). Since the input text contains characters from different scripts (Ethiopic, Arabic, Latin, Chinese, and Sinhala), the rendering will take into account the bidirectional nature of the text and the Arabic locale.
+
+</div>
+
+---
+
+## Example 2: RTL and Complex Scripts Rendering in Mobile Apps using Java Android
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="ex2"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="ex2">
+
+```java
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import com.ibm.icu.text.Bidi;
+import com.ibm.icu.text.BreakIterator;
+import com.ibm.icu.util.ULocale;
+
+public class MobileAppTextRendering extends AppCompatActivity {
+    private TextView renderedLabel;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Create the main layout
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        // Create the rendered label
+        renderedLabel = new TextView(this);
+        renderedLabel.setId(View.generateViewId());
+        // Create the render button
+        Button renderButton = new Button(this);
+        renderButton.setText("Render Text");
+        renderButton.setOnClickListener(v -> renderText());
+        // Add the views to the layout
+        layout.addView(renderedLabel);
+        layout.addView(renderButton);
+        setContentView(layout);
+    }
+    private void renderText() {
+        String inputText = "ሀሎ مرحبًا Hello 你好,ආයුබෝවන්";
+        String locale = "ar"; // Arabic locale
+        String renderedText = renderBidirectionalText(inputText, locale);
+        renderedLabel.setText(renderedText);
+    }
+    private String renderBidirectionalText(String text, String locale) {
+        // Create an ICU BreakIterator for line breaking
+        BreakIterator breakIterator = BreakIterator.createLineInstance(new ULocale(locale));
+        // Perform bidirectional analysis using ICU's Bidi class
+        Bidi bidiText = new Bidi(text, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
+        // Break the text into lines
+        breakIterator.setText(bidiText.getDisplayText());
+        StringBuilder stringBuilder = new StringBuilder();
+        int start = breakIterator.first();
+        for (int end = breakIterator.next(); end != BreakIterator.DONE; start = end, end = breakIterator.next()) {
+            stringBuilder.append(bidiText.getDisplayText(start, end));
+        }
+        // Render the lines
+        return stringBuilder.toString();
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">The following is a summary of how the above Java code works:</span>
+
+The import statements specify the necessary classes and libraries for the Android app and ICU4J (International Components for Unicode for Java) text rendering.
+
+The `onCreate()` method is called when the activity is created. It sets the layout for the activity using `setContentView(R.layout.activity_main)`, which inflates the XML layout file `activity_main.xml`. See below the xml file created for this purpose.
+
+The "onCreate()" method also initializes the `renderedLabel` variable by finding the corresponding `TextView` in the layout using `findViewById(R.id.rendered_label)`.
+
+The `renderText()` method is called when the render button is clicked. It sets the input text and locale variables and calls the `renderBidirectionalText()` method to render the text.
+
+The `renderBidirectionalText()` method takes the input text and locale as parameters and returns the rendered text.
+
+Inside the renderText() `method`, an `ICU` BreakIterator `is created to handle line breaking`. Then, `ICU's Bidi` class is used to perform bidirectional analysis on the input text.
+
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Note:</span> The "activity_main.xml" file is needed to define the layout of the main activity screen in your Android app. It serves as the visual representation of the user interface (UI) elements that will be displayed on the screen. It describes the arrangement and properties of UI elements such as buttons, text views, and other widgets. It allows you to define the structure and appearance of the app's user interface. It should be created in the res/layout directory. The following is an example of the contents of the XML file used in the above java code.
+
+</div>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="ex2xml"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="ex2xml">
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingTop="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="16dp"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/rendered_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/render_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Render Text" />
+</RelativeLayout>
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Generating the Output:</span>
+
+- When you run the Android app, the output will be a screen with a "Render Text" button and a TextView below it. Initially, the TextView will be empty.
+- When you click the "Render Text" button, the renderText() method will be called. It will render the input text "ሀሎ مرحبًا Hello 你好,ආයුබෝවන්" using the renderBidirectionalText() method and set the rendered text as the text for the TextView.
+- The rendered text will depend on the input text and the locale. In this case, the input text contains characters from different scripts (Ethiopic, Arabic, Latin, Chinese, and Sinhala). The rendering will take into account the bidirectional nature of the text and the specified locale (in this case, Arabic).
+
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Note:</span> The example assumes that you have properly configured the classpath and imported the necessary ICU JAR files into your project. Note that this code also assumes you have Android Studio and the Android SDK installed.
+
+</div>
+
+---
+
+## Mobile IDN Processing: Libraries and Examples
+
+When it comes to mobile IDN (Internationalized Domain Name) processing, there are several libraries available that can assist in handling and processing IDNs in mobile apps. The following are some of the top libraries and examples for mobile IDN processing:
+
+<div class="info-card">
+
+<details>
+<summary>Python IDNA Libraries (Pythonista for iOS and BeeWare for Android):</summary>
+
+<span class="hl">idna library:</span> The idna library is a Python library that supports IDNA conversion, validation, and normalization. It can be used in Python-based mobile app development frameworks, such as Pythonista for iOS or BeeWare for Android.
+
+</details>
+
+</div>
+
+---
+
+## Example 3: Code Snippet for IDN Processing in Mobile Apps Using the IDNA Library in Python
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex3"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex3">
+
+```python
+import idna
+domain = "다국어도메인이용환경테스트.한국"
+encoded_domain = idna.encode(domain)  # Converts IDN to ACE
+decoded_domain = idna.decode(encoded_domain)  # Converts ACE to IDN
+print(encoded_domain)
+print(decoded_domain)
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output:</span>
+
+```
+b'xn--289a1ml9kwza93v32mygfc5bguceb581u3zduop.xn--3e0b707e'
+다국어도메인이용환경테스트.한국
+```
+
+The `furl` library is a Python library for URL parsing and manipulation. It includes support for handling IDNs in URLs. The code snippet below runs with mobile app development frameworks such as Kivy.
+
+</div>
+
+---
+
+## Example 4: Code Snippet for IDN Parsing from URL in Mobile Apps in Python
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex4"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex4">
+
+```python
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
+
+class DomainParserApp(App):
+    def build(self):
+        # Create a simple UI
+        layout = BoxLayout(orientation='vertical', padding=10)
+
+        # Input URL
+        input_label = Label(text="https://تجربة-القبول-الشامل.موريتانيا/")
+        input_url = TextInput(multiline=False)
+        layout.add_widget(input_label)
+        layout.add_widget(input_url)
+
+        # Display parsed domain
+        result_label = Label(text="Parsed Domain:")
+        layout.add_widget(result_label)
+
+        # Button to trigger parsing
+        parse_button = Button(text="Parse Domain", on_press=self.parse_domain)
+        layout.add_widget(parse_button)
+
+        return layout
+
+    def parse_domain(self, instance):
+        # Get the URL from the input field
+        url = self.root.children[1].text  # Assumes TextInput is the second child
+
+        # Parse the URL using furl
+        parsed_url = furl(url)
+        domain = parsed_url.host  # Extract the IDN domain
+
+        # Display the parsed domain
+        result_label = self.root.children[3]  # Assumes Label is the fourth child
+        result_label.text = f"Parsed Domain: {domain}"
+
+if __name__ == '__main__':
+    DomainParserApp().run()
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output:</span> Parsed Domain: تجربة-القبول-الشامل.موريتانيا
+
+These libraries (IDNA and furl) provide efficient and reliable methods for handling IDNs on mobile platforms. IDNA offers functions for IDN encoding, decoding, validation, and the furl library is for URL parsing, enabling you to process IDNs accurately in your mobile apps.
+
+<details>
+<summary>Java IDNA for Android:</summary>
+
+<span class="hl">icu4j:</span> The icu4j library is applicable for Android app development. It provides comprehensive support for IDN processing using the IDNA class.
+
+</details>
+
+</div>
+
+---
+
+## Example 5: Code Snippet for IDN Processing in Mobile Apps Using the IDNA Library in Java
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="ex5"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="ex5">
+
+```java
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import com.ibm.icu.text.IDNA;
+import com.ibm.icu.text.IDNA.Info;
+
+public class IDNProcessing extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        String domain = "こんにちは.com";
+        IDNA idna = IDNA.getUTS46Instance(IDNA.DEFAULT);
+
+        Info info = new Info();
+        StringBuilder encodedDomain = new StringBuilder();
+        StringBuilder decodedDomain = new StringBuilder();
+        idna.nameToASCII(domain, encodedDomain, info); // Converts IDN to ACE
+        idna.nameToUnicode(encodedDomain, decodedDomain, info); // Converts ACE to IDN
+
+        // Display the results in a TextView
+        TextView resultTextView = findViewById(R.id.resultTextView);
+        resultTextView.setText("Encoded Domain: " + encodedDomain.toString() + "\nDecoded Domain: " + decodedDomain.toString());
+
+        // Print the results to the log
+        Log.d("IDNACode", "Encoded Domain: " + encodedDomain.toString());
+        Log.d("IDNACode", "Decoded Domain: " + decodedDomain.toString());
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## EAI Support in Mobile Apps — Libraries and Examples
+
+As a significant number of email addresses now include non-Latin characters, mobile apps must ensure seamless communication by effectively accommodating diverse scripts. EAI libraries empower developers to ensure seamless communication across borders. 
+These libraries handle character conversion, display internationalized addresses correctly, and validate all formats, eliminating errors and frustrations for users worldwide. By embracing EAI, mobile apps can unlock the immense potential of global communication and create a truly inclusive digital landscape.
+
+While there are many EAI libraries available, we will discuss only those specifically written for Python and Java.
+
+---
+
+## Example 6: EAI Support in Mobile App in Python
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex6"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex6">
+
+```python
+from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.popup import Popup
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+import smtplib
+import idna
+
+class EAIMobApp(App):
+    def build(self):
+        layout = BoxLayout(orientation='vertical', spacing=10, padding=10)
+
+        send_button = Button(text='Send Email', on_press=self.send_email)
+        layout.add_widget(send_button)
+
+        self.result_label = Label(text='')
+        layout.add_widget(self.result_label)
+
+        return layout
+
+    def send_email(self, instance):
+        try:
+            # Set your email credentials and properties
+            username = 'your-email@gmail.com'
+            password = 'your-email-password'
+            host = 'smtp.gmail.com'
+            port = 587
+
+            # Create a connection to the email server
+            server = smtplib.SMTP(host, port)
+            server.starttls()
+            server.login(username, password)
+
+            # Create a MIME message
+            message = MIMEMultipart()
+            message['From'] = 'تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا'
+            message['To'] = '电子邮件测试@普遍适用测试.我爱你'
+            message['Subject'] = 'Test Email'
+
+            # Attach text content
+            text_content = MIMEText('This is a test email sent from the mobile app.', 'plain')
+            message.attach(text_content)
+
+            # Send the email
+            server.send_message(message)
+            server.quit()
+
+            self.result_label.text = 'Email sent successfully.'
+        except Exception as e:
+            self.result_label.text = f'Error sending email: {str(e)}'
+
+if __name__ == '__main__':
+    EAIMobApp().run()
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+In summary, the above Python code demonstrates a mobile app that allows users to send emails with internationalized email addresses using the Kivy framework and the smtplib and email modules.
+
+<span class="hl">The following is a description of the main steps:</span>
+
+- Imports necessary modules and libraries, including `Kivy`, email-related modules, smtplib for email sending, and idna for handling internationalized email addresses.
+- Define the `EAIMobApp` class, inheriting from kivy.app.
+- Override the build method to create the app's UI using a vertical BoxLayout, a "`Send Email`" button, and a label for displaying the result.
+- Implement the send_email method to handle the email sending functionality:
+  - Set up email credentials and properties.
+  - Establish a connection to the email server using `smtplib.SMTP`.
+  - Create an email message using `MIMEMultipart`.
+  - Define the sender, recipient, subject, and content of the email.
+  - Use the `server.send_message` method to send the email.
+  - Handle exceptions and display the result in the label.
+
+</div>
+
+---
+
+## Example 7: EAI Support in Mobile App in Java Android
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="ex7"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="ex7">
+
+```java
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import androidx.appcompat.app.AppCompatActivity;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Replace with your server's email sending logic
+        new SendEmailTask().execute();
+    }
+
+    private class SendEmailTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            sendEmail();
+            return null;
+        }
+
+        private void sendEmail() {
+            // Set your server's email credentials and properties
+            String username = "your-server-email@example.com";
+            String password = "your-server-email-password";
+            String host = "your-email-server-host";
+            int port = 587;
+
+            // Set the properties for the mail session
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", String.valueOf(port));
+
+            // Create a mail session with the specified properties
+            Session session = Session.getInstance(props, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
+
+            try {
+                // Create a MimeMessage
+                MimeMessage message = new MimeMessage(session);
+
+                // Set the sender address
+                String senderEmail = "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا";
+                InternetAddress senderAddress = new InternetAddress(senderEmail, true);
+                message.setFrom(senderAddress);
+
+                // Set the recipient address
+                String recipientEmail = "电子邮件测试@普遍适用测试.我爱你";
+                InternetAddress recipientAddress = new InternetAddress(recipientEmail, true);
+                message.setRecipient(Message.RecipientType.TO, recipientAddress);
+
+                // Set the email subject and content
+                message.setSubject("Test Email");
+                message.setText("This is a test email sent from the mobile app.");
+
+                // Send the email
+                Transport.send(message);
+
+                Log.d("EmailSender", "Email sent successfully.");
+
+            } catch (Exception e) {
+                Log.e("EmailSender", "Error sending email", e);
+            }
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+The above code is an Android application written in Java that demonstrates sending emails from a mobile app. Overall, it demonstrates how to write an Android application that sends emails using the `JavaMail` API and performs the email sending operation in the background using `AsyncTask`.
+
+<span class="hl">The following is a summary of what the above code performs:</span>
+
+- Import necessary modules and libraries, including `AsyncTask` for background tasks, Bundle for passing data between activities, Log for logging, `AppCompatActivity` as the base activity class, and `JavaMail` API classes for email functionality.
+- Define the `MainActivity` class, which extends `AppCompatActivity` and serves as the main activity of the application.
+- Override the `onCreate` method, which is called when the activity is created, and set the layout for the activity.
+- In the `onCreate` method, instantiate a new instance of the `SendEmailTask` class and execute it using execute() to send the email in the background.
+- Define the `SendEmailTask` class, which extends `AsyncTask` to perform background email sending.
+- Override the `doInBackground` method in `SendEmailTask` to implement the email sending logic.
+- In the `doInBackground` method, call the `sendEmail` method to send the email.
+- Implement the `sendEmail` method to handle the email sending functionality: 
+  - Set up your server's email credentials and properties, such as the username, password, host, and port.
+  - Create properties for the mail session, specifying authentication, `TLS`, host, and port.
+  - Create a mail session using `Session.getInstance` and provide an `Authenticator` to authenticate with the server.
+  - Create a `MimeMessage` object to compose the email.
+  - Set the sender and recipient addresses using `InternetAddress`. 
+  - Set the email subject and content.
+  - Use `Transport.send` to send the message.
+  - Log the success or failure of the email sending process using `Log`.
+
+</div>
+
+---
+
+## Reference & Author
+
+<div class="meta-card">
+
+<span class="hl">Reference:</span>
+
+1. Unicode Consortium. (2023, October 5). The Unicode Standard, Version 15.0. Retrieved from [https://unicode.org/versions/](https://unicode.org/versions/) on December 14, 2023.
+2. Android Developer Documentation. (n.d.). Unicode and internationalization. Retrieved from [https://stackoverflow.com/questions/16786739/how-to-use-unicode-in-android-resource](https://stackoverflow.com/questions/16786739/how-to-use-unicode-in-android-resource) on December 14, 2023.
+3. Apple Developer Documentation. (n.d.). Using Unicode in Your App. Retrieved from [https://developer.apple.com/documentation/swift/unicode](https://developer.apple.com/documentation/swift/unicode) on December 14, 2023.
+4. Coulthard, M. (2019, May 30). Unicode & Multilingualism in Mobile Apps. Retrieved from [https://www.smashingmagazine.com/category/mobile](https://www.smashingmagazine.com/category/mobile) on December 14, 2023.
+5. Kivy: Kivy Organization. (n.d.). Kivy: Cross-platform Python Framework. Retrieved from [https://kivy.org/](https://kivy.org/), on December 14, 2023.
+6. Google. (n.d.). Android Developer Documentation. Retrieved from [https://developer.android.com/docs](https://developer.android.com/docs) on December 14, 2023.
+7. International Components for Unicode (ICU). (n.d.). ICU User Guide. Retrieved from [https://unicode-org.github.io/icu/userguide/](https://unicode-org.github.io/icu/userguide/) on December 14, 2023.
+8. Stack Overflow. (2015, May 27). Retrieved from [https://stackoverflow.com/questions/8126233/how-to-build-icu-so-i-can-use-it-in-an-iphone-app](https://stackoverflow.com/questions/8126233/how-to-build-icu-so-i-can-use-it-in-an-iphone-app) on December 14, 2023.
+9. International Components for Unicode (ICU). (n.d.). ICU User Guide. Retrieved from [https://unicode-org.github.io/icu/userguide/](https://unicode-org.github.io/icu/userguide/) on December 14, 2023.
+10. Kivy Team. (n.d.). Kivy Documentation. Retrieved from [https://kivy.org/doc/stable/](https://kivy.org/doc/stable/) on December 14, 2023.
+11. Mendoza, J. (2023, November 25). python-bidi. PyPI. Retrieved from [https://pypi.org/project/python-bidi/](https://pypi.org/project/python-bidi/) on December 14, 2023.
+12. Mendoza, J. (2023, November 25). idna. PyPI. Retrieved from [https://pypi.org/project/idna/](https://pypi.org/project/idna/) on December 14, 2023.
+13. International Components for Unicode (ICU). (n.d.). icu4j, GitHub. Retrieved from [https://github.com/unicode-org/icu](https://github.com/unicode-org/icu) on December 14, 2023.
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

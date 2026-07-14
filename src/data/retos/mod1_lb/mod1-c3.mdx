@@ -1,0 +1,27 @@
+---
+moduleId: "mod1"
+challengeId: "c3"
+moduleTitle: "Module 1 – Unicode Programming Fundamentals"
+moduleDesc: "Provide the basic understanding of Unicode and its applications."
+exerciseNum: "Exercise 3"
+exerciseTitle: "You work for a social media platform that supports all Unicode characters and has a 280‑character limit per post. Some users report that the character count is inaccurate when posts include emojis and other special characters. What is the source of the issue? Write an updated character‑counting code in Java that accurately counts all Unicode characters."
+exerciseItems:
+  - "Explain why using `String.length()` is incorrect for counting Unicode characters (it counts UTF‑16 code units, not code points)."
+  - "Implement a character count using `String.codePointCount()`."
+  - "Test the code with a sample post that contains emojis and special characters."
+solutionLang: "java"
+solutionCode: |
+  public class Mod1_Exercise3 {
+      public static void main(String[] args) {
+          String post = "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed diam urna tempor pulvinar vivamus fringilla lacus nec metus bibendum egestas iaculis 😀😀 12345678.";
+  
+          int length = post.codePointCount(0, post.length());
+          if (length > 280) {
+              System.out.println("This post has " + length + " characters, which exceeds our limit of 280 characters.");
+          } else {
+              System.out.println("This post has " + length + " characters, which complies with our limit of 280 characters.");
+          }
+      }
+  }
+draft: false
+---

@@ -1,0 +1,1078 @@
+---
+title: "Guide 2 - Unicode Advanced Programming"
+description: "Advanced module on Unicode covering the character-glyph model, normalization, Unicode Character Database, string comparison, and bidirectional scripts in Python and Java."
+difficulty: "Básico"
+duration: "136 min"
+objective: "Expand understanding and proficiency in working with Unicode by covering the character-glyph model, normalization, the Unicode Character Database, and string comparison in Python and Java."
+progress: 0
+pubDate: 2026-03-17
+draft: false
+sections:
+  - title: "Introduction"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+      - title: "Note on Unicode String Literals"
+        panelId: "note-about-the-utilization-of-unicode-string-literals"
+  - title: "How It Is Utilized"
+    items:
+      - title: "How It Is Utilized"
+        panelId: "how-character-glyph-model-is-utilized"
+      - title: "Text Rendering: Engines, Fonts & Glyph Shapers"
+        panelId: "text-rendering-engines-fonts-and-glyph-shapers"
+      - title: "Glyph Shapers & Diacritical Marks"
+        panelId: "how-do-glyph-shapers-handle-diacritical-marks"
+  - title: "Normalization"
+    items:
+      - title: "NFC and NFD"
+        panelId: "normalization-of-unicode-strings-nfc-and-nfd"
+      - title: "Normalization Examples"
+        panelId: "unicode-text-normalization-with-nfc-and-nfd"
+  - title: "Unicode Character Database"
+    items:
+      - title: "UCD Overview"
+        panelId: "exploring-the-unicode-character-database"
+      - title: "How to Access the Unicode Character Database"
+        panelId: "how-to-access-the-unicode-character-database"
+  - title: "String Comparison"
+    items:
+      - title: "Case Insensitive & Locale-Based"
+        panelId: "comparing-unicode-strings"
+  - title: "Bidirectional & Shaped Scripts"
+    items:
+      - title: "Bidirectional & Shaped Scripts"
+        panelId: "bidirectional-and-shaped-scripts"
+      - title: "Reshaping Text"
+        panelId: "reshaping-text-using-icu"
+      - title: "File Storage in Key-press Order"
+        panelId: "file-storage-in-key-press-order-in-bidirectional-and-shaped-scripts"
+      - title: "Glyph Shapers"
+        panelId: "glyph-shapers-in-bidirectional-and-shaped-scripts"
+      - title: "ICU Examples"
+        panelId: "icu-examples-for-complex-script-shaping-and-rendering"
+  - title: "File Formats & String Manipulation"
+    items:
+      - title: "JSON Unicode Handling"
+        panelId: "unicode-in-other-file-formats-and-their-handling---json-file-unicode-handling"
+      - title: "String Manipulation with ICU"
+        panelId: "unicode-string-manipulations-using-icu"
+      - title: "Normalization with Standard Libraries"
+        panelId: "unicode-normalization-with-standard-libraries"
+      - title: "Normalization & Case Folding with ICU"
+        panelId: "unicode-normalization-and-case-folding-with-icu"
+      - title: "Text Collation with ICU"
+        panelId: "text-collation-with-icu"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "references--author"
+---
+
+## Objectives
+
+This module is designed to expand your understanding and proficiency in working with Unicode by covering key aspects such as the character-glyph model, Unicode normalization, accessing the Unicode character database, and comparing and sorting Unicode strings.
+
+When relevant, instructors can cover optional topics as indicated in the students guide.
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Gain a clear understanding of the character-glyph model and how it relates to Unicode, including the concepts of code points, character encoding, and glyph representations;
+- Explore the functionality and capabilities of text engines that handle complex text layouts;
+- Acquire knowledge and practical skills in Unicode normalization techniques;
+- Understand the importance of normalization for consistent text processing and comparison;
+- Learn how to access and utilize the Unicode character database; and
+- Understand the challenges and best practices for accurate string comparison in a multilingual and diverse context.
+
+---
+
+## Note About the Utilization of Unicode String Literals
+
+- The Unicode string literals utilized in the code examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
+- Throughout the module, Unicode string literals derived from various scripts have been used in the examples code, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts.
+- The module provides the meanings of Unicode string literals used in the example codes in English, along with their transliterations, to aid learners in accurately pronouncing them.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples code.
+
+### Character-Glyph Model
+
+- Overview of Character-glyph Model.
+  - Clear separation between characters and glyphs.
+  - Characters represent the abstract units of written language.
+  - glyphs are the visual representations or renditions of characters.
+- Key difference between processing textual information and displaying
+  - Distinction between characters and glyphs.
+  - Operations are performed based on the character's Unicode code points, independent of their visual appearance.
+  - Displaying text involves converting characters into their corresponding glyphs for visual presentation.
+
+---
+
+## How Character-Glyph Model Is Utilized
+
+Both Python and Java support Unicode, allowing you to perform operations on characters based on their abstract representation, without being concerned about their visual appearance.
+
+<span class="hl">Example: Iterate through characters in a Unicode string</span>
+
+- Java’s support for Unicode allows you to perform operations on characters based on their abstract representation, without being concerned about their visual appearance.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="disp1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="disp1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="disp1">
+
+```python
+unicode_string = "Hello, 你好, नमस्ते"
+# "你好" (nǐ hǎo) is a Chinese greeting
+# "नमस्ते" (namaste) is a greeting in Hindi
+
+# Iterate through the characters in the string
+for char in unicode_string:
+    print(char)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="disp1">
+
+```java
+public class UnicodeStringIteration {
+    public static void main(String[] args) {
+        // "你好" (nǐ hǎo) is a Chinese greeting
+        // "नमस्ते" (namaste) is a greeting in Hindi
+        String unicodeString = "Hello, 你好, नमस्ते";
+        char[] charArray = unicodeString.toCharArray();
+        for (char c : charArray) {
+            System.out.println(c);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<span class="hl">Example: Compare two Unicode characters</span>
+
+In character comparison operations, the comparison is solely based on the abstract representation of characters through their Unicode code points — not by their visual representation or glyph model.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="bmp1"><span class="lang-icon lang-icon--python"></span>Python (BMP)</button>
+    <button class="lang-btn" data-lang="java-surr" data-target="bmp1"><span class="lang-icon lang-icon--java"></span>Java (surrogate)</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="bmp1">
+
+```python
+char1 = 'ሀ'  # first character (ha) in the Ethiopic script
+char2 = 'ለ'  # character "le" in the Ethiopic script
+
+if ord(char1) < ord(char2):
+    print(f"{char1} comes before {char2}")
+else:
+    print(f"{char1} comes after {char2}")
+# The ord() function retrieves the Unicode code point of each character,
+# enabling a comparison based on their abstract representation.
+```
+
+  </div>
+  <div class="lang-block" data-lang="java-surr" data-group="bmp1">
+
+```java
+public class UnicodeComparison {
+    public static void main(String[] args) {
+        char char1 = 'ሀ'; // first character (ha) in the Ethiopic script
+        char char2 = 'ለ'; // character "le" in the Ethiopic script
+        if (char1 < char2) {
+            System.out.println(char1 + " comes before " + char2);
+        } else {
+            System.out.println(char1 + " comes after " + char2);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Text Rendering Engines Fonts and Glyph Shapers
+
+- **Text rendering:**
+  - Text engines, fonts, and glyph shapers play crucial roles.
+- **Text Engines:**
+  - are responsible for handling the layout and rendering of text.
+  - analyze the Unicode text, apply appropriate layout algorithms, and determine the correct positioning and shaping.
+- **Fonts:**
+  - provide the necessary glyphs (visual representations) for each character.
+- **Glyph Shapers:**
+  - shaping glyphs to produce visually connected and contextually appropriate representations of characters.
+
+---
+
+## How Do Glyph Shapers Handle Diacritical Marks
+
+- Glyph shapers:
+  - handle the shaping of characters with diacritical marks or vowel signs.
+- Glyph shapers does  the following tasks:
+  - Base Character and Diacritical Mark Identification.
+  - Positioning and Placement.
+  - Mark Positioning Rules.
+  - Contextual Adjustments.
+  - Ligatures and Special Forms.
+
+---
+
+## Normalization of Unicode Strings NFC and NFD
+
+<span class="hl">NFC (Normalization Form C)</span>
+
+- Composes characters and combining marks whenever possible.
+- Represents characters as precomposed forms, where a single code point represents a composed character.
+- Useful for compatibility with older systems and applications that rely on precomposed characters.
+- Generally preferred for interoperability and compatibility purposes.
+- Allows for efficient storage and comparison of strings.
+- Can be beneficial when working with most modern software and protocols.
+
+<span class="hl">NFD (Normalization Form D)</span>
+
+- Decomposes characters and combining marks.
+- Represents characters as a sequence of separate code points, with combining marks following their base characters.
+- Useful for applications that require working with decomposed characters and need to accurately process combining marks.
+- Can be beneficial for applications that perform in‑depth text processing or linguistic analysis.
+- Provides a more granular representation of characters, making it suitable for certain text manipulation tasks.
+- Can help identify and handle specific linguistic and orthographic variations.
+
+---
+
+## Unicode Text Normalization with NFC and NFD
+
+<span class="hl">Normalization Examples Using Python and Java</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="norm1"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="norm1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="norm1">
+    
+```python
+import unicodedata
+
+# Example text
+
+text = "Café"
+
+# Normalize to NFC
+
+nfc_text = unicodedata.normalize('NFC', text)
+print("NFC normalized text:", nfc_text)
+
+# Output individual Unicode code points for the NFC normalized text
+
+for char in nfc_text:
+if char != text:
+print(char, f"U+{ord(char):04X}")
+
+# NFC Output: diacritic character "é" is U+00E9
+
+# Normalize to NFD
+
+nfd_text = unicodedata.normalize('NFD', text)
+print("NFD normalized text:", nfd_text)
+
+# Output individual Unicode code points for the NFD normalized text
+
+for char in nfd_text:
+if char != text:
+print(char, f"U+{ord(char):04X}")
+
+# NFD Output: diacritic character: "e" (U+0065) followed by the combining character "´" (U+0301)
+
+````
+
+  </div>
+<div class="lang-block" data-lang="java" data-group="norm1">
+
+```java
+import java.text.Normalizer;
+
+public class UnicodeNormalization {
+    public static void main(String[] args) {
+        // Example text
+        String text = "Café";
+
+        // Normalize to NFC
+        String nfcText = Normalizer.normalize(text, Normalizer.Form.NFC);
+        System.out.println("NFC normalized text: " + nfcText);
+
+        // Output individual Unicode code points for the NFC normalized text
+        for (int i = 0; i < nfcText.length(); i++) {
+            char ch = nfcText.charAt(i);
+            if (ch != text.charAt(i)) {
+                System.out.println(ch + " U+" + Integer.toHexString(ch | 0x10000).substring(1));
+                // NFC Output: diacritic character "é" is U+00E9
+            }
+        }
+
+        // Normalize to NFD
+        String nfdText = Normalizer.normalize(text, Normalizer.Form.NFD);
+        System.out.println("NFD normalized text: " + nfdText);
+
+        // Output individual Unicode code points for the NFD normalized text
+        for (int i = 0; i < nfdText.length(); i++) {
+            char ch = nfdText.charAt(i);
+            if (ch != text.charAt(i)) {
+                System.out.println(ch + " U+" + Integer.toHexString(ch | 0x10000).substring(1));
+                // NFD Output: "e" (U+0065) followed by combining "´" (U+0301)
+            }
+        }
+    }
+}
+````
+
+  </div>
+</div>
+
+- Both NFC and NFD normalization produce similar Unicode code point outputs for characters such as C, a, and f.
+- However, there is a difference in the representation of the diacritic character.
+- In NFC, the Unicode code point for "é" is U+00E9, whereas in NFD it is represented as the base character "e" (U+0065) followed by the combining character "´" (U+0301).
+
+---
+
+## Exploring the Unicode Character Database
+
+- UCD features for Unicode-aware applications:
+  - Character Properties and Metadata:
+  - Collation and Sorting.
+  - Normalization and Composition.
+  - Bidirectional Text Handling.
+  - Emoji and Emoji Presentation.
+  - Character Set Support and Block Ranges.
+  - Case Mapping.
+
+---
+
+## How to Access the Unicode Character Database
+
+<span class="hl">Some of the Methods and Tools</span>
+
+- Commonly used methods and tools:
+  - Programming Language APIs.
+  - Web-based APIs.
+  - Unicode Database Tools and Utilities.
+  - Offline Unicode Database Dumps.
+  - Unicode Consortium Resources.
+
+### Accessing UCD Using Programming Languages
+
+<span class="hl">Example:</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="ucd1"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="ucd1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div>
+    <div class="lang-block active" data-lang="python" data-group="ucd1">
+
+```python
+import unicodedata
+
+char = 'ሀ'  # Ethiopic Syllable Ha (ሀ)
+category = unicodedata.category(char)
+print(f"Character: {char}")
+print(f"Category: {category}")
+# Output: Character: ሀ
+# Output: Category: Lo
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ucd1">
+
+```java
+public class UCDExample {
+    public static void main(String[] args) {
+        char character = 'ሀ'; // Ethiopic Syllable Ha (ሀ)
+        int codePoint = character;
+        int category = Character.getType(codePoint);
+        System.out.println("Character: " + character);
+        System.out.println("Category: " + category);
+        // Output: Character: ሀ
+        // Output: Category: Lo
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="obs-card">
+
+- Python code using the unicodedata module
+- Java using the java.lang.Character package
+
+</div>
+
+<div class="info-card">
+
+### Accessing UCD Using Command Line Utilities and Complementary Command Line Utilities
+
+<span class="hl">Using a Command Line Utility or Library:</span>
+
+- curl -X GET "https://unicode.org/cldr/utility/character/properties?&character=ሀ"
+- uconv -f utf-8 -t ascii input.txt output.txt
+- The curl command sends a GET request to the Unicode CLDR utility, which provides information about Unicode characters.
+- The curl command sends a GET request to the Unicode CLDR utility, which provides information about Unicode characters.
+
+</div>
+
+<div class="info-card">
+
+### Accessing UCD Using Web Interfaces
+
+<span class="hl">Using the Unicode CLDR utility website:</span>
+
+- website: https://util.unicode.org/UnicodeJsps/character.jsp
+- In the "Character" field, enter the character for which you want to query properties.
+- Click on the code point of interest.
+- displays the properties of the character you entered.
+- scroll down to explore additional details and properties.
+
+</div>
+
+The `curl` command sends a GET request to the Unicode CLDR utility, which provides information about Unicode characters. The `uconv` command converts text from UTF‑8 to ASCII.
+
+---
+
+## Comparing Unicode Strings
+
+<span class="hl">Example: Case‑insensitive comparisons</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="cmp1"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="cmp1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="cmp1">
+
+```python
+string1 = "Café"
+string2 = "café"
+
+if string1.casefold() == string2.casefold():
+    print("The strings are equal (case-insensitive comparison)")
+else:
+    print("The strings are not equal (case-insensitive comparison)")
+# Output: The strings are equal (case-insensitive comparison)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="cmp1">
+
+```java
+public class CaseInsensitiveComparison {
+    public static void main(String[] args) {
+        String string1 = "Café";
+        String string2 = "café";
+
+        if (string1.equalsIgnoreCase(string2)) {
+            System.out.println("The strings are equal (case-insensitive comparison)");
+        } else {
+            System.out.println("The strings are not equal (case-insensitive comparison)");
+        }
+    }
+}
+// Output: The strings are equal (case-insensitive comparison)
+```
+
+  </div>
+</div>
+
+<span class="hl">Example: Locale‑based comparisons</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="cmp2"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="cmp2"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="cmp2">
+
+```python
+import locale
+
+string1 = "café"
+string2 = "cafe"
+
+def compare_strings(result, locale_name):
+    locale.setlocale(locale.LC_ALL, locale_name)
+    if result < 0:
+        print(f"{string1} comes before {string2} in the {locale_name} locale.")
+    elif result > 0:
+        print(f"{string1} comes after {string2} in the {locale_name} locale.")
+    else:
+        print(f"{string1} and {string2} are equivalent in the {locale_name} locale.")
+
+result1 = locale.strcoll(string1, string2)
+compare_strings(result1, 'en_US.UTF-8')
+# Output: café comes after cafe in the en_US.UTF-8 locale.
+
+result2 = locale.strcoll(string1, string2)
+compare_strings(result2, 'fr_FR.utf8')
+# Output: café comes before cafe in the fr_FR.utf8 locale.
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="cmp2">
+
+```java
+import java.text.Collator;
+import java.util.Locale;
+
+public class LocaleComparison {
+    public static void main(String[] args) {
+        Locale locale = Locale.US; // English (United States)
+        Collator collator = Collator.getInstance(locale);
+
+        String string1 = "café";
+        String string2 = "cafe";
+
+        int result = collator.compare(string1, string2);
+
+        if (result < 0) {
+            System.out.println(string1 + " comes before " + string2);
+        } else if (result > 0) {
+            System.out.println(string1 + " comes after " + string2);
+        } else {
+            System.out.println(string1 + " and " + string2 + " are equivalent");
+        }
+    }
+}
+// Output: café comes after cafe
+```
+
+  </div>
+</div>
+
+---
+
+## Bidirectional and Shaped Scripts
+
+<span class="hl">Bidirectional Scripts and Shaped Scripts</span>
+
+- Bidirectional Scripts:
+  - text flows from right to left (RTL)
+  - text flows from right to left (LTR)
+- Shaped Scripts also known as Complex Scripts:
+  - additional shaping and contextual transformation of characters to achieve the correct visual representation.
+  - Examples of shaped scripts include:
+    - Arabic, Hebrew, Indic scripts (e.g., Devanagari, Bengali), and
+    - Southeast Asian scripts (e.g., Thai, Khmer)
+- Shaping is the process of transforming input text into a sequence of glyphs that visually represent the characters.
+
+<span class="hl">Bidirectional Display Format</span>
+
+- Ensures that the text flows correctly from right to left (RTL) for RTL scripts and from left to right (LTR) for LTR scripts:
+  - Text directionality.
+  - Bi-directional control characters.
+  - Contextual analysis.
+- Shaped Display Format:
+  - Character joining.
+  - Glyph substitution.
+  - Glyph positioning.
+
+---
+
+## Reshaping Text Using ICU
+
+<span class="hl">Python example using the python‑bidi library:</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="bidi1"><span class="lang-icon lang-icon--python"></span>Python (bidi)</button>
+        <button class="lang-btn" data-lang="java" data-target="bidi1"><span class="lang-icon lang-icon--java"></span>Java (ICU)</button>
+    </div>
+    <div class="lang-block active" data-lang="python" data-group="bidi1">
+
+```python
+from bidi.algorithm import get_display
+
+def reshape_arabic_text(text):
+    reshaped_text = get_display(text)
+    return reshaped_text
+
+# Example usage
+text = 'مرحبا بكم'  # 'Marhaban bikum' in Arabic
+reshaped_text = reshape_arabic_text(text)
+print(reshaped_text)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="bidi1">
+
+```java
+import com.ibm.icu.text.Bidi;
+
+public class ReshapeArabicText {
+    public static String reshapeArabicText(String text) {
+        Bidi bidi = new Bidi(text, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
+        return bidi.writeReordered(Bidi.REORDER_DEFAULT);
+    }
+
+    public static void main(String[] args) {
+        String text = "مرحبا بكم"; // 'Marhaban bikum' in Arabic
+        String reshapedText = reshapeArabicText(text);
+        System.out.println(reshapedText);
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="obs-card">
+
+**Note:** Java Code Example to reshape Arabic text: The Java code below utilizes the ICU4J library's com.ibm.icu.text.Bidi package to reshape Arabic text:
+
+</div>
+
+---
+
+## File Storage in Key-press Order in Bidirectional and Shaped Scripts
+
+- Consideration in storing text in a file in key-press order for bidirectional and shaped scripts:
+  - Character Encoding.
+  - Logical Order.
+  - Shaping and Ligatures.
+  - Bi-directional Control Characters.
+
+## Glyph Shapers in Bidirectional and Shaped Scripts
+
+- Glyph Shaping in Bidirectional Scripts:
+  - Contextual Analysis.
+  - Ligatures and Joining.
+  - Positional Variants.
+
+- Glyph Shaping in Shaped Scripts:
+  - Contextual Analysis.
+  - Ligatures and Substitutions.
+  - Complex Shaping Rules.
+
+---
+
+## ICU Examples for Complex Script Shaping and Rendering
+
+<span class="hl">Shaping and Rendering Arabic Text</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="icu1"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="icu1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="icu1">
+
+```python
+import icu
+
+# Create an ICU Transliterator object for Arabic shaping
+transliterator = icu.Transliterator.createInstance("Arabic")
+
+arabic_text = "السلام عليكم"  # 'Assalamu alaikum' in Arabic
+shaped_text = transliterator.transliterate(arabic_text)
+print(shaped_text)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="icu1">
+
+```java
+import com.ibm.icu.text.ArabicShaping;
+import com.ibm.icu.text.Bidi;
+
+public class ArabicTextShaping {
+    public static void main(String[] args) {
+        ArabicShaping arabicShaper = new ArabicShaping();
+        String arabicText = "السلام عليكم"; // 'Assalamu alaikum' in Arabic
+        String shapedText = arabicShaper.shape(arabicText);
+        Bidi bidi = new Bidi(shapedText, Bidi.DIRECTION_LEFT_TO_RIGHT);
+        System.out.println(bidi.writeReordered(Bidi.REORDER_DEFAULT));
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Unicode in Other File Formats and their Handling - JSON File Unicode Handling
+
+- Considerations for Unicode handling in JSON file handling:
+  - Encoding
+  - Escaping Special Characters
+  - Unicode Support in JSON Libraries
+  - String Handling
+
+<span class="hl">Example: Writing and reading Unicode data in JSON (Python and Java)</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="json1"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="json1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="json1">
+    
+```python
+import json
+
+contact_info = {
+"name": {
+"Ethiopic": "ዮናስ ተስፋዬ",
+"Arabic": "يونس تسفاي",
+"Sinhala": "යුනෝස් ටෙස්ෆායි",
+"Japanese": "ユナス・テスファイ",
+"Latin": "Yonas Tesfaye"
+},
+"email_address": {
+"Ethiopic": "ኢሜይል-ሙከራ@ሁለንአቀፍ-ተቀባይነት-ሙከራ.com",
+"Arabic": "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا",
+"Latin": "yonas.tesfaye@domain.com"
+},
+"job_title": {
+"Ethiopic": "ሶፍትዌር አልሚ",
+"Arabic": "مهندس برمجيات",
+"Japanese": "ソフトウェアエンジニア",
+"Latin": "Software Engineer"
+}
+}
+
+# Save to JSON — ensure_ascii=False preserves Unicode characters
+
+with open("contactinfo.json", "w", encoding="utf-8") as file:
+json.dump(contact_info, file, ensure_ascii=False)
+
+# Read back from JSON
+
+with open("contactinfo.json", "r", encoding="utf-8") as file:
+loaded_data = json.load(file)
+
+print("Name (Ethiopic):", loaded_data["name"]["Ethiopic"])
+print("Email (Arabic):", loaded_data["email_address"]["Arabic"])
+print("Job Title (Japanese):", loaded_data["job_title"]["Japanese"])
+
+````
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="json1">
+
+```java
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.IOException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class ContactInfo {
+    public static void main(String[] args) {
+        JSONObject contactInfo = new JSONObject();
+
+        JSONObject name = new JSONObject();
+        name.put("Ethiopic", "ዮናስ ተስፋዬ");
+        name.put("Arabic", "يونس تسفاي");
+        name.put("Latin", "Yonas Tesfaye");
+        contactInfo.put("name", name);
+
+        JSONObject emailAddress = new JSONObject();
+        emailAddress.put("Ethiopic", "ኢሜይል-ሙከራ@ሁለንአቀፍ-ተቀባይነት-ሙከራ.com");
+        emailAddress.put("Arabic", "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا");
+        emailAddress.put("Latin", "yonas.tesfaye@domain.com");
+        contactInfo.put("email_address", emailAddress);
+
+        JSONObject jobTitle = new JSONObject();
+        jobTitle.put("Ethiopic", "ሶፍትዌር አልሚ");
+        jobTitle.put("Arabic", "مهندس برمجيات");
+        jobTitle.put("Latin", "Software Engineer");
+        contactInfo.put("job_title", jobTitle);
+
+        // Save to JSON file
+        try (FileWriter file = new FileWriter("contactinfo.json")) {
+            file.write(contactInfo.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Read back from JSON file
+        try (FileReader reader = new FileReader("contactinfo.json")) {
+            JSONParser parser = new JSONParser();
+            JSONObject loaded = (JSONObject) parser.parse(reader);
+            JSONObject loadedName = (JSONObject) loaded.get("name");
+            System.out.println("Name (Ethiopic): " + loadedName.get("Ethiopic"));
+            System.out.println("Email (Arabic): " + ((JSONObject) loaded.get("email_address")).get("Arabic"));
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+    }
+}
+````
+
+  </div>
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Note:</span> Remember to specify the UTF‑8 encoding
+(`encoding="utf-8"` in Python) and use `ensure_ascii=False` to preserve Unicode
+characters as‑is.
+
+</div>
+
+---
+
+## Unicode String Manipulations Using ICU
+
+<span class="hl">Example: Character iteration, code point inspection, and transliteration using ICU</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="icu2"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="icu2"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="icu2">
+
+```python
+import icu
+
+japanese_text = "こんにちは世界"  # 'Hello, World' in Japanese
+
+# Transliterate Han characters to Latin
+han_latin = icu.Transliterator.createInstance("Han-Latin")
+shaped_text = han_latin.transliterate(japanese_text)
+print(shaped_text)
+
+# Character count and properties
+unicode_string = icu.UnicodeString(japanese_text)
+count = unicode_string.length()
+print("Character count:", count)
+
+for i in range(count):
+    code_point = unicode_string.charAt(i)
+    char = chr(code_point)
+    char_name = icu.Char.charName(code_point)
+    print(f"Character: {char} | Code point: {code_point} | Name: {char_name}")
+    print(f"  Is digit: {str(char).isdigit()} | Is uppercase: {str(char).isupper()}")
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="icu2">
+
+```java
+import java.util.Iterator;
+
+public class UnicodeExampleICU {
+    public static void main(String[] args) {
+        String text = "こんにちは世界"; // Japanese "Hello, World"
+
+        // Character count
+        int characterCount = text.codePointCount(0, text.length());
+        System.out.println("Character count: " + characterCount);
+
+        // Character iteration and properties
+        Iterator<Integer> iterator = text.codePoints().iterator();
+        while (iterator.hasNext()) {
+            int codePoint = iterator.next();
+            System.out.println("Character: " + (char) codePoint);
+            System.out.println("Code point: " + codePoint);
+            System.out.println("Name: " + Character.getName(codePoint));
+            System.out.println("Is digit: " + Character.isDigit(codePoint));
+            System.out.println("Is upper: " + Character.isUpperCase(codePoint));
+            System.out.println("----");
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Unicode Normalization with Standard Libraries
+
+<span class="hl">Example: Normalization and diacritic removal using standard libraries</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="norm2"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="norm2"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="norm2">
+
+```python
+import unicodedata
+
+input_str = "Café"
+
+# Normalize to NFC
+normalized = unicodedata.normalize('NFC', input_str)
+
+# Remove diacritical marks (combining characters)
+without_diacritics = ''.join(c for c in normalized if not unicodedata.combining(c))
+
+print("Normalized:        ", normalized)         # Café
+print("Without diacritics:", without_diacritics) # Cafe
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="norm2">
+
+```java
+import java.text.Normalizer;
+
+public class UnicodeStringManipulation {
+    public static void main(String[] args) {
+        String input = "Café";
+
+        // Normalize to NFC
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFC);
+
+        // Remove diacritical marks using regex \p{M} (Mark category)
+        String withoutDiacritics = normalized.replaceAll("\\p{M}", "");
+
+        System.out.println("Normalized:         " + normalized);        // Café
+        System.out.println("Without diacritics: " + withoutDiacritics); // Cafe
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Unicode Normalization and Case Folding with ICU
+
+<span class="hl">Example: Using ICU for normalization and case folding</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="icu3"><span class="lang-icon lang-icon--python"></span>Python (PyICU)</button> <button class="lang-btn" data-lang="java" data-target="icu3"><span class="lang-icon lang-icon--java"></span>Java (ICU4J)</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="icu3">
+
+```python
+import icu
+
+input_str = "مَرْحَبًا"  # 'Marhaban' in Arabic
+
+# Normalize to NFC using PyICU
+normalizer = icu.Normalizer2.getNFCInstance()
+normalized = normalizer.normalize(input_str)
+
+# Remove diacritical marks using ICU Transliterator
+diacritic_remover = icu.Transliterator.createInstance("Any-NFD; [:M:] Remove; NFC")
+without_diacritics = diacritic_remover.transliterate(normalized)
+
+print("Normalized:        ", normalized)
+print("Without diacritics:", without_diacritics)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="icu3">
+
+```java
+import com.ibm.icu.text.Normalizer2;
+import com.ibm.icu.text.Transliterator;
+
+public class UnicodeStringManipulationICU {
+    public static void main(String[] args) {
+        String input = "Café";
+
+        // Normalize to NFC using ICU
+        Normalizer2 normalizer = Normalizer2.getNFCInstance();
+        String normalized = normalizer.normalize(input);
+
+        // Remove diacritical marks using ICU
+        Transliterator diacriticRemover = Transliterator.getInstance("Any-NFD; [:M:] Remove; NFC");
+        String withoutDiacritics = diacriticRemover.transform(normalized);
+
+        System.out.println("Normalized: " + normalized);
+        System.out.println("Without Diacritics: " + withoutDiacritics);
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Text Collation with ICU
+
+<span class="hl">Example: Locale‑aware string comparison using ICU</span>
+
+<div class="code-switcher">
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="python" data-target="collate1"><span class="lang-icon lang-icon--python"></span>Python</button> <button class="lang-btn" data-lang="java" data-target="collate1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    </div> <div class="lang-block active" data-lang="python" data-group="collate1">
+
+```python
+import icu
+
+def compare_strings(text1, text2, locale='ar'):
+    collator = icu.Collator.createInstance(icu.Locale(locale))
+    result = collator.compare(text1, text2)
+    if result < 0:
+        return f"{text1} comes before {text2}"
+    elif result > 0:
+        return f"{text1} comes after {text2}"
+    else:
+        return f"{text1} is equal to {text2}"
+
+string1 = "تفاحة"  # 'Apple' in Arabic
+string2 = "موز"    # 'Banana' in Arabic
+print(compare_strings(string1, string2))
+# Output: تفاحة comes before موز
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="collate1">
+
+```java
+import com.ibm.icu.text.Collator;
+import com.ibm.icu.util.ULocale;
+
+public class StringComparison {
+    public static String compareStrings(String text1, String text2, String locale) {
+        Collator collator = Collator.getInstance(new ULocale(locale));
+        int result = collator.compare(text1, text2);
+        if (result < 0) {
+            return text1 + " comes before " + text2;
+        } else if (result > 0) {
+            return text1 + " comes after " + text2;
+        } else {
+            return text1 + " is equal to " + text2;
+        }
+    }
+
+    public static void main(String[] args) {
+        String string1 = "تفاحة"; // 'Apple' in Arabic
+        String string2 = "موز";   // 'Banana' in Arabic
+        System.out.println(compareStrings(string1, string2, "ar"));
+        // Output: تفاحة comes before موز
+    }
+}
+```
+
+  </div>
+</div>
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. Unicode Consortium. "Glyph Shaping." In The Unicode Standard, Version 15.0. Unicode Consortium. 2022. Retrieved October 21, 2023, from [https://www.unicode.org/versions/Unicode15.0.0/](https://www.unicode.org/versions/Unicode15.0.0/).
+2. International Business Machines Corporation (IBM). (2023). ICU Documentation. Retrieved October 21, 2023, from [https://docs.python.org/3/](https://docs.python.org/3/).
+3. Python Software Foundation. (2023). Python 3.12 Documentation. Retrieved October 21, 2023, from [https://docs.python.org/3/](https://docs.python.org/3/).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a>.</p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License — Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

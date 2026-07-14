@@ -11,8 +11,6 @@ export class AuthError extends Error {
 
 /**
  * getSession — fuente única de "quién es el usuario actual".
- * El middleware ya validó el token y llenó locals.user; esto solo lo lee.
- * Devuelve el usuario o null (nunca lanza).
  */
 export function getSession(locals) {
   return locals?.user ?? null;
@@ -43,9 +41,7 @@ export function requireAdmin(user) {
 }
 
 /**
- * Exige profesor VERIFICADO  (T2.8).
- * Combina requireRole('PROFESOR') + chequeo en base de teacherVerificationStatus.
- * Es async porque el estado de verificación no viaja en el token (puede cambiar).
+ * Exige profesor VERIFICADO
  */
 export async function requireVerifiedTeacher(user) {
   requireRole(user, "PROFESOR");

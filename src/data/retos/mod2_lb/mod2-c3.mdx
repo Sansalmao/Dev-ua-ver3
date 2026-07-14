@@ -1,0 +1,47 @@
+---
+moduleId: "mod2"
+challengeId: "c3"
+moduleTitle: "Module 2 – Unicode Advanced Programming"
+moduleDesc: "Expands understanding of Unicode: character-glyph model, normalization, character database, string comparison, and bidirectional scripts."
+exerciseNum: "Exercise 3"
+exerciseTitle: "Develop a code in Java that performs a locale‑based comparison of two Unicode strings, based on the locale supplied by the user."
+exerciseItems:
+  - "Read a language tag (e.g., 'fr‑FR') and two strings from the user."
+  - "Create a `Collator` for the specified locale."
+  - "Compare the strings and display whether the first string is equivalent, comes before, or comes after the second."
+solutionLang: "java"
+solutionCode: |
+  import java.text.Collator;
+  import java.util.Locale;
+  import java.util.Scanner;
+
+  public class Mod2_Exercise3 {
+      public static void main(String[] args) {
+          Scanner scanner = new Scanner(System.in);
+
+          System.out.print("Enter language tag (e.g., 'fr-FR' for France, 'de-DE' for Germany): ");
+          String langTag = scanner.nextLine();
+          Locale userLocale = Locale.forLanguageTag(langTag);
+
+          System.out.print("Enter first string: ");
+          String str1 = scanner.nextLine();
+          System.out.print("Enter second string: ");
+          String str2 = scanner.nextLine();
+
+          Collator localeCollator = Collator.getInstance(userLocale);
+          int result = localeCollator.compare(str1, str2);
+
+          System.out.println("\nComparison Results (Locale: " + userLocale.getDisplayName() + "):");
+          if (result == 0) {
+              System.out.println("'" + str1 + "' is EQUIVALENT to '" + str2 + "'");
+          } else if (result < 0) {
+              System.out.println("'" + str1 + "' comes BEFORE '" + str2 + "'");
+          } else {
+              System.out.println("'" + str1 + "' comes AFTER '" + str2 + "'");
+          }
+
+          scanner.close();
+      }
+  }
+draft: false
+---

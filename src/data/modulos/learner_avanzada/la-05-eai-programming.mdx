@@ -1,0 +1,1826 @@
+---
+title: "Module 9 - Programming in Email Address Internationalization (EAI)"
+description: "Explores the fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses — covering subject/header lines, email body, attachments, SMTP interactions, sending emails with non-ASCII addresses, confirmation link validation, and mailbox name considerations."
+difficulty: "Básico"
+duration: "110 min"
+objective: "Learn techniques for handling non-ASCII characters in email components using UTF-8 encoding, discover libraries for SMTP interactions with EAI support, send emails with non-ASCII addresses using Python and Java, validate internationalized email addresses with confirmation links, and parse internationalized email addresses correctly."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Introduction"
+        panelId: "introduction"
+      - title: "Objetives"
+        panelId: "objetives"
+  - title: "Non-ASCII in Emails"
+    items:
+      - title: "EAI Programming: Handling Non-ASCII Characters in Emails"
+        panelId: "eai-programming-handling-non-ascii-characters-in-emails"
+      - title: "Handling Subject and Header Lines"
+        panelId: "eai-programming-handling-subject-and-header-lines-with-utf-8non-ascii-characters"
+      - title: "Example 2 & 3 — Subject Line in Python and Java"
+        panelId: "example-2-and-3-code-snippet-for-handling-subject-line-with-utf-8non-ascii-characters"
+  - title: "Email Body"
+    items:
+      - title: "EAI Programming: Handling Email Body"
+        panelId: "eai-programming-handling-email-body-with-utf-8non-ascii-characters"
+      - title: "Example 8 & 9 — Full Code for Subject, Header and Body"
+        panelId: "example-8-and-9-eai-code-for-handling-subject-line-header-line-and-email-body-with-utf-8non-ascii-characters"
+  - title: "Attachments"
+    items:
+      - title: "EAI Programming: Handling Attachments"
+        panelId: "eai-programming-handling-attachments-with-utf-8non-ascii-characters"
+      - title: "Example 10 — Code Snippets for Handling Attachments"
+        panelId: "example-10-code-snippets-for-parts-of-python-and-java-codes-for-handling-attachments-in-utf-8"
+      - title: "Example 11 & 12 — Full Code for Handling Attachments"
+        panelId: "example-11-and-12-full-code-for-handling-attachments-with-utf-8non-ascii-characters"
+      - title: "Example 13 & 14 — Non-ASCII Filename"
+        panelId: "example-13-and-14-handling-attachments-with-utf-8non-ascii-filename"
+  - title: "SMTP & Sending Emails"
+    items:
+      - title: "Handling SMTP Interactions with EAI Support: Libraries and APIs"
+        panelId: "handling-smtp-interactions-with-eai-support-libraries-and-apis"
+      - title: "Example 15 — Sending Multilingual Emails with Python smtplib/IDNA"
+        panelId: "example-15-sending-emails-with-multilingual-email-addresses-with-pythons-smtplib-and-idna"
+      - title: "Example 16 — Sending Multilingual Emails with Java JavaMail"
+        panelId: "example-16-sending-emails-with-multilingual-emails-addresses-with-javas-javamail-and-idna"
+  - title: "Validation"
+    items:
+      - title: "Ensuring Email Delivery Across Languages: Confirmation Link Workflow"
+        panelId: "ensuring-email-delivery-across-languages-internationalized-email-address-validation-with-confirmation-links"
+      - title: "Example 17 — Validating Email Addresses Using Confirmation Link Workflow"
+        panelId: "example-17-validating-internationalized-email-addresses-using-confirmation-link-workflow-using-python-and-java"
+  - title: "Parsing"
+    items:
+      - title: "Understanding Multilingual Mailboxes: Parsing Internationalized Email Addresses"
+        panelId: "understanding-multilingual-mailboxes-parsing-internationalized-email-addresses"
+      - title: "Example 18 & 19 — Validating Email Address Length"
+        panelId: "example-18-and-19-validating-email-addresses-length-using-python-and-java"
+      - title: "EAI-Specific Considerations for Setting Up Email Mailbox Names"
+        panelId: "eai-specific-considerations-for-setting-up-email-mailbox-names"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "reference--author"
+---
+
+## Introduction
+
+<div class="info-card">
+
+In today's globalized world, email communication plays a vital role in connecting individuals and businesses across borders. However, traditional email systems have limitations when it comes to accommodating non-ASCII characters in email addresses. EAI addresses this challenge by allowing the use of non-ASCII characters in internationalized email addresses, enabling users to express their identities and languages more accurately. In this micro-learning module, we will explore the fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses.
+
+</div>
+
+---
+
+## Objetives
+
+<div class="info-card">
+
+Upon completion of this micro-learning UA module, students will be able to:
+
+- Learn techniques and best practices for handling non-ASCII characters in email subject line, header line, attachments and email body contents using UTF-8 encoding;
+- Discover libraries and APIs available for handling SMTP interactions with EAI support in programming languages;
+- Learn how to send emails with Non-ASCII email addresses using Python's smtplib and IDNA encoding and Java's JavaMail API;
+- Explore techniques for validating internationalized email addresses with confirmation links to ensure email delivery across languages;
+- Learn parsing internationalized email addresses, including decoding the local and domain parts correctly; and
+- Understand the EAI-specific considerations for setting up email mailbox names, including character encoding and validation.
+
+</div>
+
+---
+
+## EAI programming: Handling Non-ASCII Characters in Emails
+
+When it comes to handling UTF-8/non-ASCII characters in email communication, including the subject line, header, email body text, and attachments, there are several considerations and techniques involved. EAI programming plays a crucial role in ensuring proper encoding, decoding, and handling of these characters. 
+
+The following are some key aspects to consider:
+
+<div class="obs-card">
+
+<details>
+<summary>Character Encoding:</summary>
+
+Use UTF-8 as the character encoding scheme throughout the email communication process. UTF-8 supports a wide range of characters, including non-ASCII characters, and ensures compatibility across different systems and email clients.
+
+</details>
+
+<details>
+<summary>Subject Line:</summary>
+
+When including non-ASCII characters in the subject line, ensure that it is properly encoded using the MIME encoded-word syntax. This syntax allows special characters to be represented using the "=?charset?encoding?encoded-text?=" format, where charset is the character set used (e.g., UTF-8) and encoding specifies the encoding scheme (e.g., Q or B for quoted-printable or base64).
+
+Encode the subject line using the appropriate character encoding, typically UTF-8.
+
+Ensure that the email client or server supports EAI and is capable of displaying and processing non-ASCII characters in the subject line.
+
+Validate and sanitize user input to prevent any potential issues with special characters or malicious content.
+
+</details>
+
+<details>
+<summary>Header Fields:</summary>
+
+Similar to the subject line, any non-ASCII characters in email headers should be encoded using the MIME encoded-word syntax. This ensures that headers are correctly interpreted by email clients and servers. 
+
+Use UTF-8 encoding when setting header fields that may contain non-ASCII characters, such as "From," "To," "Cc," "Bcc," and "Reply-To." 
+
+Ensure that the email server and client are configured to handle UTF-8 encoding in header fields. 
+
+Validate and sanitize user input to prevent any issues with non-ASCII characters that could affect the interpretation of header fields.
+
+</details>
+
+<details>
+<summary>Email Body Text:</summary>
+
+To handle non-ASCII characters in the email body text, ensure that the email content is encoded using UTF-8. This encoding scheme supports the full range of Unicode characters. When composing emails programmatically, make sure to use the appropriate encoding functions or libraries provided by your programming language to handle the conversion to UTF-8.
+
+Encode the email body text using UTF-8 to support non-ASCII characters. 
+
+Specify the character encoding in the email's Content-Type header to ensure proper rendering. 
+
+Use appropriate libraries or functions in your programming language to handle string manipulation and UTF-8 encoding/decoding. 
+
+Validate and sanitize user input to prevent any potential security vulnerabilities.
+
+</details>
+
+<details>
+<summary>Attachments:</summary>
+
+When dealing with attachments, it is essential to handle the encoding of filenames and content correctly. Filenames should be encoded using the MIME encoded-word syntax, similar to subject lines and headers. Additionally, ensure that the content of the attachments is transmitted using the appropriate encoding, such as base64 for binary files. 
+
+Ensure that the file encoding of attachments is set to UTF-8 or supports the necessary character set required for non-ASCII characters. 
+
+Handle file uploads and downloads with care to preserve the integrity of non-ASCII characters. 
+
+Validate and sanitize file names and content to avoid any issues related to invalid characters or security vulnerabilities.
+
+</details>
+
+<details>
+<summary>Testing and Validation:</summary>
+
+It is crucial to thoroughly test your EAI programming implementation to ensure compatibility across various email clients, servers, and platforms. Test different scenarios involving UTF-8/non-ASCII characters in subject lines, headers, email body text, and attachments to verify that the encoding and decoding processes work as expected. 
+
+Verify that the email components are displayed and processed correctly in EAI-compliant email clients. 
+
+Pay attention to potential issues such as encoding errors, character truncation, or garbled characters during testing.
+
+</details>
+
+</div>
+
+Remember to consult the documentation and resources specific to the programming language of your choice, email libraries, and frameworks for detailed instructions on handling EAI and UTF-8/non-ASCII characters in email components. Following best practices and thorough testing will ensure proper handling and display of multilingual content in emails.
+
+---
+
+## EAI Programming: Handling Subject and Header Lines with UTF-8/Non-ASCII Characters
+
+When handling subject lines with UTF-8/non-ASCII characters in EAI programming, it's important to ensure proper encoding and decoding. 
+
+The following are some considerations:
+
+<div class="info-card">
+
+<details>
+<summary>Character Encoding:</summary>
+
+Ensure that the subject and header lines support the necessary character encoding, typically UTF-8, to handle non-ASCII characters. Encode the subject and header lines appropriately using the chosen character encoding to represent the non-ASCII characters correctly.
+
+</details>
+
+<details>
+<summary>MIME Encoded-Word Syntax:</summary>
+
+To represent non-ASCII characters in the subject and header lines, utilize the MIME encoded-word syntax. The MIME encoded-word syntax has the following general structure: `=?charset?encoding?encoded-text?=`
+  - `charset`: Specifies the character set of the encoded text.
+  - `encoding`: Specifies the encoding method used for the text. Common values are "Q" for Quoted-Printable and "B" for Base64.
+  - `encoded-text`: Represents the actual encoded text.
+
+<details>
+<summary>Example1: MIME Encoded-Word Syntax Representing the Arabic Word “Marhaba”:</summary>
+
+=?UTF-8?Q?=D9=85=D8=B1=D8=AD=D8=A8=D8=A7?=
+In this example:
+- UTF-8 is the character set.
+- Q indicates Quoted-Printable encoding.
+- =D9=85=D8=B1=D8=AD=D8=A8=D8=A7 is the Quoted-Printable encoded representation of the Arabic greeting word ""مرحبا" in UTF-8. Each non-ASCII character is represented by an equal sign "=" followed by two hexadecimal digits.
+
+</details>
+
+</details>
+
+<details>
+<summary>Subject and Header Lines Length:</summary>
+
+Be aware that using non-ASCII characters in the subject and header lines may affect the length of the subject line.
+Some characters, especially certain non-ASCII characters, may consume more than one byte or character space, potentially impacting the overall length limitations imposed by email protocols or email clients.
+
+</details>
+
+<details>
+<summary>Encoding the Subject and Header Lines:</summary>
+
+Before sending an email, encode the subject and header lines using the MIME encoded-word syntax. This includes converting any non-ASCII characters into their corresponding encoded form. 
+
+Depending on the programming language or email library you are using, there may be built-in functions or methods available to handle this encoding. Alternatively, you can manually implement the encoding process using the MIME encoded-word syntax.
+
+</details>
+
+<details>
+<summary>Testing and Validation:</summary>
+
+Thoroughly test the behavior of the subject and header lines with different scenarios involving non-ASCII characters.
+Validate that the subject and header lines are properly displayed, encoded, and decoded in EAI-compatible email clients.
+Pay attention to any potential issues like character truncation, encoding errors, or unexpected behavior during testing.
+
+</details>
+
+</div>
+
+---
+
+## Example 2 and 3: Code Snippet for Handling Subject Line with UTF-8/non-ASCII Characters
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex2-3"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex2-3"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex2-3">
+
+```python
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import formataddr
+
+# Define sender and recipient email addresses
+sender_email = 'your_sender_email@example.com'  # Replace with your sender's email address
+recipient_email = 'recipient_email@example.com'  # Replace with the recipient's email address
+# Create a MIME message
+msg = MIMEMultipart('alternative')
+
+# Set the subject line with non-ASCII characters
+subject = 'Subject with Non-ASCII Characters: 你好, Hello'
+msg['Subject'] = Header(subject, 'utf-8').encode()
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex2-3">
+
+```java
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+
+public class SubjectLine {
+    public static void main(String[] args) {
+        // Define sender and recipient email addresses
+        String senderEmail = "your_sender_email@example.com"; // Replace with your sender's email address
+        String recipientEmail = "recipient_email@example.com"; // Replace with the recipient's email address
+        // Set the subject line with non-ASCII characters
+        String subject = "Subject with Non-ASCII Characters: 你好, Hello";
+        // Create a MIME message
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        try {
+            // Set the From address
+            message.setFrom(new InternetAddress(senderEmail));
+            // Set the To address
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+            // Set the subject line
+            message.setSubject(MimeUtility.encodeText(subject, "UTF-8", "B"));
+            // Continue building and sending the email...
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Python:</span>
+
+By using the Header class and its encode() method, you ensure that the subject line is properly encoded in the specified character encoding (UTF-8) to handle non-ASCII characters.
+
+This is important to ensure that the subject line is correctly interpreted by email clients that support international characters and to maintain compatibility across different systems and clients.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">Java:</span>
+
+Please note that the provided Java code sets up the basic email structure and encodes the subject line using the same approach as in the Python code. 
+
+The Java code uses the JavaMail API and the MimeMessage class to create and configure the email message.
+
+</div>
+
+---
+
+## EAI Programming: Handling Email Body with UTF-8/Non-ASCII Characters
+
+When handling email bodies with UTF-8 or non-ASCII characters in EAI programming, there are a few considerations and techniques to ensure proper handling and encoding. 
+
+Here are the key steps:
+
+<details>
+<summary>Set the Content-Type and Character Encoding:</summary>
+
+When creating the email message, set the Content-Type header to specify the character encoding and the type of email body. For plain text emails, use `text/plain; charset=utf-8` as the Content-Type. For HTML emails, use `text/html; charset=utf-8`. This ensures that the email client correctly interprets the character encoding.
+
+<div class="info-card">
+
+<span class="hl">Example 4: Set the Content-Type and Character Encoding</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex4"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex4"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex4">
+
+```python
+message['Content-Type'] = 'text/plain; charset=utf-8'
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex4">
+
+```java
+message.setHeader("Content-Type", "text/plain; charset=utf-8");
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Encode the Email Body:</summary>
+
+Encode the email body using the UTF-8 encoding to handle non-ASCII characters properly. Use the `String.getBytes()` method to convert the email body string to a byte array with UTF-8 encoding.
+
+<div class="info-card">
+
+<span class="hl">Example 5: Encode the Email Body</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex5"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex5"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex5">
+
+```python
+email_body = '你好, Hello'
+encoded_body = email_body.encode('utf-8')
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex5">
+
+```java
+String emailBody = "你好, Hello";
+byte[] encodedBody = emailBody.getBytes(StandardCharsets.UTF_8);
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Create a MIMEText Object and Set the Content:</summary>
+
+Create a MIMEText object, set the content of the object using the encoded byte string, and attach it to the email message using the attach() method.
+
+<div class="info-card">
+
+<span class="hl">Example 6: Create a MIMEText Object and Set the Content</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex6"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex6"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex6">
+
+```python
+from email.mime.text import MIMEText
+text_part = MIMEText(encoded_body, 'plain', 'utf-8')
+message.attach(text_part)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex6">
+
+```java
+MimeBodyPart bodyPart = new MimeBodyPart();
+bodyPart.setContent(encodedBody, "text/plain; charset=utf-8");
+message.addBodyPart(bodyPart);
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Send the Email:</summary>
+
+Once you have set up the email message and its body, you can send the email using the appropriate email sending mechanisms and libraries, such as the JavaMail API.
+
+<div class="info-card">
+
+<span class="hl">Example 7: Send the Email</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex7"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex7"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex7">
+
+```python
+import smtplib
+with smtplib.SMTP('smtp.example.com') as server:  # Replace with your SMTP server details
+    server.send_message(message)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex7">
+
+```java
+Transport.send(message);
+```
+
+  </div>
+</div>
+
+</div>
+
+Once you have set up the email message and its body, you can send the email using the appropriate email sending mechanisms and libraries, such as the `smtplib` or `JavaMail` API. The following are Complete Python and Java codes derived from the code snippets from the above examples.
+
+</details>
+
+---
+
+## Example 8 and 9: EAI Code for Handling Subject Line, Header Line and Email Body with UTF-8/Non-ASCII Characters
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex8-9"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex8-9"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex8-9">
+
+```python
+import smtplib
+from email.mime.text import MIMEText
+
+# Define sender and recipient email addresses
+sender_email = 'your_sender_email@example.com'  # Replace with your sender's email address
+recipient_email = 'recipient_email@example.com'  # Replace with the recipient's email address
+
+# Create a MIMEText message with internationalized text
+message_text = """
+Hello,
+This is an example of internationalized email body text. It includes non-ASCII characters
+like مرحبًا,ሀሎ,ආයුබෝවන්, 你好 (Arabic, Ethiopic, Sinhala and Chinese for "Hello").
+Feel free to add more internationalized content as you like.
+
+Best regards,
+Your Name
+"""
+
+msg = MIMEText(message_text, 'plain', 'utf-8')
+
+# Establish an SMTP connection and send the email
+smtp_server = 'your_smtp_server.com'  # Replace with your SMTP server address
+smtp_port = 587  # Replace with the appropriate port
+smtp_username = 'your_smtp_username'  # Replace with your SMTP username
+smtp_password = 'your_smtp_password'  # Replace with your SMTP password
+msg['From'] = sender_email
+msg['To'] = recipient_email
+msg['Subject'] = 'Internationalized Email Body Text'
+try:
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.starttls()
+    server.login(smtp_username, smtp_password)
+    server.sendmail(sender_email, [recipient_email], msg.as_string())
+    server.quit()
+    print("Email sent successfully.")
+except Exception as e:
+    print("Email sending failed:", str(e))
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex8-9">
+
+```java
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+
+public class EAIExample {
+    public static void main(String[] args) {
+        // Define sender and recipient email addresses
+        String senderEmail = "your_sender_email@example.com"; // Replace with your sender's email address
+        String recipientEmail = "recipient_email@example.com"; // Replace with the recipient's email address
+        // Create a Properties object to hold the SMTP server details
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "your_smtp_server.com"); // Replace with your SMTP server address
+        props.put("mail.smtp.port", "587"); // Replace with the appropriate port
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("your_smtp_username", "your_smtp_password");
+                // Replace with your SMTP username and password
+            }
+        });
+
+        try {
+            // Create a new MimeMessage object
+            MimeMessage message = new MimeMessage(session);
+            // Set the sender, recipient, and subject of the email
+            message.setFrom(new InternetAddress(senderEmail));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+            message.setSubject("Internationalized Email Body Text");
+
+            // Create a new MimeBodyPart object and set the content of the email
+            MimeBodyPart bodyPart = new MimeBodyPart();
+            String messageText = "Hello,\n\n"
+                    + "This is an example of internationalized email body text. It includes non-ASCII characters like مرحبًا,ሀሎ,ආයුබෝවන්, 你好 (Arabic, Ethiopic, Sinhala and Chinese for \"Hello\").\n"
+                    + "Feel free to add more internationalized content as you like.\n\n"
+                    + "Best regards,\n"
+                    + "Your Name\n";
+            bodyPart.setText(messageText, "utf-8");
+
+            // Create a Multipart object and add the MimeBodyPart to it
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(bodyPart);
+
+            // Set the content of the message to the Multipart object
+            message.setContent(multipart);
+
+            // Send the email
+            Transport.send(message);
+            System.out.println("Email sent successfully.");
+        } catch (Exception e) {
+            System.out.println("Email sending failed: " + e.getMessage());
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Python:</span>
+
+In the above code, we are creating a plain text email message with internationalized content in the body text. The content includes non-ASCII characters from four scripts. The 'utf-8' parameter in MIMEText specifies the character encoding for the text content.
+
+Make sure to replace the placeholders with your actual email and server information. Additionally, ensure that you have the required SMTP server access and credentials to send the email.
+
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Java:</span>
+
+Make sure to replace senderEmail and recepientEmail with actual email addresses, 'your_smtp_server.com' , 'your_smtp_username', and 'your_smtp_password' SMTP 	server details, and credentials with actual strings.
+
+This Java code uses the `JavaMail` API to send an email with internationalized text. It sets up the SMTP server details, creates a `MimeMessage` object, sets the sender, recipient, and subject, creates a `MimeBodyPart` object to hold the email content, and sends the email using the provided `SMTP` server, port, username, and password. The email body includes non-ASCII characters, and the appropriate encoding is set to handle them correctly.
+
+</div>
+
+---
+
+## EAI Programming: Handling Attachments with UTF-8/Non-ASCII Characters
+
+Handling attachments with UTF-8 or non-ASCII characters in EAI programming involves ensuring that the encoding of the attachment data and metadata is correctly handled to preserve the integrity of the characters. 
+
+The following are the key aspects to consider when handling attachments with UTF-8 or non-ASCII characters:
+
+<div class="info-card">
+
+<details>
+<summary>Attachment Encoding:</summary>
+
+When attaching a file with UTF-8 or non-ASCII characters, it's important to use the appropriate encoding to preserve the character integrity. This typically involves using UTF-8 encoding for the attachment content.
+
+</details>
+
+<details>
+<summary>Filename Encoding:</summary>
+
+If the attachment has a filename that includes non-ASCII characters, it needs to be properly encoded. The filename should be encoded using the MIME encoding scheme, such as the "Q encoding" or "B encoding," to ensure compatibility with email clients. The MIMEUtility class in JavaMail provides methods, like MimeUtility.encodeText(), to encode the attachment filename correctly.
+
+</details>
+
+<details>
+<summary>Content-Type and Content-Disposition Header:</summary>
+
+When including an attachment, you need to set the appropriate Content-Type and Content-Disposition headers. The Content-Type header specifies the media type of the attachment, while the Content-Disposition header indicates how the attachment should be handled by the email client (e.g., as an attachment or inline). Ensure that the headers are set correctly to reflect the UTF-8 encoding and the disposition of the attachment.
+
+</details>
+
+<details>
+<summary>MIME Types:</summary>
+
+Attachments are typically included in an email using the multipart format, where the email body and attachments are encapsulated in MIME parts. The multipart format allows you to combine text and binary data in a single email. When working with attachments containing UTF-8 or non-ASCII characters, you need to ensure that the multipart structure is properly constructed and that the correct encoding is used for the text and attachment parts.
+
+Validate and process MIME types according to the relevant specifications and standards.
+
+</details>
+
+Remember to refer to relevant standards, guidelines, and best practices for programming with EAI at the attachment level. These considerations will help ensure that your code properly handles attachments containing internationalized characters and provides a seamless experience for users working with non-ASCII file names and content.
+
+</div>
+
+---
+
+## Example 10: Code Snippets for Parts of Python and Java Codes for Handling Attachments in UTF-8
+
+<span class="hl">Importing Libraries:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex10a"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex10a"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex10a">
+
+```python
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex10a">
+
+```java
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.activation.*;
+```
+
+  </div>
+</div>
+
+<span class="hl">Defining Email Configuration:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex10b"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex10b"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex10b">
+
+```python
+# Defining Email Configuration
+sender_email = 'تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا'
+recipient_email = '电子邮件测试@普遍适用测试.我爱你'
+message = MIMEMultipart()
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex10b">
+
+```java
+String sender_email = "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا";
+String recipient_email = "电子邮件测试@普遍适用测试.我爱你";
+MimeMessage message = new MimeMessage(session);
+```
+
+  </div>
+</div>
+
+<span class="hl">Composing Email Content:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex10c"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex10c"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex10c">
+
+```python
+# Composing Email Content
+message["From"] = sender_email
+message["To"] = recipient_email
+message["Subject"] = "Email with Attachment"
+message_text = "Hello,\n\n" \
+               "Please find the attached file.\n\n" \
+               "Best regards,\n" \
+               "Your Name\n"
+message.attach(MIMEText(message_text, "plain"))
+attachment_file = "path/to/attachment"
+attachment = open(attachment_file, "rb")
+part = MIMEBase("application", "octet-stream")
+part.set_payload(attachment.read())
+encoders.encode_base64(part)
+part.add_header(
+    "Content-Disposition",
+    f"attachment; filename=attachment_name; filename*=UTF-8''{attachment_file}",
+)
+message.attach(part)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex10c">
+
+```java
+// Composing Email Content
+message.setFrom(new InternetAddress(sender_email));
+message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipient_email));
+message.setSubject("Email with Attachment");
+String message_text = "Hello,\n\n" +
+                      "Please find the attached file.\n\n" +
+                      "Best regards,\n" +
+                      "Your Name\n";
+messageBodyPart.setText(message_text);
+multipart.addBodyPart(messageBodyPart);
+String attachment_file = "path/to/attachment";
+File attachment = new File(attachment_file);
+DataSource source = new FileDataSource(attachment);
+messageBodyPart.setDataHandler(new DataHandler(source));
+messageBodyPart.setFileName(attachment.getName());
+multipart.addBodyPart(messageBodyPart);
+```
+
+  </div>
+</div>
+
+<span class="hl">Sending Email with Attachment:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex10d"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex10d"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex10d">
+
+```python
+# Sending Email with Attachment
+smtp_server = "your_smtp_server.com"
+smtp_port = 587
+smtp_username = "your_smtp_username"
+smtp_password = "your_smtp_password"
+with smtplib.SMTP(smtp_server, smtp_port) as server:
+    server.starttls()
+    server.login(smtp_username, smtp_password)
+    server.sendmail(sender_email, recipient_email, message.as_string())
+print("Email sent successfully.")
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex10d">
+
+```java
+String smtp_server = "your_smtp_server.com";
+int smtp_port = 587;
+String smtp_username = "your_smtp_username";
+String smtp_password = "your_smtp_password";
+
+// Create a Properties object to store mail server configuration
+java.util.Properties props = new java.util.Properties();
+props.put("mail.smtp.host", smtp_server);
+props.put("mail.smtp.port", smtp_port);
+props.put("mail.smtp.auth", "true");
+props.put("mail.smtp.starttls.enable", "true");
+
+// Create a Session object with authentication
+Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+    protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(smtp_username, smtp_password);
+    }
+});
+
+try {
+    // Connect to the SMTP server
+    Transport transport = session.getTransport("smtp");
+    transport.connect(smtp_server, smtp_port, smtp_username, smtp_password);
+
+    // Send the email message
+    transport.sendMessage(message, message.getAllRecipients());
+    transport.close();
+
+    System.out.println("Email sent successfully.");
+} catch (MessagingException e) {
+    throw new RuntimeException(e);
+}
+```
+
+  </div>
+</div>
+
+---
+
+## Example 11 and 12: Full Code for Handling Attachments with UTF-8/Non-ASCII Characters
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex11-12"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex11-12"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex11-12">
+
+```python
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+
+def send_email_with_attachment():
+    # Define sender and recipient email addresses
+    sender_email = 'تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا'  # Replace with your sender's email address
+    recipient_email = '电子邮件测试@普遍适用测试.我爱你'  # Replace with the recipient's email address
+
+    # Create a MIMEMultipart object
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = recipient_email
+    message["Subject"] = "Email with Attachment"
+
+    # Add email text
+    message_text = "Hello,\n\n" \
+                   "Please find the attached file.\n\n" \
+                   "Best regards,\n" \
+                   "Your Name\n"
+    message.attach(MIMEText(message_text, "plain"))
+
+    # Add attachment
+    attachment_file = "path/to/attachment"  # Replace with the path to your attachment file
+    attachment = open(attachment_file, "rb")
+    part = MIMEBase("application", "octet-stream")
+    part.set_payload(attachment.read())
+    encoders.encode_base64(part)
+    part.add_header(
+        "Content-Disposition",
+        f"attachment; filename=attachment_name; filename*=UTF-8''{attachment_file}",
+    )
+    message.attach(part)
+
+    # Connect to the SMTP server and send the email
+    smtp_server = "your_smtp_server.com"  # Replace with your SMTP server address
+    smtp_port = 587  # Replace with the appropriate port
+    smtp_username = "your_smtp_username"  # Replace with your SMTP username
+    smtp_password = "your_smtp_password"  # Replace with your SMTP password
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.sendmail(sender_email, recipient_email, message.as_string())
+    print("Email sent successfully.")
+
+# Call the function to send the email
+send_email_with_attachment()
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex11-12">
+
+```java
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+
+public class EmailWithAttachmentExample {
+    public static void main(String[] args) {
+        // Define sender and recipient email addresses
+        String senderEmail = "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا"; // Replace with your sender's email address
+        String recipientEmail = "电子邮件测试@普遍适用测试.我爱你"; // Replace with the recipient's email address
+        // Create a Properties object to hold the SMTP server details
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "your_smtp_server.com"); // Replace with your SMTP server address
+        props.put("mail.smtp.port", "587"); // Replace with the appropriate port
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        // Create a Session object with the provided properties and authentication
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("your_smtp_username", "your_smtp_password");
+                // Replace with your SMTP username and password
+            }
+        });
+
+        try {
+            // Create a new MimeMessage object
+            MimeMessage message = new MimeMessage(session);
+            // Set the sender, recipient, and subject of the email
+            message.setFrom(new InternetAddress(senderEmail));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+            message.setSubject("Email with Attachment");
+            // Create a new MimeBodyPart object for the email text
+            MimeBodyPart textPart = new MimeBodyPart();
+            String messageText = "Hello,\n\n"
+                    + "Please find the attached file.\n\n"
+                    + "Best regards,\n"
+                    + "Your Name\n";
+            textPart.setText(messageText, "utf-8");
+            // Create a new MimeBodyPart object for the attachment
+            MimeBodyPart attachmentPart = new MimeBodyPart();
+            File attachmentFile = new File("path/to/attachment"); // Replace with the path to your attachment file
+            FileDataSource dataSource = new FileDataSource(attachmentFile);
+            attachmentPart.setDataHandler(new DataHandler(dataSource));
+            attachmentPart.setFileName(MimeUtility.encodeText(dataSource.getName(), "utf-8", null));
+            // Create a Multipart object and add the MimeBodyParts to it
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(textPart);
+            multipart.addBodyPart(attachmentPart);
+            // Set the content of the message to the Multipart object
+            message.setContent(multipart);
+            // Send the email
+            Transport.send(message);
+            System.out.println("Email sent successfully.");
+        } catch (Exception e) {
+            System.out.println("Email sending failed: " + e.getMessage());
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Python:</span>
+
+Make sure to replace senderEmail, recipientEmail , 'your_smtp_server.com', 'your_smtp_username', 'your_smtp_password', and 'path/to/attachment' with your actual email addresses, SMTP server details, credentials, and the path to your attachment file, respectively.
+
+This Python code uses the `smtplib` module to connect to the `SMTP` server and the email module to construct the email message. It creates a `MIMEMultipart` object, sets the sender, recipient, and subject, attaches the email text as `MIMEText`, and adds the attachment using `MIMEBase`.
+
+The attachment file is read in binary mode, encoded using base64, and added as a payload to the `MIMEBase` object. The appropriate headers are set for the attachment, including the filename and encoding. Finally, the email is sent using the `SMTP` server and credentials specified.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">Java:</span>
+
+In the above code, we create a `MimeBodyPart` object for the email text and set the content using the `setText` method, specifying the UTF-8 encoding. When adding the attachment, we create another `MimeBodyPart` object and set its data handler to the attachment file using a `FileDataSource`. To handle non-ASCII characters in the attachment filename, we use `MimeUtility.encodeText` to properly encode the filename with the UTF-8 encoding.
+
+Make sure to replace senderEmail, recipientEmail, 'your_smtp_server.com', 'your_smtp_username', 'your_smtp_password', and 'path/to/attachment' with your actual email addresses, SMTP server details, credentials, and the path to your attachment file, respectively.
+
+</div>
+
+<div class="obs-card">
+
+<span class="hl">Note:</span> The above Python and Java codes assume that you have a valid SMTP server available to send emails. Additionally, you may need to install the smtplib and email modules if they are not already installed.
+
+</div>
+
+---
+
+## Example 13 and 14: Handling Attachments with UTF-8/Non-ASCII Filename
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex13-14"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex13-14"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex13-14">
+
+```python
+import email.utils
+from email.mime.base import MIMEBase
+import email.encoders
+
+def handle_attachment(filename):
+    # Encode the filename using UTF-8
+    encoded_filename = filename.encode('utf-8')
+    # Set the Content-Disposition header with the encoded filename
+    content_disposition = f'attachment; filename="{encoded_filename.decode()}"'
+    # Create the email attachment object
+    attachment = email.mime.base.MIMEBase('application', 'octet-stream')
+    attachment.set_payload(open(filename, 'rb').read())
+    # Set the Content-Disposition header for the attachment
+    attachment['Content-Disposition'] = content_disposition
+    # Encode the attachment as base64
+    email.encoders.encode_base64(attachment)
+    return attachment
+
+# Example usage
+attachment_filename = "文件名.pdf"  # Non-ASCII filename
+attachment = handle_attachment(attachment_filename)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex13-14">
+
+```java
+import javax.activation.*;
+import javax.mail.internet.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
+public class AttachmentNonASCII {
+    public static void main(String[] args) {
+        String attachmentFilename = "文件名.pdf";  // Non-ASCII filename
+        MimeBodyPart attachment = handleAttachment(attachmentFilename);
+    }
+
+    public static MimeBodyPart handleAttachment(String filename) {
+        MimeBodyPart attachment = new MimeBodyPart();
+        try {
+            // Encode the filename using UTF-8
+            String encodedFilename = MimeUtility.encodeText(filename, StandardCharsets.UTF_8.name(), null);
+            // Set the Content-Disposition header with the encoded filename
+            String contentDisposition = String.format("attachment; filename=\"%s\"", encodedFilename);
+            // Create the email attachment object
+            DataSource source = new FileDataSource(filename);
+            attachment.setDataHandler(new DataHandler(source));
+            // Set the Content-Disposition header for the attachment
+            attachment.setHeader("Content-Disposition", contentDisposition);
+            // Encode the attachment as base64
+            attachment.setDisposition(MimeBodyPart.ATTACHMENT);
+            return attachment;
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="obs-card">
+
+The above Python and Java codes demonstrate how to handle an attachment with a non-ASCII filename. It encodes the filename using UTF-8, sets the appropriate Content-Disposition header, and encodes the attachment using base64. You can further extend and customize this code based on your specific requirements and use cases.
+
+Note that this code utilizes the email module from the Python standard library to work with email-related functionality. Make sure to import the necessary modules (email, email.mime.base, and email.encoders) before using this code snippet.
+
+</div>
+
+---
+
+## Handling SMTP Interactions with EAI Support: Libraries and APIs
+
+<div class="info-card">
+
+When it comes to handling SMTP interactions with EAI support, you can utilize various libraries and APIs depending on your programming language of choice. 
+
+The following are some commonly used libraries and APIs for handling SMTP interactions with EAI support, focusing on two of the Programming languages, Python and Java:
+
+</div>
+
+<div class="obs-card">
+
+<details>
+<summary>Python's built-in smtplib module with IDN support</summary>
+
+**smtplib:** The built-in smtplib module in Python provides a simple way to send emails using SMTP. It supports EAI through the use of IDNA encoding for email addresses. You can encode email addresses using the idna module before sending them via smtplib.
+The **idna** module provides functions for converting Unicode domain names to ASCII-compatible encoding (Punycode).
+
+</details>
+
+<details>
+<summary>JavaMail (Java):</summary>
+
+- **JavaMail** is a widely used Java library for sending and receiving emails. 
+- It includes support for EAI, allowing you to handle non-ASCII characters in email addresses and headers. 
+- **JavaMail** can be used with an SMTP provider that supports EAI, such as a provider that implements the JavaMail SPI (Service Provider Interface).
+
+</details>
+
+</div>
+
+<div class="info-card">
+
+When using these libraries or APIs, make sure to consult their documentation and examples for specific guidance on enabling and utilizing EAI support. Additionally, ensure that your SMTP server and the recipient's server support EAI to ensure proper transmission and handling of non-ASCII characters in email addresses.
+
+</div>
+
+---
+
+## Example 15: Sending Emails with Multilingual Email Addresses with Python's smtplib and IDNA
+
+Python's built-in smtplib module does not have native support for EAI (Email Address Internationalization). However, you can use the idna module in conjunction with smtplib to handle IDN (Internationalized Domain Names) and encode/decode email addresses containing non-ASCII characters. To send multilingual emails with Python's smtplib and support IDN, you need to encode email addresses using IDNA encoding. Below are the steps you need to follow for sending multilingual emails using smtplib and IDNA encoding:
+
+- Use an external library, such as idna or email.header, to encode or decode domain names and email addresses that include IDNs.
+- Set up your email headers and content as needed.
+- Use the smtplib module to send the email as usual.
+
+<div class="info-card">
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex15"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex15">
+
+```python
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
+
+def send_multilingual_email():
+    # Define sender and recipient email addresses
+    sender_email = "تجربة-بريد-الكتروني@example.com"  # Replace with your sender's email address
+    recipient_email = "电子邮件测试@example.com"  # Replace with the recipient's email address
+    # Create the email message
+    message = MIMEText("مرحبًا,ሀሎ,ආයුබෝවන්", "plain", "utf-8")
+    message["From"] = Header("Sender Name", "utf-8")
+    message["To"] = Header("Recipient Name", "utf-8")
+    message["Subject"] = Header("Multilingual Email", "utf-8")
+    # Connect to the SMTP server and send the email
+    smtp_server = "your_smtp_server.com"  # Replace with your SMTP server address
+    smtp_port = 587  # Replace with the appropriate port
+    smtp_username = "your_smtp_username"  # Replace with your SMTP username
+    smtp_password = "your_smtp_password"  # Replace with your SMTP password
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.sendmail(sender_email.encode("idna").decode("utf-8"),
+                            recipient_email.encode("idna").decode("utf-8"), message.as_string())
+        print("Email sent successfully.")
+    except (smtplib.SMTPException, socket.gaierror) as e:
+        print(f"Error sending email: {str(e)}")
+
+try:
+   send_multilingual_email()
+except Exception as e:
+    print(f"An error occurred: {str(e)}")
+```
+
+  </div>
+</div>
+
+The above code demonstrates how to send emails with multilingual email addresses using Python's smtplib module. The sender email address is set to "تجربة-بريد-الكتروني@example.com" (which means "email-test" in Arabic), and the recipient email address is set to "电子邮件测试@example.com" (which means "email-test" in Chinese).
+
+To ensure proper encoding for SMTP communication, the email addresses are encoded using IDNA encoding. This is achieved by calling encode("idna").decode("utf-8") on the email addresses. This encoding scheme converts Unicode characters to ASCII-compatible representations, allowing them to be transmitted over the SMTP protocol.
+
+It's important to replace the placeholder values 'your_smtp_server.com', 'your_smtp_username', and 'your_smtp_password' with the actual SMTP server details and credentials you have.
+
+By using IDNA encoding for the email addresses, you can successfully send emails with multilingual email addresses using Python and the smtplib module.
+
+</div>
+
+---
+
+## Example 16: Sending Emails with Multilingual Emails Addresses with Java's JavaMail and IDNA
+
+JavaMail, a popular Java library for sending and receiving emails, provides support for EAI. 
+
+The following are steps for considerations in using JavaMail with EAI support:
+
+<details>
+<summary>Include JavaMail dependencies:</summary>
+
+Ensure that you have the JavaMail API library in your project's classpath. You can typically obtain the JavaMail library from the JavaMail website or by using a dependency management tool like Maven or Gradle.
+
+</details>
+
+<details>
+<summary>Create a JavaMail session:</summary>
+
+Set up a `JavaMail` session using the appropriate properties for your email server. Consult your email service provider's documentation for the required properties. Enable EAI support by setting the "mail.mime.allowutf8" property to "true" in the session properties.
+
+</details>
+
+`JavaMail`, a standard Java library for sending and receiving email, has added support for Email Address Internationalization (EAI) since version 1.6.0. EAI support in `JavaMail` allows you to work with internationalized email addresses (email addresses with non-ASCII characters) and send and receive emails using these addresses. 
+
+To work with EAI support in `JavaMail`, you should make sure you have the `JavaMail` API or package version 1.6.0 or later.
+
+<div class="obs-card">
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="ex16"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="ex16">
+
+```java
+import javax.mail.*;
+import javax.mail.internet.*;
+import java.util.Properties;
+
+public class EAIEmailIDN {
+    public static void main(String[] args) {
+        sendMultilingualEmail();
+    }
+
+    public static void sendMultilingualEmail() {
+        // Define sender and recipient email addresses
+        String senderEmail = "تجربة-بريد-الكتروني@example.com"; // Replace with your sender's email address
+        String recipientEmail = "电子邮件测试@example.com"; // Replace with the recipient's email address
+
+        // Create the email message
+        String messageContent = "مرحبًا,ሀሎ,ආයුබෝවන්";
+        String subject = "Multilingual Email";
+
+        try {
+            // Set SMTP server properties
+            Properties properties = new Properties();
+            properties.put("mail.smtp.host", "your_smtp_server.com"); // Replace with your SMTP server address
+            properties.put("mail.smtp.port", "587"); // Replace with the appropriate port
+            properties.put("mail.smtp.auth", "true");
+            properties.put("mail.smtp.starttls.enable", "true");
+
+            // Create a Session object
+            Session session = Session.getInstance(properties, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication("your_smtp_username", "your_smtp_password");
+                    // Replace with your SMTP username and password
+                }
+            });
+
+            // Create the email message
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(senderEmail));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+            message.setSubject(subject);
+            message.setText(messageContent, "utf-8");
+
+            // Send the email
+            Transport.send(message);
+
+            System.out.println("Email sent successfully.");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+In the above Java code, we use the `JavaMail` API to send multilingual emails. The sendMultilingualEmail() method is responsible for sending the email.
+
+To send the email, we set the `SMTP` server properties, including the server address, port, and authentication details. We create a Session object using these properties and provide an implementation of the Authenticator class to handle the `SMTP` authentication.
+
+We then create a `MimeMessage` object and set the sender, recipient, subject, and message content. The message content is set using the setText() method, specifying the UTF-8 encoding.
+
+Finally, we use the `Transport.send()` method to send the email.
+
+Make sure to replace the placeholder values "your_smtp_server.com", "your_smtp_username", and "your_smtp_password" with the actual `SMTP` server details and credentials you have.
+
+Make sure to replace the placeholders with your actual email and server information, and ensure that you have `JavaMail` 1.6.0 or later in your classpath.
+
+Note that in the Java code provided, the sender and recipient email addresses are not explicitly encoded using IDNA encoding. `JavaMail` API automatically handles the encoding of email addresses containing non-ASCII characters.
+
+When you set the sender and recipient addresses using the `InternetAddress` class, `JavaMail` internally performs the necessary encoding based on the email address format. It ensures that non-ASCII characters are properly encoded using the appropriate encoding scheme (such as IDNA encoding for domain names).
+
+</div>
+
+---
+
+## Ensuring Email Delivery Across Languages: Internationalized Email Address Validation with Confirmation Links
+
+Generally, validating email addresses using a confirmation link workflow involves sending a confirmation email to the provided email address and requiring the user to click on a confirmation link to verify the address. When working with internationalized email addresses, it's important to ensure proper validation and delivery of emails across languages.
+
+In the generic confirmation link workflow, in addition to handling multilingual characters in the email addresses, it is also important to incorporate confirmation links to verify the email addresses.
+
+<div class="obs-card">
+
+**To ensure the confirmation link workflow works seamlessly for internationalized email addresses, you should consider the following steps:**
+
+<details>
+<summary>User Registration:</summary>
+
+A user registers with an internationalized email address.
+The server stores the user's email address and generates a unique confirmation token (e.g., a random string or UUID).
+
+</details>
+
+<details>
+<summary>Send Confirmation Email:</summary>
+
+The server sends an email to the registered internationalized email address.
+The email should contain a confirmation link, a message explaining the purpose of the email, and the confirmation token.
+The confirmation link should point to a server endpoint where the token can be validated. 
+The server generates a unique confirmation token associated with the user's email address. 
+The token is typically stored in a database along with the user's information and an expiration time.
+
+</details>
+
+<details>
+<summary>Email Verification:</summary>
+
+The user receives the email and clicks the confirmation link. The user's email client (or web browser) opens the link, making an HTTP request to the server.
+
+</details>
+
+<details>
+<summary>Token Validation:</summary>
+
+The server endpoint specified in the confirmation link processes the request.
+It extracts the confirmation token from the link and queries the database to find the associated user. 
+If the token and user are found, and the token has not expired, the server marks the user's email address as verified.
+
+</details>
+
+<details>
+<summary>Confirmation Page:</summary>
+
+After successful validation, the server may display a confirmation page to the user, thanking them for confirming their email address.
+
+</details>
+
+<details>
+<summary>Email Address Verification Status:</summary>
+
+The server can now mark the user's email address as verified in its records. The user is considered to have a verified email address and can use the service accordingly.
+
+</details>
+
+</div>
+
+By following the above steps, you can implement a workflow for validating internationalized email addresses with a confirmation link. This approach ensures that users can confirm their email addresses, even when using non-ASCII characters, and allows you to maintain the verification status of email addresses in your system.
+
+---
+
+## Example 17: Validating Internationalized Email Addresses Using Confirmation Link Workflow Using Python and Java
+
+Validating internationalized email addresses using a confirmation link workflow involves several steps, as outlined earlier. Below, code examples in Python for each step are given, taking into account internationalized email addresses.
+Please note that this is a simplified example, and in a real-world application, you would need to integrate this process with a database for storing user information and tokens. Additionally, you would typically use a web framework for handling HTTP requests and responses. Here, we will focus on the core logic of the workflow.
+
+<div class="info-card">
+
+<details>
+<summary>User Registration:</summary>
+
+This step simulates user registration with an internationalized email address:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex17a"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex17a"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex17a">
+
+```python
+# Simulated user registration
+user_email = '你好@example.com'  # Replace with the user's internationalized email address
+confirmation_token = 'unique_token_generated_for_user'  # Generate a unique token
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex17a">
+
+```java
+String user_email = "你好@example.com"; // Replace with the user's internationalized email address
+String confirmation_token = "unique_token_generated_for_user"; // Generate a unique token
+```
+
+  </div>
+</div>
+
+</details>
+
+<details>
+<summary>Send Confirmation Email:</summary>
+
+This step generates and sends an email with a confirmation link:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex17b"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex17b"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex17b">
+
+```python
+import smtplib
+from email.mime.text import MIMEText
+
+# Create an email message
+msg = MIMEText(f"Click the following link to confirm your email address: "
+                f"http://example.com/confirm?token={confirmation_token}", 'plain', 'utf-8')
+msg['Subject'] = 'Confirm Your Email Address'
+msg['From'] = 'noreply@example.com'
+msg['To'] = user_email
+
+# Send the email using an SMTP server
+smtp_server = 'your_smtp_server.com'
+smtp_port = 587
+smtp_username = 'your_smtp_username'
+smtp_password = 'your_smtp_password'
+server = smtplib.SMTP(smtp_server, smtp_port)
+server.starttls()
+server.login(smtp_username, smtp_password)
+server.sendmail('noreply@example.com', [user_email], msg.as_string())
+server.quit()
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex17b">
+
+```java
+import java.util.Properties;
+import javax.mail.*;
+import javax.mail.internet.*;
+
+public class EmailSender {
+    public static void main(String[] args) {
+        // Email configuration
+        String smtpServer = "your_smtp_server.com";
+        int smtpPort = 587;
+        String smtpUsername = "your_smtp_username";
+        String smtpPassword = "your_smtp_password";
+        // Sender and recipient details
+        String fromEmail = "noreply@example.com";
+        String toEmail = "user@example.com"; // Replace with the recipient's email address
+
+        // Email content
+        String confirmationToken = "unique_token_generated_for_user";
+        String emailSubject = "Confirm Your Email Address";
+        String emailBody = "Click the following link to confirm your email address: http://example.com/confirm?token=" + confirmationToken;
+        // Email properties
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", smtpServer);
+        props.put("mail.smtp.port", smtpPort);
+
+        // Create session with authentication
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(smtpUsername, smtpPassword);
+            }
+        });
+
+        try {
+            // Create email message
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(fromEmail));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+            message.setSubject(emailSubject);
+            message.setText(emailBody);
+            // Send email
+            Transport.send(message);
+            System.out.println("Email sent successfully!");
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+</details>
+
+<details>
+<summary>Token Generation and Storage:</summary>
+
+The confirmation token should be generated and stored in your database. The code for this will depend on your database and web application framework. A simplified example is:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex17c"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex17c"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex17c">
+
+```python
+# Store the confirmation token in your database, associated with the user's email address
+database = {
+    user_email: confirmation_token
+}
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex17c">
+
+```java
+Map<String, String> database = new HashMap<>(); // Store the user_email and confirmation_token in the database
+database.put(user_email, confirmation_token);
+```
+
+  </div>
+</div>
+
+</details>
+
+<details>
+<summary>Email Verification:</summary>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex17d"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex17d"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex17d">
+
+```python
+# This step simulates the user clicking the confirmation link
+clicked_token = 'unique_token_generated_for_user'  # Replace with the token from the confirmation link
+
+# Verify the clicked token against the stored token
+if clicked_token == database.get(user_email):
+    print("Email address confirmed.")
+else:
+    print("Confirmation link is invalid.")
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex17d">
+
+```java
+String clicked_token = "unique_token_generated_for_user"; // Replace with the token from the confirmation link
+String user_email = "user@example.com"; // Replace with the user's email address
+
+// Verify the clicked token against the stored token
+String stored_token = database.get(user_email);
+if (clicked_token.equals(stored_token)) {
+    System.out.println("Email address confirmed.");
+} else {
+    System.out.println("Confirmation link is invalid.");
+}
+
+// Sample database storing confirmation tokens associated with email addresses
+static Map<String, String> database = new HashMap<>();
+static {
+    // Populating sample data (replace with actual data)
+    database.put("user@example.com", "unique_token_generated_for_user");
+}
+```
+
+  </div>
+</div>
+
+</details>
+
+</div>
+
+---
+
+## Understanding Multilingual Mailboxes: Parsing Internationalized Email Addresses
+
+Parsing internationalized email addresses involves correctly extracting the local part (username) and domain part of an email address that may contain non-ASCII characters. 
+The following are key points to consider while parsing internationalized email addresses:
+
+<div class="obs-card">
+
+<details>
+<summary>Split the Email Address:</summary>
+
+Split the email address into two parts: the local part and the domain part. The local part is the portion before the "@" symbol, and the domain part is the portion after the "@" symbol. For example, if the email address is "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني", splitting it would result in the local part "تجربة-القبول" and the domain part "تجربة-القبول-الشامل.موريتاني".
+
+</details>
+
+<details>
+<summary>Decode the Domain Part:</summary>
+
+If the domain part contains non-ASCII characters, it may be encoded using Punycode or UTF-8.
+If the domain part is encoded with Punycode, you can use a Punycode decoder to convert it back to Unicode.
+If the domain part is encoded with UTF-8, you may need to decode it using appropriate encoding/decoding functions.
+
+</details>
+
+<details>
+<summary>Decode the Local Part:</summary>
+
+The local part of the email address may also contain non-ASCII characters.
+Check if the local part is encoded using any specific encoding scheme (e.g., UTF-8).
+If encoded, apply the appropriate decoding method to convert it back to Unicode.
+
+</details>
+
+<details>
+<summary>Validate the Email Address:</summary>
+
+After decoding the local and domain parts, validate that they conform to the necessary requirements for email addresses.
+Ensure that the email address follows the correct syntax, including the presence of the "@" symbol and a valid domain structure.
+Apply any additional validation rules specific to your application or business logic.
+
+</details>
+
+</div>
+
+It's important to note that email address parsing and handling can be complex due to the various standards, encoding schemes, and local rules that apply. To simplify the process, consider using established email parsing libraries or APIs that support internationalized email addresses, such as the `javax.mail.internet.InternetAddress` class in `JavaMail` or third-party libraries like the `email` module in Python.
+
+These libraries often provide built-in functions for parsing, validating, and handling internationalized email addresses, taking care of the intricacies and edge cases involved in the process.
+
+For instance, when validating email address length, consider the following factors:
+
+<details>
+<summary>Ensure that the length of the email address is within acceptable limits:</summary>
+
+The maximum length of the entire email address (including the local part, domain part, and "@" symbol) is typically 254 characters according to the RFC 5321 specification.
+
+</details>
+
+<details>
+<summary>Additionally:</summary>
+
+Validate that the length of the local part does not exceed 64 characters, and the length of the domain part (after decoding) does not exceed 255 characters.
+
+</details>
+
+---
+
+## Example 18 and 19: Validating Email Addresses Length Using Python and Java
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="ex18-19"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="ex18-19"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="ex18-19">
+
+```python
+import re
+
+def is_valid_email_address(email):
+    try:
+        # Validate email address using regular expression
+        pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(pattern, email):
+            return False
+        # Check length validation
+        return len(email) <= 254 and len(email.split('@')[0]) <= 64 and len(email.split('@')[1]) <= 255
+    except Exception:
+        return False
+
+# Test the validation
+email = 'تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني'
+is_valid = is_valid_email_address(email)
+print(f"Is valid email address: {is_valid}")
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="ex18-19">
+
+```java
+import java.util.regex.*;
+
+public class EmailAddressLengthValidation {
+    public static void main(String[] args) {
+        // Test email validation
+        String email = "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني";
+        boolean isValid = isValidEmailAddress(email);
+        System.out.println("Is valid email address: " + isValid);
+    }
+
+    public static boolean isValidEmailAddress(String email) {
+        try {
+            // Validate email address using regular expression
+            String pattern = "^[\\w\\.-]+@[\\w\\.-]+\\.\\w+$";
+            Pattern emailPattern = Pattern.compile(pattern);
+            Matcher matcher = emailPattern.matcher(email);
+            if (!matcher.matches()) {
+                return false;
+            }
+            // Check length validation
+            String[] parts = email.split("@");
+            return email.length() <= 254 && parts[0].length() <= 64 && parts[1].length() <= 255;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Output:</span> Is `valid email address`: True
+
+In this Python code, the is_valid_email_address function takes an email address as input and performs the following activities:
+
+It uses a regular expression pattern to validate the email address format. The pattern `r'^[\w.-]+@[\w.-]+.\w+$'` checks for a valid format with at least one character before and after the "@" symbol, separated by a dot.
+
+It then checks the length of the email address, local part, and domain part to ensure they meet the specified limits: 254 characters for the entire email address, 64 characters for the local part, and 255 characters for the domain part.
+
+If the email address passes both the format and length validation, the function returns True. Otherwise, it returns False.
+
+Finally, the code tests the validation by passing an example email address, "تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتاني", and prints the result indicating whether it is a valid email address or not.
+
+</div>
+
+---
+
+## EAI-Specific Considerations for Setting Up Email Mailbox Names
+
+When setting up email mailbox names with EAI (Email Address Internationalization) support, there are a few EAI-specific considerations to keep in mind.
+Key points to setting up mailbox names for internationalized email addresses:
+
+<div class="obs-card">
+
+<details>
+<summary>EAI Support:</summary>
+
+Ensure that your email server or email service provider supports EAI. Not all email systems have native support for EAI, so it's essential to choose a provider or configure your server to handle internationalized email addresses.
+
+</details>
+
+<details>
+<summary>Character Encoding:</summary>
+
+EAI allows the use of non-ASCII characters in the local part (username) of an email address. When setting up mailbox names, ensure that the character encoding used is compatible with EAI. Common encoding schemes for EAI include UTF-8, UTF-16, and MIME-encoded words. Choose an encoding scheme that is widely supported and compatible with your email server or service.
+
+</details>
+
+<details>
+<summary>Punycode Encoding:</summary>
+
+If your email system or server requires Punycode encoding for the domain part of the email address, ensure that the encoding is correctly applied. Punycode encoding is used to represent non-ASCII characters in the domain part using ASCII characters. Use a Punycode encoder library or built-in functions to encode the domain part when necessary.
+
+</details>
+
+<details>
+<summary>Validation and Display:</summary>
+
+Implement robust validation mechanisms to ensure that mailbox names conform to the relevant standards and restrictions. Provide appropriate error messages and feedback to users when they enter invalid mailbox names. Ensure that mailbox names are correctly displayed in email clients and other interfaces, preserving the intended encoding and rendering.
+
+</details>
+
+<details>
+<summary>User Experience Consideration:</summary>
+
+Consider the user experience when dealing with internationalized mailbox names. Educate users about the capabilities and limitations of internationalized mailbox names to avoid confusion. Provide guidance on how to enter, display, and handle mailbox names containing non-ASCII characters.
+
+</details>
+
+</div>
+
+By considering these EAI-specific considerations, you can set up email mailbox names that support internationalized email addresses. It's important to ensure compatibility with EAI standards, handle character encoding correctly, and provide a user-friendly experience for users setting up their mailbox names.
+
+---
+
+## Reference & Author
+
+<div class="meta-card">
+
+<span class="hl">Reference:</span>
+
+1. Freed, N., & Borenstein, N. (1996). Multipurpose Internet Mail Extensions (MIME) Part 3: Message Header Extensions for Non-ASCII Text (RFC 2047). Retrieved from [https://www.ietf.org/](https://www.ietf.org/) on 2023-12-11.
+2. Klensin, J., & Hildebrand, M. (2008). Internationalized Email Headers (RFC 5335). Retrieved from [https://datatracker.ietf.org/wg/tewg/documents/](https://datatracker.ietf.org/wg/tewg/documents/) on 2023-12-11.
+3. The Unicode Consortium. (n.d.). Retrieved from [https://unicode.org/consortium/](https://unicode.org/consortium/) on 2023-12-11.
+4. Freed, N. (1996). Multipurpose Internet Mail Extensions (MIME) Part 5: Base64 Content-Transfer-Encoding (RFC 2048). Retrieved from [http://tools.ietf.org/html/rfc2048](http://tools.ietf.org/html/rfc2048) on 2023-12-11.
+5. Python, Chardet. (n.d.). Retrieved from [https://github.com/chardet/chardet](https://github.com/chardet/chardet) on 2023-12-11.
+6. Python, Idna. (n.d.). Retrieved from [https://pypi.org/project/idna/](https://pypi.org/project/idna/).
+7. Java, Java Platform, Standard Edition 7 API Specification. (n.d.). Charset class. Retrieved from [https://docs.oracle.com/javase/7/docs/api/java/nio/charset/Charset.html](https://docs.oracle.com/javase/7/docs/api/java/nio/charset/Charset.html) on 2023-12-11.
+8. Hoffman, P., & Dürst, M. (2010, July). Internationalized Domain Names in Applications (IDNA2008) (RFC 5893). Retrieved from [https://www.ietf.org/](https://www.ietf.org/) on 2023-12-11.
+9. Python Documentation. (n.d.). Retrieved from [https://docs.python.org/](https://docs.python.org/) on 2023-12-11.
+10. JavaMail. (n.d.). Retrieved from [https://www.oracle.com/java/technologies/javamail-api.html](https://www.oracle.com/java/technologies/javamail-api.html) on 2023-12-11.
+11. Python, smtplib module. (n.d.). Retrieved from [https://docs.python.org/3/library/smtplib.html](https://docs.python.org/3/library/smtplib.html) on 2023-12-11.
+12. Stack Exchange. (2023). What's the best approach to confirm user email address - sending an email-confirm link? Retrieved from [https://ux.stackexchange.com/questions/111252/](https://ux.stackexchange.com/questions/111252/) on December 11, 2023.
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

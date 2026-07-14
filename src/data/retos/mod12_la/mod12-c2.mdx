@@ -1,0 +1,21 @@
+---
+moduleId: "mod12"
+challengeId: "c2"
+moduleTitle: "Module 12 – Unicode, IDNs and EAI Support in Operating Systems"
+moduleDesc: "Explore the fundamental concepts and mechanisms that are essential for Unicode support in contemporary operating systems."
+exerciseNum: "Exercise 2"
+exerciseTitle: "Check if two Unicode strings are identical using shell"
+exerciseItems:
+  - "Write a shell script that can check whether two Unicode strings are identical."
+solutionLang: "bash"
+solutionCode: |
+  #!/bin/bash
+  string1="സാർവത്രിക-സ്വീകാര്യതാ-പരിശോധന.ഭാരതം"
+  string2="സാർവത്രിക-സ്വീകാര്യതാ-പരിശോധന.രഭാതം"
+  if [ "$string1" == "$string2" ]; then
+      echo "Equal"
+  else
+      echo "Not Equal"
+  fi
+draft: false
+---

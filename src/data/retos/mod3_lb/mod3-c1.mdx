@@ -1,0 +1,67 @@
+---
+moduleId: "mod3"
+challengeId: "c1"
+moduleTitle: "Module 3 – Unicode in Data Structures and Algorithms"
+moduleDesc: "Comprehensive introduction to leveraging the power of Unicode in data structures and algorithms, including sorting, searching, and collation techniques."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Develop a Java program that reads a list of usernames (with diacritics) from a file, then allows searching for a name ignoring diacritics and case, using Unicode normalization and primary-strength collation."
+exerciseItems:
+  - "Read a UTF-8 encoded text file `names.txt` containing a list of names (e.g., José, Håkon, Renée, Zoë, Søren)."
+  - "Accept a search name from the user (e.g., 'Renee')."
+  - "Normalize both the search term and each stored name to NFD."
+  - "Compare them using a `Collator` with `PRIMARY` strength (ignores diacritics and case)."
+  - "If a match is found, print the original stored name; otherwise indicate 'Username not found'."
+solutionLang: "java"
+solutionCode: |
+  import java.io.BufferedReader;
+  import java.io.FileInputStream;
+  import java.io.IOException;
+  import java.io.InputStreamReader;
+  import java.text.Collator;
+  import java.text.Normalizer;
+  import java.util.ArrayList;
+  import java.util.List;
+  import java.util.Locale;
+
+  public class Mod3_Exercise1 {
+      public static void main(String[] args) throws IOException {
+          // Read list of names from UTF-8 file
+          List<String> listOfStrings = new ArrayList<>();
+          try (BufferedReader bf = new BufferedReader(
+                  new InputStreamReader(new FileInputStream("names.txt"), "UTF-8"))) {
+              String line;
+              while ((line = bf.readLine()) != null) {
+                  listOfStrings.add(line);
+              }
+          }
+
+          String[] names = listOfStrings.toArray(new String[0]);
+
+          // Search for a given name
+          String name = "Renee"; // This could come from user input
+
+          String normalizedSearch = Normalizer.normalize(name, Normalizer.Form.NFD);
+          Collator collator = Collator.getInstance(Locale.getDefault());
+          collator.setStrength(Collator.PRIMARY);
+
+          boolean found = false;
+          String match = "";
+
+          for (String nm : names) {
+              String normalizedName = Normalizer.normalize(nm, Normalizer.Form.NFD);
+              if (collator.compare(normalizedSearch, normalizedName) == 0) {
+                  match = nm;
+                  found = true;
+                  break;
+              }
+          }
+
+          if (found) {
+              System.out.println("Matched with " + match);
+          } else {
+              System.out.println("Username not found");
+          }
+      }
+  }
+draft: false
+---

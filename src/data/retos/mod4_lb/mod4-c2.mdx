@@ -1,0 +1,20 @@
+---
+moduleId: "mod4"
+challengeId: "c2"
+moduleTitle: "Module 4 – Unicode in Database Systems"
+moduleDesc: "Concise introduction to essential concepts and considerations when working with Unicode character data in database systems."
+exerciseNum: "Exercise 2"
+exerciseTitle: "Using MySQL statements, fill the `books` table from Exercise 1 with sample books in multiple scripts (Chinese, French, Arabic, Japanese, English)."
+exerciseItems:
+  - "Insert at least five books with titles and authors in different scripts."
+  - "Ensure the inserted text is properly stored using the Unicode character set."
+solutionLang: "sql"
+solutionCode: |
+  INSERT INTO books (title, author, genre) VALUES
+      ('孙子兵法', '孙子', 'Military Strategy'),
+      ('Les Misérables', 'Victor Hugo', 'Historical Fiction'),
+      ('أَلْفُ لَيْلَةٍ وَلَيْلَةٌ', 'مجهول', 'Fairy Tale'),
+      ('ノルウェイの森', '村上 春樹', 'Romance'),
+      ('To Kill a Mocking Bird', 'Harper Lee', 'Southern Gothic');
+draft: false
+---

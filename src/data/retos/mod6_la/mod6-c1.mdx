@@ -1,0 +1,58 @@
+---
+moduleId: "mod6"
+challengeId: "c1"
+moduleTitle: "Module 6 – Programming with Internationalized Domain Names (IDNs)"
+moduleDesc: "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages."
+exerciseNum: "Exercise 1"
+exerciseTitle: "IDN to Punycode Converter"
+exerciseItems:
+  - "Implement a Java program that can read a text file containing a list of domain names and convert each domain to punycode if it's in Unicode, and vice versa. If the domain name is not an IDN, it should return it as is. Output all the domain names to a txt file."
+  - "To test your solution, create a txt file with the following list of IDNs:"
+  - "مقهى.البحرين"
+  - "example.com"
+  - "xn--mnchen-3ya.de"
+  - "universal-acceptance-test.international"
+  - "universal-acceptance-test.icu"
+solutionLang: "java"
+solutionCode: |
+  import com.ibm.icu.text.IDNA;
+  import com.ibm.icu.text.IDNA.Info;
+  
+  public class Mod6_Exercise1 {
+    public static void main(String[] args) {
+      String[] domains = {
+          "مقهى.البحرين",
+          "example.com",
+          "xn--mnchen-3ya.de",
+          "universal-acceptance-test.international",
+          "universal-acceptance-test.icu"
+      };
+      IDNA idna = IDNA.getUTS46Instance(IDNA.DEFAULT);
+  
+      // Check if domain name is in punycode
+      outer: for (String domain : domains) {
+        String[] dots = domain.split("\\.");
+        for (String dot : dots) {
+          if (dot.startsWith("xn--")) {
+            try {
+              StringBuilder unicodeDomainBuilder = new StringBuilder();
+              idna.nameToUnicode(domain, unicodeDomainBuilder, new Info());
+              System.out.println(unicodeDomainBuilder.toString());
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+            break outer;
+          }
+        }
+        try {
+          StringBuilder punycodeDomainBuilder = new StringBuilder();
+          idna.nameToASCII(domain, punycodeDomainBuilder, new Info());
+          System.out.println(punycodeDomainBuilder.toString());
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
+draft: false
+---

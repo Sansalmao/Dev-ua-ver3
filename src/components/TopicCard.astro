@@ -1,0 +1,116 @@
+---
+export type TopicState = "nuevo" | "progreso" | "completado";
+
+interface Props {
+    id: string;
+    titulo: string;
+    nivel: "Básico" | "Avanzado";
+    duracion: string;
+    descripcion: string;
+    estado: TopicState;
+    slug?: string;
+}
+
+const { id, titulo, nivel, duracion, descripcion, estado, slug } = Astro.props;
+
+const nivelClass = nivel === "Avanzado" ? "avanzado" : "basico";
+const cardClass =
+    estado === "completado"
+        ? "completed"
+        : estado === "progreso"
+          ? "visited"
+          : "";
+
+const botonTexto =
+    estado === "completado"
+        ? "$ revisar"
+        : estado === "progreso"
+          ? "$ continuar"
+          : "$ iniciar";
+
+const href = slug ? `/modulos/${slug}` : "#";
+const esEnlace = !!slug;
+---
+
+<div class={`topic-card ${cardClass}`} data-id={id}>
+    <div class="tc-top">
+        <div class="tc-icon-box">
+            <slot name="icon" />
+        </div>
+
+        <div class="tc-info">
+            <div class="tc-title">
+                {titulo}
+                {
+                    estado === "completado" && (
+                        <span class="tc-sbadge done">✓ completado</span>
+                    )
+                }
+                {
+                    estado === "progreso" && (
+                        <span class="tc-sbadge prog">en progreso</span>
+                    )
+                }
+            </div>
+
+            <div class="tc-badges">
+                <span class={`tc-nivel ${nivelClass}`}>{nivel}</span>
+
+                <span class="tc-dur">
+                    <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                    >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    {duracion}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <p class="tc-desc">{descripcion}</p>
+
+    <div class="tc-foot">
+        <!--
+            Si el tema tiene slug: renderiza <a> para navegar al módulo.
+            Si no tiene slug: renderiza <button> para que el JS del grid
+            maneje el evento (marcar progreso en localStorage).
+            Ambos comparten la clase btn-iniciar y data-id para que
+            los estilos y el JS existente sigan funcionando sin cambios.
+        -->
+        {
+            esEnlace ? (
+                <a href={href} class="btn-iniciar" data-id={id}>
+                    {botonTexto}
+                </a>
+            ) : (
+                <button type="button" class="btn-iniciar" data-id={id}>
+                    {botonTexto}
+                </button>
+            )
+        }
+
+        {
+            estado !== "nuevo" && (
+                <div class="tc-prog">
+                    <div class="tc-prog-lbl">
+                        Progreso: {estado === "completado" ? "100" : "60"}%
+                    </div>
+                    <div class="tc-prog-bg">
+                        <div
+                            class={`tc-prog-fill ${estado === "completado" ? "green" : "orange"}`}
+                            style={`width: ${estado === "completado" ? 100 : 60}%;`}
+                        />
+                    </div>
+                </div>
+            )
+        }
+    </div>
+</div>
