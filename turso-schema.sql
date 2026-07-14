@@ -216,3 +216,11 @@ CREATE INDEX "Account_userId_idx" ON "Account"("userId");
 
 -- CreateIndex
 CREATE INDEX "Verification_identifier_idx" ON "Verification"("identifier");
+
+-- Agrega el rol de miembro dentro de la comunidad (ADMIN | MANAGER | MEMBER)
+ALTER TABLE "JoinRequest" ADD COLUMN "role" TEXT NOT NULL DEFAULT 'MEMBER';
+
+-- Campos de Profesor
+ALTER TABLE "User" ADD COLUMN "country" TEXT;
+ALTER TABLE "User" ADD COLUMN "institution" TEXT;
+ALTER TABLE "User" ADD COLUMN "wantsCommunity" BOOLEAN NOT NULL DEFAULT false;

@@ -10,33 +10,35 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     aria-labelledby="am-title"
 >
     <div class="am-modal">
-        <button
-            type="button"
-            id="auth-modal-close"
-            class="am-close"
-            aria-label="Cerrar"
-        >
-            <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                aria-hidden="true"
-            >
-                <path d="M18 6L6 18M6 6l12 12"></path>
-            </svg>
-        </button>
-
-        <div class="am-badge">COMUNIDAD GLOBAL</div>
-        <h2 id="am-title" class="am-title" data-title>Registrarse</h2>
-        <p class="am-subtitle" data-subtitle>
-            Crea una cuenta para seguir tu progreso, mostrar tu conjunto de
-            habilidades y formar parte de la comunidad.
-        </p>
-
         <div class="am-card">
+            <button
+                type="button"
+                id="auth-modal-close"
+                class="am-close"
+                aria-label="Cerrar"
+            >
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    aria-hidden="true"
+                >
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <div class="am-header">
+                <div class="am-badge">COMUNIDAD GLOBAL</div>
+                <h2 id="am-title" class="am-title" data-title>Registrarse</h2>
+                <p class="am-subtitle" data-subtitle>
+                    Crea una cuenta para seguir tu progreso, mostrar tu conjunto
+                    de habilidades y formar parte de la comunidad.
+                </p>
+            </div>
+
             <p id="auth-error" class="am-error" hidden></p>
 
             <!-- ── REGISTRO ─────────────────────────────────────────────── -->
@@ -388,13 +390,12 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         align-items: center;
         justify-content: center;
         padding: 20px;
-        /* Antes era rgba(26,26,26,0.4) + blur(4px): dejaba pasar suficiente
-           contenido de la página de atrás como para que su propio texto
-           (títulos, badges) se viera "peleando" con el título/badge del
-           modal, que no tienen fondo propio. Se sube la opacidad y el blur
-           para que atrás quede solo una mancha de color, sin texto legible. */
-        background: rgba(20, 17, 14, 0.72);
-        backdrop-filter: blur(10px);
+        /* Misma opacidad/blur que el modal de perfil (imagen de referencia).
+           Ahora el badge/título/subtítulo van DENTRO del card (sobre blanco),
+           así que ya no hace falta un overlay oscuro para tapar el fondo. */
+        background: rgba(0, 0, 0, 0.32);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         overflow-y: auto;
     }
     .am-overlay--open {
@@ -404,62 +405,63 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     .am-modal {
         position: relative;
         width: 100%;
-        max-width: 500px;
-        text-align: center;
-        padding: 8px 4px 4px;
-    }
-    .am-close {
-        position: absolute;
-        top: 0;
-        right: 4px;
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.6);
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 8px;
-        transition: color 0.15s ease;
-    }
-    .am-close:hover {
-        color: #fff;
-    }
-
-    .am-badge {
-        display: inline-block;
-        border: 1.5px solid var(--accent, #e5621a);
-        color: #ffb38a;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        padding: 5px 16px;
-        border-radius: 999px;
-        margin-bottom: 14px;
-    }
-    .am-title {
-        color: #ff8a44;
-        font-size: 2.6rem;
-        font-weight: 800;
-        line-height: 1.05;
-        margin: 0 0 12px;
-    }
-    .am-subtitle {
-        /* Fijo (no var(--text-secondary)): este texto va directo sobre el
-           overlay oscuro del modal, no sobre una superficie clara, así que
-           no debe seguir el color de texto "normal" del tema. */
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 1rem;
-        line-height: 1.55;
-        max-width: 40ch;
-        margin: 0 auto 22px;
+        max-width: 400px;
     }
 
     .am-card {
+        position: relative;
         background: var(--card-bg, #fff);
         border: 1px solid var(--border, #ede8df);
-        border-radius: 22px;
-        padding: 26px 24px;
-        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.12);
+        border-radius: 20px;
+        padding: 24px 22px 20px;
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.18);
         text-align: left;
+    }
+    .am-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted, #a0aab4);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 8px;
+        transition: color 0.15s ease;
+        z-index: 2;
+    }
+    .am-close:hover {
+        color: var(--text, #1a1a1a);
+    }
+
+    .am-header {
+        text-align: center;
+        margin-bottom: 16px;
+    }
+    .am-badge {
+        display: inline-block;
+        border: 1.5px solid var(--accent, #e5621a);
+        color: var(--accent, #e5621a);
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        padding: 4px 13px;
+        border-radius: 999px;
+        margin-bottom: 9px;
+    }
+    .am-title {
+        color: var(--accent, #e5621a);
+        font-size: 1.55rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin: 0 0 5px;
+    }
+    .am-subtitle {
+        color: var(--text-secondary, #4b5563);
+        font-size: 0.83rem;
+        line-height: 1.5;
+        max-width: 38ch;
+        margin: 0 auto;
     }
     .am-error {
         background: #fef2f2;
@@ -473,11 +475,11 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     .am-form {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
     }
     .am-row {
         display: flex;
-        gap: 12px;
+        gap: 10px;
     }
     .am-row .am-input {
         flex: 1;
@@ -487,8 +489,8 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         width: 100%;
         border: 1.5px solid var(--border, #ede8df);
         border-radius: 12px;
-        padding: 13px 16px;
-        font-size: 0.95rem;
+        padding: 10px 14px;
+        font-size: 0.9rem;
         color: var(--text, #1a1a1a);
         background: var(--card-bg, #fff);
         outline: none;
@@ -532,7 +534,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         flex: 1;
         background: transparent;
         border: none;
-        padding: 12px 10px;
+        padding: 10px 8px;
         font-size: 0.92rem;
         font-weight: 600;
         color: var(--text-secondary, #4b5563);
@@ -556,7 +558,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         width: 100%;
         border: none;
         border-radius: 12px;
-        padding: 14px;
+        padding: 11px;
         font-size: 0.98rem;
         font-weight: 700;
         cursor: not-allowed;
@@ -600,7 +602,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
     @media (max-width: 520px) {
         .am-title {
-            font-size: 2.1rem;
+            font-size: 1.6rem;
         }
         .am-row {
             flex-direction: column;
