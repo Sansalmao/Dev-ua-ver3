@@ -333,7 +333,6 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
                 profileType: profileValue.value as "PROFESOR" | "ESTUDIANTE",
                 displayName: String(data.get("displayName") ?? "") || undefined,
                 turnstileToken: token,
-                // Campos extra de profesor (el backend aún debe persistirlos).
                 country: String(data.get("country") ?? "") || undefined,
                 institution: String(data.get("institution") ?? "") || undefined,
                 wantsCommunity: data.get("wantsCommunity") === "on",
@@ -389,8 +388,13 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         align-items: center;
         justify-content: center;
         padding: 20px;
-        background: rgba(26, 26, 26, 0.4);
-        backdrop-filter: blur(4px);
+        /* Antes era rgba(26,26,26,0.4) + blur(4px): dejaba pasar suficiente
+           contenido de la página de atrás como para que su propio texto
+           (títulos, badges) se viera "peleando" con el título/badge del
+           modal, que no tienen fondo propio. Se sube la opacidad y el blur
+           para que atrás quede solo una mancha de color, sin texto legible. */
+        background: rgba(20, 17, 14, 0.72);
+        backdrop-filter: blur(10px);
         overflow-y: auto;
     }
     .am-overlay--open {
@@ -410,20 +414,20 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         right: 4px;
         background: none;
         border: none;
-        color: var(--text-muted, #a0aab4);
+        color: rgba(255, 255, 255, 0.6);
         cursor: pointer;
         padding: 6px;
         border-radius: 8px;
         transition: color 0.15s ease;
     }
     .am-close:hover {
-        color: var(--text, #1a1a1a);
+        color: #fff;
     }
 
     .am-badge {
         display: inline-block;
         border: 1.5px solid var(--accent, #e5621a);
-        color: var(--accent, #e5621a);
+        color: #ffb38a;
         font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -432,14 +436,17 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         margin-bottom: 14px;
     }
     .am-title {
-        color: var(--accent, #e5621a);
+        color: #ff8a44;
         font-size: 2.6rem;
         font-weight: 800;
         line-height: 1.05;
         margin: 0 0 12px;
     }
     .am-subtitle {
-        color: var(--text-secondary, #4b5563);
+        /* Fijo (no var(--text-secondary)): este texto va directo sobre el
+           overlay oscuro del modal, no sobre una superficie clara, así que
+           no debe seguir el color de texto "normal" del tema. */
+        color: rgba(255, 255, 255, 0.82);
         font-size: 1rem;
         line-height: 1.55;
         max-width: 40ch;

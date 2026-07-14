@@ -18,7 +18,8 @@ export async function POST({ request }) {
     return json({ error: "Body JSON inválido." }, 400);
   }
 
-  const { email, password, profileType, displayName, turnstileToken } = body ?? {};
+  const { email, password, profileType, displayName, turnstileToken, country, institution, wantsCommunity } =
+    body ?? {};
 
   // ── Validación ────
   if (!email || typeof email !== "string" || !email.includes("@")) {
@@ -41,6 +42,19 @@ export async function POST({ request }) {
     return json({ error: "Verificación anti-bot fallida. Intenta de nuevo." }, 400);
   }
 
+  // Los campos extra de Profesor solo se guardan si profileType es
+  // PROFESOR — para ESTUDIANTE se ignora cualquier cosa que venga en el
+  // body (nunca se confía en que el cliente mande combinaciones raras).
+  const profesorExtra =
+    profileType === "PROFESOR"
+      ? {
+          country: typeof country === "string" ? country.trim().slice(0, 100) || undefined : undefined,
+          institution:
+            typeof institution === "string" ? institution.trim().slice(0, 150) || undefined : undefined,
+          wantsCommunity: Boolean(wantsCommunity),
+        }
+      : {};
+
   try {
     const response = await auth.api.signUpEmail({
       asResponse: true,
@@ -49,6 +63,7 @@ export async function POST({ request }) {
         password,
         name: displayName ?? String(email).split("@")[0],
         profileType,
+        ...profesorExtra,
       },
     });
 

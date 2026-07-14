@@ -44,6 +44,16 @@ model User {
   // producto (E5). El endpoint route-preview-progress.js lo usa.
   hasCompletedRouteAPreview Boolean @default(false)
 
+  // ── Campos extra del registro de Profesor/instructor ──────────────────────
+  // Solo tienen sentido cuando profileType = 'PROFESOR'; para ESTUDIANTE
+  // quedan null/false. `wantsCommunity` es una señal de intención (no crea
+  // la comunidad sola — eso lo sigue haciendo POST /api/communities una vez
+  // que el profesor esté VERIFIED) que el admin puede ver al revisar
+  // profesores pendientes (D1).
+  country        String?
+  institution    String?
+  wantsCommunity Boolean @default(false)
+
   // ── Relaciones de Better Auth (sesión + credenciales) ─────────────────────
   sessions Session[]
   accounts Account[]

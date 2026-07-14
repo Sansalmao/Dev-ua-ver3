@@ -45,6 +45,17 @@ export const auth = betterAuth({
         required: true,
         input: true,
       },
+      // Extra de Profesor/instructor — opcionales, aceptables desde el
+      // body de /sign-up/email. Se saltean/ignoran para ESTUDIANTE en
+      // register.js antes de llegar acá.
+      country: { type: "string", required: false, input: true },
+      institution: { type: "string", required: false, input: true },
+      wantsCommunity: {
+        type: "boolean",
+        required: false,
+        input: true,
+        defaultValue: false,
+      },
       // El resto son server-only: nunca se aceptan desde el cliente
       isAdmin: { type: "boolean", required: false, input: false, defaultValue: false },
       teacherVerificationStatus: {

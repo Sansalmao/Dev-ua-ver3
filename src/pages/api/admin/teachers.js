@@ -1,4 +1,3 @@
-
 import { prisma } from "@lib/prisma.js";
 import { requireAdmin, toErrorResponse } from "../../../lib/auth.js";
 
@@ -15,6 +14,9 @@ export async function GET({ locals }) {
         id: true,
         email: true,
         displayName: true,
+        country: true,
+        institution: true,
+        wantsCommunity: true,
         createdAt: true,
       },
       orderBy: { createdAt: "asc" },
