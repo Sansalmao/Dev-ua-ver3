@@ -198,8 +198,8 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     const overlay = document.getElementById("auth-modal-overlay")!;
     const closeBtn = document.getElementById("auth-modal-close")!;
     const errorEl = document.getElementById("auth-error")!;
-    const titleEl = document.querySelector("[data-title]")!;
-    const subtitleEl = document.querySelector("[data-subtitle]")!;
+    const titleEl = overlay.querySelector("[data-title]")!;
+    const subtitleEl = overlay.querySelector("[data-subtitle]")!;
     const registerForm = document.getElementById(
         "auth-form-register",
     ) as HTMLFormElement;
@@ -270,7 +270,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         turnstileRendered = true;
     }
 
-    function openModal(view: "register" | "login" = "register") {
+    function openModal(view: "register" | "login" = "login") {
         overlay.classList.add("am-overlay--open");
         document.body.style.overflow = "hidden";
         setView(view);

@@ -6,6 +6,7 @@ import PageHeader from "../components/PageHeader.astro";
 import MetadataCard from "../components/MetadataCard.astro";
 import TabsNav from "../components/TabsNav.astro";
 import TabsPanel from "../components/TabsPanel.astro";
+import AuthModal from "../components/AuthModal.astro";
 import type { ModuleSection } from "../lib/module-schema";
 
 interface Props {
@@ -101,6 +102,8 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
             </div>
         </div>
     </div>
+
+    <AuthModal />
 
     <script>
         // ═══════════════════════════════════════════════════════════════════
