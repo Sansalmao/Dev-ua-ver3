@@ -624,8 +624,8 @@ canvas {
     margin-left: 24px;
 }
 
-.module-content details > .info-card,
-.module-content details > .obs-card {
+.module-content details .info-card,
+.module-content details .obs-card {
     margin-left: 24px;
 }
 
@@ -1225,7 +1225,6 @@ canvas {
 
 .vc-shell {
     display: none;
-    opacity: 0;
     padding: 36px 40px 80px;
     max-width: 1140px;
     margin: 0 auto;
@@ -1233,25 +1232,14 @@ canvas {
 
 .vc-shell.vc-visible {
     display: block;
-    animation: vc-enter 280ms ease forwards;
 }
 
 @keyframes vc-enter {
     from {
         opacity: 0;
-        transform: translateY(14px);
     }
     to {
         opacity: 1;
-        /* OJO: dejar esto en "none" (no translateY(0)) es intencional.
-           Con animation-fill-mode: forwards, el último keyframe queda como
-           valor computado permanente — y CUALQUIER transform distinto de
-           "none" (incluso translateY(0), que es la identidad) convierte a
-           este elemento en containing block para sus descendientes
-           position:fixed. Eso rompe el overlay de bloqueo de registro
-           (.vc-register-lock), que necesita ser fixed a la ventana
-           completa, no a este contenedor. */
-        transform: none;
     }
 }
 

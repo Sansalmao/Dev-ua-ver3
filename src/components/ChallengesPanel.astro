@@ -957,29 +957,13 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
         </script>
 
         <style>
-            /* Overlay de bloqueo de registro sobre los retos (pieza nueva → estilos propios). */
-            .vc-main {
-                position: relative;
-            }
-            /* Contenedor del overlay: opaca TODA la pantalla */
-            .vc-register-lock {
-                position: absolute;
-                inset: 0;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                padding: 24px;
-                background: rgba(0, 0, 0, 0.32);
-                backdrop-filter: blur(4px);
-                z-index: 10; /* suficiente porque está dentro de #view-challenges */
-            }
-            #view-challenges {
-                position: relative;
-            }
-
+            /* ══════════════════════════════════════════════════════════════
+               Velo de bloqueo de registro
+               ══════════════════════════════════════════════════════════════ */
             .vc-register-lock {
                 position: fixed;
                 inset: 0;
+                z-index: 60;
                 display: none;
                 align-items: center;
                 justify-content: center;
@@ -987,24 +971,30 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
                 background: rgba(0, 0, 0, 0.32);
                 backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
-                z-index: 9999; /* muy alto para que esté por encima de todo, pero por debajo del modal de auth (100) si quieres, pero 9999 es mayor, así que estará por encima. Para que el auth modal quede por encima, usa 99 y el auth 100 */
-                border-radius: 0; /* sin bordes redondeados */
             }
 
             .vc-register-lock[aria-hidden="false"] {
                 display: flex;
             }
 
-            /* Resaltar la card de progreso y el botón volver cuando el overlay está visible */
+            #view-challenges:has(.vc-register-lock[aria-hidden="false"])
+                .vc-sidebar {
+                z-index: 65;
+            }
+            #view-challenges:has(.vc-register-lock[aria-hidden="false"])
+                .vc-btn-back {
+                position: relative;
+                z-index: 65;
+            }
+            /* Mismo anillo de acento para ambos (la card queda resaltada
+               igual que el botón "Volver a la Ruta"). */
             #view-challenges:has(.vc-register-lock[aria-hidden="false"])
                 .vc-progress-card,
             #view-challenges:has(.vc-register-lock[aria-hidden="false"])
                 .vc-btn-back {
-                position: relative;
-                z-index: 10000; /* mayor que el overlay (9999) para que queden resaltados por encima */
                 box-shadow:
                     0 0 0 2px var(--accent),
-                    0 6px 20px rgba(229, 98, 26, 0.3);
+                    0 6px 22px rgba(229, 98, 26, 0.32);
                 border-color: var(--accent);
             }
             .vc-register-lock-card {
