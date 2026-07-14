@@ -167,11 +167,7 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
             <!-- Grid de retos — renderizado por JS -->
             <div class="vc-grid" id="vc-challenge-grid"></div>
 
-            <!--
-                Bloqueo de registro: se muestra encima de los retos (que quedan
-                visibles pero bloqueados) cuando el visitante NO está registrado.
-                getSession() decide; el vínculo abre el AuthModal en registro.
-            -->
+            <!-- Overlay de registro (fuera de .vc-main, dentro de #view-challenges) -->
             <div
                 id="vc-register-lock"
                 class="vc-register-lock"
@@ -210,857 +206,891 @@ for (const [filePath, mod] of Object.entries(retoFiles)) {
                             class="vc-register-lock-link"
                             data-open-auth-modal="register"
                         >
-                            regístrate aquí
+                            Regístrate aquí
                         </button>
                     </div>
                 </div>
             </div>
+
+            <!-- Toast -->
+            <div class="vc-toast vc-toast-hidden" id="vc-toast">
+                <span id="vc-toast-msg"></span>
+            </div>
         </main>
-    </div>
 
-    <!-- Toast -->
-    <div class="vc-toast vc-toast-hidden" id="vc-toast">
-        <span id="vc-toast-msg"></span>
-    </div>
-
-    <script
-        define:vars={{
-            retosMap,
-            EDUCATOR_MODULES: EDUCATOR_CHALLENGE_MODULES,
-            EDUCATOR_CARDS: EDUCATOR_CHALLENGE_CARDS,
-            LEARNER_MODULES: LEARNER_CHALLENGE_MODULES,
-            LEARNER_CARDS: LEARNER_CHALLENGE_CARDS,
-            LEARNER_ADVANCED_MODULES,
-            LEARNER_ADVANCED_CARDS,
-        }}
-    >
-        "use strict";
-        (function () {
-            /* ════════════════════════════════════════════════════════════════════════════
+        <script
+            define:vars={{
+                retosMap,
+                EDUCATOR_MODULES: EDUCATOR_CHALLENGE_MODULES,
+                EDUCATOR_CARDS: EDUCATOR_CHALLENGE_CARDS,
+                LEARNER_MODULES: LEARNER_CHALLENGE_MODULES,
+                LEARNER_CARDS: LEARNER_CHALLENGE_CARDS,
+                LEARNER_ADVANCED_MODULES,
+                LEARNER_ADVANCED_CARDS,
+            }}
+        >
+            "use strict";
+            (function () {
+                /* ════════════════════════════════════════════════════════════════════════════
            ChallengesPanel — Vanilla JS (IIFE)
            Soportea perfiles educator / learner con datos separados y localStorage único.
            El desbloqueo de siguientes retos está desactivado (comentado).
         ═════════════════════════════════════════════════════════════════════════════ */
 
-            var currentProfile = null; // "educator" | "learner"
-            var MODULES = null;
-            var CHALLENGES = null;
-            var STORAGE_KEY = null;
-            var MODULE_MAP = {};
+                var currentProfile = null; // "educator" | "learner"
+                var MODULES = null;
+                var CHALLENGES = null;
+                var STORAGE_KEY = null;
+                var MODULE_MAP = {};
 
-            var state = null;
-            var booted = false;
+                var state = null;
+                var booted = false;
 
-            /* ── ICONOS ───────────────────────────────────────────────────────────── */
-            var ICON_PATHS = {
-                code: "M16 18 22 12 16 6M8 6 2 12 8 18",
-                list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
-                network:
-                    "M2 2h6v6H2zM16 16h6v6H16zM16 2h6v6H16zM5 8v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M12 14v2",
-                doc: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8",
-                check: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
-                globe: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z",
-                chart: "M18 20V10M12 20V4M6 20v-6",
-                mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 7l-10 7L2 7",
-                server: "M2 2h20v8H2zM2 14h20v8H2zM6 6h.01M6 18h.01",
-                edit: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z",
-                lock: "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4",
-                checkFill:
-                    "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3",
-                clock: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM12 6v6l4 2",
-            };
-
-            function svg(name, color, size) {
-                size = size || 16;
-                var d = ICON_PATHS[name] || ICON_PATHS.code;
-                return (
-                    '<svg width="' +
-                    size +
-                    '" height="' +
-                    size +
-                    '" fill="none"' +
-                    ' stroke="' +
-                    (color || "currentColor") +
-                    '" viewBox="0 0 24 24"' +
-                    ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
-                    '<path d="' +
-                    d +
-                    '"/></svg>'
-                );
-            }
-
-            /* ── INICIALIZACIÓN SEGÚN PERFIL ────────────────────────────────────── */
-            function setProfile(profile, routeType) {
-                currentProfile = profile;
-                if (profile === "educator") {
-                    MODULES = EDUCATOR_MODULES;
-                    CHALLENGES = EDUCATOR_CARDS;
-                    STORAGE_KEY = "ua-challenges-v1-educator";
-                } else {
-                    // learner
-                    if (routeType === "avanzada") {
-                        MODULES = LEARNER_ADVANCED_MODULES;
-                        CHALLENGES = LEARNER_ADVANCED_CARDS;
-                        STORAGE_KEY = "ua-challenges-v1-learner-advanced";
-                    } else {
-                        MODULES = LEARNER_MODULES;
-                        CHALLENGES = LEARNER_CARDS;
-                        STORAGE_KEY = "ua-challenges-v1-learner";
-                    }
-                }
-                MODULE_MAP = {};
-                MODULES.forEach(function (m) {
-                    MODULE_MAP[m.id] = m;
-                });
-                initState();
-                renderAll();
-            }
-
-            function buildDefault() {
-                var modules = {};
-                var firstModuleId = MODULES[0] ? MODULES[0].id : "mod1";
-                MODULES.forEach(function (mod, mi) {
-                    var challengesList = CHALLENGES[mod.id];
-                    var challenges = challengesList.map(function (c, ci) {
-                        var status =
-                            mi === 0 && ci === 0 ? "available" : "locked";
-                        return { id: c.id, status: status };
-                    });
-                    modules[mod.id] = { progress: 0, challenges: challenges };
-                });
-                return {
-                    currentModuleId: firstModuleId,
-                    modules: modules,
-                    version: 6,
+                /* ── ICONOS ───────────────────────────────────────────────────────────── */
+                var ICON_PATHS = {
+                    code: "M16 18 22 12 16 6M8 6 2 12 8 18",
+                    list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+                    network:
+                        "M2 2h6v6H2zM16 16h6v6H16zM16 2h6v6H16zM5 8v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M12 14v2",
+                    doc: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8",
+                    check: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+                    globe: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z",
+                    chart: "M18 20V10M12 20V4M6 20v-6",
+                    mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 7l-10 7L2 7",
+                    server: "M2 2h20v8H2zM2 14h20v8H2zM6 6h.01M6 18h.01",
+                    edit: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z",
+                    lock: "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4",
+                    checkFill:
+                        "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3",
+                    clock: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM12 6v6l4 2",
                 };
-            }
 
-            function initState() {
-                var def = buildDefault();
-                try {
-                    var raw = localStorage.getItem(STORAGE_KEY);
-                    if (!raw) {
-                        state = def;
-                        return;
+                function svg(name, color, size) {
+                    size = size || 16;
+                    var d = ICON_PATHS[name] || ICON_PATHS.code;
+                    return (
+                        '<svg width="' +
+                        size +
+                        '" height="' +
+                        size +
+                        '" fill="none"' +
+                        ' stroke="' +
+                        (color || "currentColor") +
+                        '" viewBox="0 0 24 24"' +
+                        ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path d="' +
+                        d +
+                        '"/></svg>'
+                    );
+                }
+
+                /* ── INICIALIZACIÓN SEGÚN PERFIL ────────────────────────────────────── */
+                function setProfile(profile, routeType) {
+                    currentProfile = profile;
+                    if (profile === "educator") {
+                        MODULES = EDUCATOR_MODULES;
+                        CHALLENGES = EDUCATOR_CARDS;
+                        STORAGE_KEY = "ua-challenges-v1-educator";
+                    } else {
+                        // learner
+                        if (routeType === "avanzada") {
+                            MODULES = LEARNER_ADVANCED_MODULES;
+                            CHALLENGES = LEARNER_ADVANCED_CARDS;
+                            STORAGE_KEY = "ua-challenges-v1-learner-advanced";
+                        } else {
+                            MODULES = LEARNER_MODULES;
+                            CHALLENGES = LEARNER_CARDS;
+                            STORAGE_KEY = "ua-challenges-v1-learner";
+                        }
                     }
-                    var stored = JSON.parse(raw);
-                    if (!stored.version || stored.version < 6) {
-                        state = def;
-                        saveState();
-                        return;
-                    }
-                    var merged = {};
+                    MODULE_MAP = {};
                     MODULES.forEach(function (m) {
-                        merged[m.id] =
-                            stored.modules && stored.modules[m.id]
-                                ? stored.modules[m.id]
-                                : def.modules[m.id];
+                        MODULE_MAP[m.id] = m;
                     });
-                    // Usar el módulo almacenado si existe, sino el primero de la lista actual
-                    var defaultId = MODULES[0] ? MODULES[0].id : "mod1";
-                    state = {
-                        currentModuleId:
-                            stored.currentModuleId &&
-                            merged[stored.currentModuleId]
-                                ? stored.currentModuleId
-                                : defaultId,
-                        modules: merged,
-                        version: stored.version,
+                    initState();
+                    renderAll();
+                }
+
+                function buildDefault() {
+                    var modules = {};
+                    var firstModuleId = MODULES[0] ? MODULES[0].id : "mod1";
+                    MODULES.forEach(function (mod, mi) {
+                        var challengesList = CHALLENGES[mod.id];
+                        var challenges = challengesList.map(function (c, ci) {
+                            var status =
+                                mi === 0 && ci === 0 ? "available" : "locked";
+                            return { id: c.id, status: status };
+                        });
+                        modules[mod.id] = {
+                            progress: 0,
+                            challenges: challenges,
+                        };
+                    });
+                    return {
+                        currentModuleId: firstModuleId,
+                        modules: modules,
+                        version: 6,
                     };
-                } catch (e) {
-                    state = def;
                 }
-            }
 
-            function saveState() {
-                try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                } catch (e) {}
-            }
-
-            function resetState() {
-                try {
-                    localStorage.removeItem(STORAGE_KEY);
-                } catch (e) {}
-                state = buildDefault();
-                saveState();
-                renderAll();
-                showToast("↺ Progreso de retos reiniciado");
-            }
-
-            /* ── ENGINE ────────────────────────────────────────────────────────── */
-            function recalcProgress(moduleId) {
-                var challengesList = CHALLENGES[moduleId];
-                var total = challengesList.length;
-                var done = state.modules[moduleId].challenges.filter(
-                    function (c) {
-                        return c.status === "completed";
-                    },
-                ).length;
-                var pct = total > 0 ? Math.round((done / total) * 100) : 0;
-                state.modules[moduleId].progress = pct;
-                return pct;
-            }
-
-            // Desbloqueo desactivado – se mantiene la función pero no se usa
-            function unlockNextModule(modId) {
-                var idx = MODULES.findIndex(function (m) {
-                    return m.id === modId;
-                });
-                var next = MODULES[idx + 1];
-                if (!next) return null;
-                var first = state.modules[next.id].challenges[0];
-                if (first.status !== "locked") return null;
-                first.status = "available";
-                return next.id;
-            }
-
-            function handleChallengeClick(moduleId, challengeId) {
-                var modState = state.modules[moduleId];
-                var idx = modState.challenges.findIndex(function (c) {
-                    return c.id === challengeId;
-                });
-                if (idx === -1) return;
-                var ch = modState.challenges[idx];
-                if (ch.status !== "available") return;
-
-                ch.status = "completed";
-
-                // Desbloquear el siguiente reto dentro del mismo módulo
-                var nextCh = modState.challenges[idx + 1];
-                if (nextCh && nextCh.status === "locked")
-                    nextCh.status = "available";
-
-                var newPct = recalcProgress(moduleId);
-
-                // Desbloquear el siguiente módulo si este se completó al 100%
-                var unlockedMod =
-                    newPct >= 100 ? unlockNextModule(moduleId) : null;
-
-                saveState();
-
-                renderChallenges(moduleId, challengeId);
-                updateProgressCard();
-                renderModulePills();
-                updateHeaderCounter();
-
-                var meta = CHALLENGES[moduleId][idx];
-                var mod = MODULE_MAP[moduleId];
-                if (unlockedMod) {
-                    showToast(
-                        "🔓 " +
-                            mod.title +
-                            " completado — " +
-                            MODULE_MAP[unlockedMod].title +
-                            " desbloqueado!",
-                    );
-                } else {
-                    var done = modState.challenges.filter(function (c) {
-                        return c.status === "completed";
-                    }).length;
-                    var total = CHALLENGES[moduleId].length;
-                    showToast(
-                        '✓ "' +
-                            meta.title +
-                            '" completado — ' +
-                            done +
-                            "/" +
-                            total,
-                    );
-                }
-            }
-
-            function handleModuleClick(moduleId) {
-                var modState = state.modules[moduleId];
-                var accessible = modState.challenges.some(function (c) {
-                    return c.status !== "locked";
-                });
-                if (!accessible) {
-                    var pill = document.querySelector(
-                        '[data-vc-pill="' + moduleId + '"]',
-                    );
-                    if (pill) {
-                        pill.classList.add("vc-shake");
-                        setTimeout(function () {
-                            pill.classList.remove("vc-shake");
-                        }, 350);
-                    }
-                    showToast(
-                        "🔒 Completa el módulo anterior para desbloquear este",
-                    );
-                    return;
-                }
-                state.currentModuleId = moduleId;
-                saveState();
-                renderModulePills();
-                renderChallenges(moduleId, null);
-                updateProgressCard();
-                updateActiveModuleHeader();
-            }
-
-            /* ── RENDER ────────────────────────────────────────────────────────── */
-            function renderModulePills() {
-                var container = document.getElementById("vc-module-pills");
-                if (!container) return;
-                var activeId = state.currentModuleId;
-                var html = "";
-
-                MODULES.forEach(function (mod) {
-                    var modState = state.modules[mod.id];
-                    var isActive = mod.id === activeId;
-                    var isComplete = modState.progress >= 100;
-                    var accessible = modState.challenges.some(function (c) {
-                        return c.status !== "locked";
-                    });
-
-                    var cls = "vc-pill";
-                    if (isActive) cls += " vc-pill--active";
-                    else if (!accessible) cls += " vc-pill--locked";
-
-                    var style = isActive
-                        ? "border-color:" +
-                          mod.accentHex +
-                          ";color:" +
-                          mod.accentHex +
-                          ";background:" +
-                          mod.lightHex +
-                          ";"
-                        : "";
-
-                    var badge = isComplete
-                        ? '<span style="font-size:10px;font-weight:700;margin-left:2px;color:' +
-                          mod.accentHex +
-                          ';">✓</span>'
-                        : modState.progress > 0
-                          ? '<span style="font-size:10px;font-weight:700;margin-left:2px;color:' +
-                            mod.accentHex +
-                            ';">' +
-                            modState.progress +
-                            "%</span>"
-                          : "";
-
-                    var lockIco = !accessible
-                        ? '<span style="display:flex;align-items:center;">' +
-                          svg("lock", "#c4b5ac", 11) +
-                          "</span>"
-                        : "";
-                    var checkIco = isComplete
-                        ? '<span style="display:flex;align-items:center;">' +
-                          svg("checkFill", mod.accentHex, 12) +
-                          "</span>"
-                        : "";
-
-                    html +=
-                        '<button class="' +
-                        cls +
-                        '"' +
-                        ' data-vc-pill="' +
-                        mod.id +
-                        '"' +
-                        (style ? ' style="' + style + '"' : "") +
-                        (!accessible ? ' disabled aria-disabled="true"' : "") +
-                        ">" +
-                        lockIco +
-                        checkIco +
-                        mod.title +
-                        badge +
-                        "</button>";
-                });
-
-                container.innerHTML = html;
-                container
-                    .querySelectorAll("[data-vc-pill]:not([disabled])")
-                    .forEach(function (btn) {
-                        btn.addEventListener("click", function () {
-                            handleModuleClick(btn.dataset.vcPill);
+                function initState() {
+                    var def = buildDefault();
+                    try {
+                        var raw = localStorage.getItem(STORAGE_KEY);
+                        if (!raw) {
+                            state = def;
+                            return;
+                        }
+                        var stored = JSON.parse(raw);
+                        if (!stored.version || stored.version < 6) {
+                            state = def;
+                            saveState();
+                            return;
+                        }
+                        var merged = {};
+                        MODULES.forEach(function (m) {
+                            merged[m.id] =
+                                stored.modules && stored.modules[m.id]
+                                    ? stored.modules[m.id]
+                                    : def.modules[m.id];
                         });
-                    });
-            }
-
-            function renderChallenges(moduleId, justCompletedId) {
-                var grid = document.getElementById("vc-challenge-grid");
-                if (!grid) return;
-
-                var mod = MODULE_MAP[moduleId];
-                var modState = state.modules[moduleId];
-                var list = CHALLENGES[moduleId];
-                var html = "";
-
-                list.forEach(function (meta, i) {
-                    var ch = modState.challenges[i];
-                    var status = ch.status;
-
-                    // Estilos de borde según estado
-                    var cardStyle;
-                    if (status === "completed") {
-                        cardStyle =
-                            "border:1px solid " +
-                            mod.borderHex +
-                            ";border-left:3px solid " +
-                            mod.accentHex +
-                            ";";
-                    } else if (status === "available") {
-                        cardStyle = "border:1.5px solid " + mod.borderHex + ";";
-                    } else {
-                        cardStyle = "";
+                        // Usar el módulo almacenado si existe, sino el primero de la lista actual
+                        var defaultId = MODULES[0] ? MODULES[0].id : "mod1";
+                        state = {
+                            currentModuleId:
+                                stored.currentModuleId &&
+                                merged[stored.currentModuleId]
+                                    ? stored.currentModuleId
+                                    : defaultId,
+                            modules: merged,
+                            version: stored.version,
+                        };
+                    } catch (e) {
+                        state = def;
                     }
-
-                    // Badge de estado
-                    var badgeCls, badgeHTML;
-                    if (status === "completed") {
-                        badgeCls = "vc-status-badge vc-status-badge--completed";
-                        badgeHTML =
-                            svg("checkFill", mod.accentHex, 10) + " Completado";
-                    } else if (status === "available") {
-                        badgeCls = "vc-status-badge vc-status-badge--available";
-                        badgeHTML = "Disponible";
-                    } else {
-                        badgeCls = "vc-status-badge vc-status-badge--locked";
-                        badgeHTML = svg("lock", "#a8a29e", 9) + " Bloqueado";
-                    }
-
-                    // Botón de acción
-                    var btnHTML;
-                    if (status === "completed") {
-                        btnHTML =
-                            '<button class="vc-btn-action vc-btn-action--completed" disabled aria-label="Completado">' +
-                            svg("checkFill", "white", 12) +
-                            " Completado</button>";
-                    } else if (status === "available") {
-                        btnHTML =
-                            '<button class="vc-btn-action vc-btn-action--available"' +
-                            ' data-action="start" data-module="' +
-                            moduleId +
-                            '" data-challenge="' +
-                            meta.id +
-                            '"' +
-                            ' aria-label="Iniciar ' +
-                            meta.title +
-                            '">$ iniciar</button>';
-                    } else {
-                        btnHTML =
-                            '<button class="vc-btn-action vc-btn-action--locked" disabled aria-label="Bloqueado">' +
-                            svg("lock", "#a8a29e", 11) +
-                            " Bloqueado</button>";
-                    }
-
-                    // Language pill (icono + texto)
-                    var langName =
-                        (meta.lang || "java").charAt(0).toUpperCase() +
-                        (meta.lang || "java").slice(1);
-                    var langPill =
-                        '<div class="vc-lang-pill">' +
-                        '<span class="lang-icon lang-icon--' +
-                        (meta.lang || "java") +
-                        '" aria-hidden="true"></span>' +
-                        '<span class="vc-lang-label">' +
-                        langName +
-                        "</span>" +
-                        "</div>";
-
-                    var extraCls =
-                        meta.id === justCompletedId
-                            ? " vc-card-completing"
-                            : "";
-
-                    // Construcción de la card SIMPLIFICADA (sin descripción, duración, ni icono grande)
-                    var cardHtml =
-                        '<div class="vc-card' +
-                        extraCls +
-                        '" data-status="' +
-                        status +
-                        '"' +
-                        (cardStyle ? ' style="' + cardStyle + '"' : "") +
-                        ">" +
-                        '<div class="vc-card-top">' +
-                        '<span class="' +
-                        badgeCls +
-                        '" style="display:inline-flex;align-items:center;gap:4px;">' +
-                        badgeHTML +
-                        "</span>" +
-                        "</div>" +
-                        '<div class="vc-card-title">' +
-                        meta.title +
-                        "</div>" +
-                        '<div class="vc-card-foot">' +
-                        langPill +
-                        btnHTML +
-                        "</div>" +
-                        "</div>";
-
-                    html += cardHtml;
-                });
-
-                grid.innerHTML = html;
-
-                // Bind de los botones "start" (igual que antes)
-                grid.querySelectorAll('[data-action="start"]').forEach(
-                    function (btn) {
-                        btn.addEventListener("click", function () {
-                            var moduleId = btn.dataset.module;
-                            var challengeId = btn.dataset.challenge;
-                            var mod = MODULE_MAP[moduleId];
-                            var list = CHALLENGES[moduleId];
-                            var idx = list.findIndex(function (c) {
-                                return c.id === challengeId;
-                            });
-                            if (idx === -1) return;
-                            var meta = list[idx];
-
-                            var exerciseData = getExerciseData(
-                                moduleId,
-                                challengeId,
-                                mod,
-                                meta,
-                            );
-
-                            var vcShell =
-                                document.getElementById("view-challenges");
-                            if (vcShell) {
-                                vcShell.setAttribute("aria-hidden", "true");
-                                vcShell.classList.remove("vc-visible");
-                            }
-
-                            document.dispatchEvent(
-                                new CustomEvent("challenge-flow:open", {
-                                    detail: { challengeData: exerciseData },
-                                }),
-                            );
-                        });
-                    },
-                );
-            }
-
-            /* getExerciseData: Lee el frontmatter del MDX (retosMap) */
-            function getExerciseData(moduleId, challengeId, mod, meta) {
-                var key = moduleId + "_" + challengeId;
-                var data = retosMap[key];
-
-                var baseData = {
-                    moduleId: moduleId,
-                    challengeId: challengeId,
-                };
-
-                if (!data) {
-                    // Fallback
-                    return Object.assign({}, baseData, {
-                        moduleTitle: mod.title + " \u2013 " + mod.subtitle,
-                        moduleDesc:
-                            "Reto de pr\u00e1ctica del m\u00f3dulo de " +
-                            mod.subtitle +
-                            ".",
-                        exerciseNum: "Exercise " + challengeId.replace("c", ""),
-                        exerciseTitle: meta.title,
-                        exerciseItems: [meta.desc],
-                        solutionLang: "java",
-                        solutionCode:
-                            '// Soluci\u00f3n del reto "' +
-                            meta.title +
-                            '"\n// Pr\u00f3ximamente...',
-                    });
                 }
 
-                return Object.assign({}, baseData, {
-                    moduleTitle: data.moduleTitle,
-                    moduleDesc: data.moduleDesc,
-                    exerciseNum: data.exerciseNum,
-                    exerciseTitle: data.exerciseTitle,
-                    exerciseItems: data.exerciseItems,
-                    solutionLang: data.solutionLang,
-                    solutionCode: data.solutionCode,
-                });
-            }
-
-            function updateProgressCard() {
-                var moduleId = state.currentModuleId;
-                var mod = MODULE_MAP[moduleId];
-                var modState = state.modules[moduleId];
-                var challengesList = CHALLENGES[moduleId];
-                var total = challengesList.length;
-                var done = modState.challenges.filter(function (c) {
-                    return c.status === "completed";
-                }).length;
-                var pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-                var el;
-                if ((el = document.getElementById("vc-prog-done")))
-                    el.textContent = done;
-                if ((el = document.getElementById("vc-prog-total")))
-                    el.textContent = "/" + total;
-                if ((el = document.getElementById("vc-prog-bar")))
-                    el.style.width = pct + "%";
-                if ((el = document.getElementById("vc-prog-pct")))
-                    el.textContent = pct + "% COMPLETADO";
-                if ((el = document.getElementById("vc-prog-module-name")))
-                    el.textContent = mod.title;
-
-                var dotsEl = document.getElementById("vc-challenge-dots");
-                if (dotsEl) {
-                    var dHtml = "";
-                    modState.challenges.forEach(function (c, i) {
-                        var bg =
-                            c.status === "completed"
-                                ? mod.accentHex
-                                : c.status === "available"
-                                  ? mod.borderHex
-                                  : "var(--border)";
-                        var brd =
-                            c.status === "locked"
-                                ? "1.5px solid var(--border)"
-                                : "1.5px solid " + mod.accentHex;
-                        var lbl = CHALLENGES[moduleId][i]
-                            ? CHALLENGES[moduleId][i].title
-                            : "Reto " + (i + 1);
-                        dHtml +=
-                            '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">' +
-                            '<div style="width:10px;height:10px;border-radius:50%;background:' +
-                            bg +
-                            ";border:" +
-                            brd +
-                            ';" title="' +
-                            lbl +
-                            '"></div>' +
-                            '<span style="font-size:9px;color:var(--text-muted);">' +
-                            (i + 1) +
-                            "</span></div>";
-                    });
-                    dotsEl.innerHTML = dHtml;
+                function saveState() {
+                    try {
+                        localStorage.setItem(
+                            STORAGE_KEY,
+                            JSON.stringify(state),
+                        );
+                    } catch (e) {}
                 }
-            }
 
-            function updateActiveModuleHeader() {
-                var mod = MODULE_MAP[state.currentModuleId];
-                var dotEl = document.getElementById("vc-module-dot");
-                var ttlEl = document.getElementById("vc-module-title");
-                var levelEl = document.querySelector(".vc-level-badge");
-                if (dotEl) dotEl.style.background = mod.accentHex;
-                if (ttlEl) ttlEl.textContent = mod.subtitle;
-                if (levelEl) levelEl.textContent = mod.subtitle;
-            }
+                function resetState() {
+                    try {
+                        localStorage.removeItem(STORAGE_KEY);
+                    } catch (e) {}
+                    state = buildDefault();
+                    saveState();
+                    renderAll();
+                    showToast("↺ Progreso de retos reiniciado");
+                }
 
-            function updateHeaderCounter() {
-                var totalCompleted = 0;
-                var totalRetos = 0;
-                MODULES.forEach(function (m) {
-                    totalCompleted += state.modules[m.id].challenges.filter(
+                /* ── ENGINE ────────────────────────────────────────────────────────── */
+                function recalcProgress(moduleId) {
+                    var challengesList = CHALLENGES[moduleId];
+                    var total = challengesList.length;
+                    var done = state.modules[moduleId].challenges.filter(
                         function (c) {
                             return c.status === "completed";
                         },
                     ).length;
-                    totalRetos += CHALLENGES[m.id].length;
-                });
-                var elDone = document.getElementById("vc-header-done");
-                var elTotal = document.getElementById("vc-total-retos");
-                if (elDone) elDone.textContent = totalCompleted;
-                if (elTotal) elTotal.textContent = "/" + totalRetos + " retos";
-            }
+                    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                    state.modules[moduleId].progress = pct;
+                    return pct;
+                }
 
-            function renderAll() {
-                var id = state.currentModuleId;
-                renderModulePills();
-                renderChallenges(id, null);
-                updateProgressCard();
-                updateActiveModuleHeader();
-                updateHeaderCounter();
-            }
+                // Desbloqueo desactivado – se mantiene la función pero no se usa
+                function unlockNextModule(modId) {
+                    var idx = MODULES.findIndex(function (m) {
+                        return m.id === modId;
+                    });
+                    var next = MODULES[idx + 1];
+                    if (!next) return null;
+                    var first = state.modules[next.id].challenges[0];
+                    if (first.status !== "locked") return null;
+                    first.status = "available";
+                    return next.id;
+                }
 
-            /* ── TOAST ───────────────────────────────────────────────────────────── */
-            var toastTimer = null;
-            function showToast(msg) {
-                var toast = document.getElementById("vc-toast");
-                var msgEl = document.getElementById("vc-toast-msg");
-                if (!toast || !msgEl) return;
-                msgEl.textContent = msg;
-                toast.classList.remove("vc-toast-hidden");
-                toast.classList.add("vc-toast-visible");
-                clearTimeout(toastTimer);
-                toastTimer = setTimeout(function () {
-                    toast.classList.remove("vc-toast-visible");
-                    toast.classList.add("vc-toast-hidden");
-                }, 3000);
-            }
+                function handleChallengeClick(moduleId, challengeId) {
+                    var modState = state.modules[moduleId];
+                    var idx = modState.challenges.findIndex(function (c) {
+                        return c.id === challengeId;
+                    });
+                    if (idx === -1) return;
+                    var ch = modState.challenges[idx];
+                    if (ch.status !== "available") return;
 
-            /* ── BOOT Y EVENTOS GLOBALES ────────────────────────────────────────── */
-            function boot() {
-                if (booted) return;
-                booted = true;
+                    ch.status = "completed";
 
-                var backBtn = document.getElementById("vc-btn-back");
-                if (backBtn) {
-                    backBtn.addEventListener("click", function () {
-                        document.dispatchEvent(
-                            new CustomEvent("challenges:close"),
+                    // Desbloquear el siguiente reto dentro del mismo módulo
+                    var nextCh = modState.challenges[idx + 1];
+                    if (nextCh && nextCh.status === "locked")
+                        nextCh.status = "available";
+
+                    var newPct = recalcProgress(moduleId);
+
+                    // Desbloquear el siguiente módulo si este se completó al 100%
+                    var unlockedMod =
+                        newPct >= 100 ? unlockNextModule(moduleId) : null;
+
+                    saveState();
+
+                    renderChallenges(moduleId, challengeId);
+                    updateProgressCard();
+                    renderModulePills();
+                    updateHeaderCounter();
+
+                    var meta = CHALLENGES[moduleId][idx];
+                    var mod = MODULE_MAP[moduleId];
+                    if (unlockedMod) {
+                        showToast(
+                            "🔓 " +
+                                mod.title +
+                                " completado — " +
+                                MODULE_MAP[unlockedMod].title +
+                                " desbloqueado!",
                         );
+                    } else {
+                        var done = modState.challenges.filter(function (c) {
+                            return c.status === "completed";
+                        }).length;
+                        var total = CHALLENGES[moduleId].length;
+                        showToast(
+                            '✓ "' +
+                                meta.title +
+                                '" completado — ' +
+                                done +
+                                "/" +
+                                total,
+                        );
+                    }
+                }
+
+                function handleModuleClick(moduleId) {
+                    var modState = state.modules[moduleId];
+                    var accessible = modState.challenges.some(function (c) {
+                        return c.status !== "locked";
+                    });
+                    if (!accessible) {
+                        var pill = document.querySelector(
+                            '[data-vc-pill="' + moduleId + '"]',
+                        );
+                        if (pill) {
+                            pill.classList.add("vc-shake");
+                            setTimeout(function () {
+                                pill.classList.remove("vc-shake");
+                            }, 350);
+                        }
+                        showToast(
+                            "🔒 Completa el módulo anterior para desbloquear este",
+                        );
+                        return;
+                    }
+                    state.currentModuleId = moduleId;
+                    saveState();
+                    renderModulePills();
+                    renderChallenges(moduleId, null);
+                    updateProgressCard();
+                    updateActiveModuleHeader();
+                }
+
+                /* ── RENDER ────────────────────────────────────────────────────────── */
+                function renderModulePills() {
+                    var container = document.getElementById("vc-module-pills");
+                    if (!container) return;
+                    var activeId = state.currentModuleId;
+                    var html = "";
+
+                    MODULES.forEach(function (mod) {
+                        var modState = state.modules[mod.id];
+                        var isActive = mod.id === activeId;
+                        var isComplete = modState.progress >= 100;
+                        var accessible = modState.challenges.some(function (c) {
+                            return c.status !== "locked";
+                        });
+
+                        var cls = "vc-pill";
+                        if (isActive) cls += " vc-pill--active";
+                        else if (!accessible) cls += " vc-pill--locked";
+
+                        var style = isActive
+                            ? "border-color:" +
+                              mod.accentHex +
+                              ";color:" +
+                              mod.accentHex +
+                              ";background:" +
+                              mod.lightHex +
+                              ";"
+                            : "";
+
+                        var badge = isComplete
+                            ? '<span style="font-size:10px;font-weight:700;margin-left:2px;color:' +
+                              mod.accentHex +
+                              ';">✓</span>'
+                            : modState.progress > 0
+                              ? '<span style="font-size:10px;font-weight:700;margin-left:2px;color:' +
+                                mod.accentHex +
+                                ';">' +
+                                modState.progress +
+                                "%</span>"
+                              : "";
+
+                        var lockIco = !accessible
+                            ? '<span style="display:flex;align-items:center;">' +
+                              svg("lock", "#c4b5ac", 11) +
+                              "</span>"
+                            : "";
+                        var checkIco = isComplete
+                            ? '<span style="display:flex;align-items:center;">' +
+                              svg("checkFill", mod.accentHex, 12) +
+                              "</span>"
+                            : "";
+
+                        html +=
+                            '<button class="' +
+                            cls +
+                            '"' +
+                            ' data-vc-pill="' +
+                            mod.id +
+                            '"' +
+                            (style ? ' style="' + style + '"' : "") +
+                            (!accessible
+                                ? ' disabled aria-disabled="true"'
+                                : "") +
+                            ">" +
+                            lockIco +
+                            checkIco +
+                            mod.title +
+                            badge +
+                            "</button>";
+                    });
+
+                    container.innerHTML = html;
+                    container
+                        .querySelectorAll("[data-vc-pill]:not([disabled])")
+                        .forEach(function (btn) {
+                            btn.addEventListener("click", function () {
+                                handleModuleClick(btn.dataset.vcPill);
+                            });
+                        });
+                }
+
+                function renderChallenges(moduleId, justCompletedId) {
+                    var grid = document.getElementById("vc-challenge-grid");
+                    if (!grid) return;
+
+                    var mod = MODULE_MAP[moduleId];
+                    var modState = state.modules[moduleId];
+                    var list = CHALLENGES[moduleId];
+                    var html = "";
+
+                    list.forEach(function (meta, i) {
+                        var ch = modState.challenges[i];
+                        var status = ch.status;
+
+                        // Estilos de borde según estado
+                        var cardStyle;
+                        if (status === "completed") {
+                            cardStyle =
+                                "border:1px solid " +
+                                mod.borderHex +
+                                ";border-left:3px solid " +
+                                mod.accentHex +
+                                ";";
+                        } else if (status === "available") {
+                            cardStyle =
+                                "border:1.5px solid " + mod.borderHex + ";";
+                        } else {
+                            cardStyle = "";
+                        }
+
+                        // Badge de estado
+                        var badgeCls, badgeHTML;
+                        if (status === "completed") {
+                            badgeCls =
+                                "vc-status-badge vc-status-badge--completed";
+                            badgeHTML =
+                                svg("checkFill", mod.accentHex, 10) +
+                                " Completado";
+                        } else if (status === "available") {
+                            badgeCls =
+                                "vc-status-badge vc-status-badge--available";
+                            badgeHTML = "Disponible";
+                        } else {
+                            badgeCls =
+                                "vc-status-badge vc-status-badge--locked";
+                            badgeHTML =
+                                svg("lock", "#a8a29e", 9) + " Bloqueado";
+                        }
+
+                        // Botón de acción
+                        var btnHTML;
+                        if (status === "completed") {
+                            btnHTML =
+                                '<button class="vc-btn-action vc-btn-action--completed" disabled aria-label="Completado">' +
+                                svg("checkFill", "white", 12) +
+                                " Completado</button>";
+                        } else if (status === "available") {
+                            btnHTML =
+                                '<button class="vc-btn-action vc-btn-action--available"' +
+                                ' data-action="start" data-module="' +
+                                moduleId +
+                                '" data-challenge="' +
+                                meta.id +
+                                '"' +
+                                ' aria-label="Iniciar ' +
+                                meta.title +
+                                '">$ iniciar</button>';
+                        } else {
+                            btnHTML =
+                                '<button class="vc-btn-action vc-btn-action--locked" disabled aria-label="Bloqueado">' +
+                                svg("lock", "#a8a29e", 11) +
+                                " Bloqueado</button>";
+                        }
+
+                        // Language pill (icono + texto)
+                        var langName =
+                            (meta.lang || "java").charAt(0).toUpperCase() +
+                            (meta.lang || "java").slice(1);
+                        var langPill =
+                            '<div class="vc-lang-pill">' +
+                            '<span class="lang-icon lang-icon--' +
+                            (meta.lang || "java") +
+                            '" aria-hidden="true"></span>' +
+                            '<span class="vc-lang-label">' +
+                            langName +
+                            "</span>" +
+                            "</div>";
+
+                        var extraCls =
+                            meta.id === justCompletedId
+                                ? " vc-card-completing"
+                                : "";
+
+                        // Construcción de la card SIMPLIFICADA (sin descripción, duración, ni icono grande)
+                        var cardHtml =
+                            '<div class="vc-card' +
+                            extraCls +
+                            '" data-status="' +
+                            status +
+                            '"' +
+                            (cardStyle ? ' style="' + cardStyle + '"' : "") +
+                            ">" +
+                            '<div class="vc-card-top">' +
+                            '<span class="' +
+                            badgeCls +
+                            '" style="display:inline-flex;align-items:center;gap:4px;">' +
+                            badgeHTML +
+                            "</span>" +
+                            "</div>" +
+                            '<div class="vc-card-title">' +
+                            meta.title +
+                            "</div>" +
+                            '<div class="vc-card-foot">' +
+                            langPill +
+                            btnHTML +
+                            "</div>" +
+                            "</div>";
+
+                        html += cardHtml;
+                    });
+
+                    grid.innerHTML = html;
+
+                    // Bind de los botones "start" (igual que antes)
+                    grid.querySelectorAll('[data-action="start"]').forEach(
+                        function (btn) {
+                            btn.addEventListener("click", function () {
+                                var moduleId = btn.dataset.module;
+                                var challengeId = btn.dataset.challenge;
+                                var mod = MODULE_MAP[moduleId];
+                                var list = CHALLENGES[moduleId];
+                                var idx = list.findIndex(function (c) {
+                                    return c.id === challengeId;
+                                });
+                                if (idx === -1) return;
+                                var meta = list[idx];
+
+                                var exerciseData = getExerciseData(
+                                    moduleId,
+                                    challengeId,
+                                    mod,
+                                    meta,
+                                );
+
+                                var vcShell =
+                                    document.getElementById("view-challenges");
+                                if (vcShell) {
+                                    vcShell.setAttribute("aria-hidden", "true");
+                                    vcShell.classList.remove("vc-visible");
+                                }
+
+                                document.dispatchEvent(
+                                    new CustomEvent("challenge-flow:open", {
+                                        detail: { challengeData: exerciseData },
+                                    }),
+                                );
+                            });
+                        },
+                    );
+                }
+
+                /* getExerciseData: Lee el frontmatter del MDX (retosMap) */
+                function getExerciseData(moduleId, challengeId, mod, meta) {
+                    var key = moduleId + "_" + challengeId;
+                    var data = retosMap[key];
+
+                    var baseData = {
+                        moduleId: moduleId,
+                        challengeId: challengeId,
+                    };
+
+                    if (!data) {
+                        // Fallback
+                        return Object.assign({}, baseData, {
+                            moduleTitle: mod.title + " \u2013 " + mod.subtitle,
+                            moduleDesc:
+                                "Reto de pr\u00e1ctica del m\u00f3dulo de " +
+                                mod.subtitle +
+                                ".",
+                            exerciseNum:
+                                "Exercise " + challengeId.replace("c", ""),
+                            exerciseTitle: meta.title,
+                            exerciseItems: [meta.desc],
+                            solutionLang: "java",
+                            solutionCode:
+                                '// Soluci\u00f3n del reto "' +
+                                meta.title +
+                                '"\n// Pr\u00f3ximamente...',
+                        });
+                    }
+
+                    return Object.assign({}, baseData, {
+                        moduleTitle: data.moduleTitle,
+                        moduleDesc: data.moduleDesc,
+                        exerciseNum: data.exerciseNum,
+                        exerciseTitle: data.exerciseTitle,
+                        exerciseItems: data.exerciseItems,
+                        solutionLang: data.solutionLang,
+                        solutionCode: data.solutionCode,
                     });
                 }
+
+                function updateProgressCard() {
+                    var moduleId = state.currentModuleId;
+                    var mod = MODULE_MAP[moduleId];
+                    var modState = state.modules[moduleId];
+                    var challengesList = CHALLENGES[moduleId];
+                    var total = challengesList.length;
+                    var done = modState.challenges.filter(function (c) {
+                        return c.status === "completed";
+                    }).length;
+                    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                    var el;
+                    if ((el = document.getElementById("vc-prog-done")))
+                        el.textContent = done;
+                    if ((el = document.getElementById("vc-prog-total")))
+                        el.textContent = "/" + total;
+                    if ((el = document.getElementById("vc-prog-bar")))
+                        el.style.width = pct + "%";
+                    if ((el = document.getElementById("vc-prog-pct")))
+                        el.textContent = pct + "% COMPLETADO";
+                    if ((el = document.getElementById("vc-prog-module-name")))
+                        el.textContent = mod.title;
+
+                    var dotsEl = document.getElementById("vc-challenge-dots");
+                    if (dotsEl) {
+                        var dHtml = "";
+                        modState.challenges.forEach(function (c, i) {
+                            var bg =
+                                c.status === "completed"
+                                    ? mod.accentHex
+                                    : c.status === "available"
+                                      ? mod.borderHex
+                                      : "var(--border)";
+                            var brd =
+                                c.status === "locked"
+                                    ? "1.5px solid var(--border)"
+                                    : "1.5px solid " + mod.accentHex;
+                            var lbl = CHALLENGES[moduleId][i]
+                                ? CHALLENGES[moduleId][i].title
+                                : "Reto " + (i + 1);
+                            dHtml +=
+                                '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">' +
+                                '<div style="width:10px;height:10px;border-radius:50%;background:' +
+                                bg +
+                                ";border:" +
+                                brd +
+                                ';" title="' +
+                                lbl +
+                                '"></div>' +
+                                '<span style="font-size:9px;color:var(--text-muted);">' +
+                                (i + 1) +
+                                "</span></div>";
+                        });
+                        dotsEl.innerHTML = dHtml;
+                    }
+                }
+
+                function updateActiveModuleHeader() {
+                    var mod = MODULE_MAP[state.currentModuleId];
+                    var dotEl = document.getElementById("vc-module-dot");
+                    var ttlEl = document.getElementById("vc-module-title");
+                    var levelEl = document.querySelector(".vc-level-badge");
+                    if (dotEl) dotEl.style.background = mod.accentHex;
+                    if (ttlEl) ttlEl.textContent = mod.subtitle;
+                    if (levelEl) levelEl.textContent = mod.subtitle;
+                }
+
+                function updateHeaderCounter() {
+                    var totalCompleted = 0;
+                    var totalRetos = 0;
+                    MODULES.forEach(function (m) {
+                        totalCompleted += state.modules[m.id].challenges.filter(
+                            function (c) {
+                                return c.status === "completed";
+                            },
+                        ).length;
+                        totalRetos += CHALLENGES[m.id].length;
+                    });
+                    var elDone = document.getElementById("vc-header-done");
+                    var elTotal = document.getElementById("vc-total-retos");
+                    if (elDone) elDone.textContent = totalCompleted;
+                    if (elTotal)
+                        elTotal.textContent = "/" + totalRetos + " retos";
+                }
+
+                function renderAll() {
+                    var id = state.currentModuleId;
+                    renderModulePills();
+                    renderChallenges(id, null);
+                    updateProgressCard();
+                    updateActiveModuleHeader();
+                    updateHeaderCounter();
+                }
+
+                /* ── TOAST ───────────────────────────────────────────────────────────── */
+                var toastTimer = null;
+                function showToast(msg) {
+                    var toast = document.getElementById("vc-toast");
+                    var msgEl = document.getElementById("vc-toast-msg");
+                    if (!toast || !msgEl) return;
+                    msgEl.textContent = msg;
+                    toast.classList.remove("vc-toast-hidden");
+                    toast.classList.add("vc-toast-visible");
+                    clearTimeout(toastTimer);
+                    toastTimer = setTimeout(function () {
+                        toast.classList.remove("vc-toast-visible");
+                        toast.classList.add("vc-toast-hidden");
+                    }, 3000);
+                }
+
+                /* ── BOOT Y EVENTOS GLOBALES ────────────────────────────────────────── */
+                function boot() {
+                    if (booted) return;
+                    booted = true;
+
+                    var backBtn = document.getElementById("vc-btn-back");
+                    if (backBtn) {
+                        backBtn.addEventListener("click", function () {
+                            document.dispatchEvent(
+                                new CustomEvent("challenges:close"),
+                            );
+                        });
+                    }
+                }
+
+                document.addEventListener("challenges:open", function (e) {
+                    var shell = document.getElementById("view-challenges");
+                    if (!shell) return;
+                    boot();
+                    var profile = e.detail && e.detail.profile;
+                    var routeType = e.detail && e.detail.routeType;
+                    if (!profile) profile = "learner";
+                    if (!routeType) routeType = "basica";
+                    setProfile(profile, routeType);
+                    if (e.detail && e.detail.profileLabel) {
+                        var badgeEl =
+                            document.getElementById("vc-profile-badge");
+                        if (badgeEl)
+                            badgeEl.textContent = e.detail.profileLabel;
+                    }
+                    shell.removeAttribute("aria-hidden");
+                    shell.classList.add("vc-visible");
+                });
+
+                document.addEventListener("challenges:close", function () {
+                    var shell = document.getElementById("view-challenges");
+                    if (!shell) return;
+                    shell.setAttribute("aria-hidden", "true");
+                    shell.classList.remove("vc-visible");
+                    document.dispatchEvent(
+                        new CustomEvent("challenges:closed"),
+                    );
+                });
+
+                document.addEventListener("challenge-flow:closed", function () {
+                    var shell = document.getElementById("view-challenges");
+                    if (!shell) return;
+                    shell.removeAttribute("aria-hidden");
+                    shell.classList.add("vc-visible");
+                    if (state) renderAll();
+                });
+
+                document.addEventListener(
+                    "challenge-flow:completed",
+                    function (e) {
+                        var moduleId = e.detail && e.detail.moduleId;
+                        var challengeId = e.detail && e.detail.challengeId;
+                        if (!moduleId || !challengeId) return;
+                        if (!state) initState();
+                        handleChallengeClick(moduleId, challengeId);
+                    },
+                );
+            })();
+        </script>
+
+        <style>
+            /* Overlay de bloqueo de registro sobre los retos (pieza nueva → estilos propios). */
+            .vc-main {
+                position: relative;
+            }
+            /* Contenedor del overlay: opaca TODA la pantalla */
+            .vc-register-lock {
+                position: absolute;
+                inset: 0;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: rgba(0, 0, 0, 0.32);
+                backdrop-filter: blur(4px);
+                z-index: 10; /* suficiente porque está dentro de #view-challenges */
+            }
+            #view-challenges {
+                position: relative;
             }
 
-            document.addEventListener("challenges:open", function (e) {
-                var shell = document.getElementById("view-challenges");
-                if (!shell) return;
-                boot();
-                var profile = e.detail && e.detail.profile;
-                var routeType = e.detail && e.detail.routeType;
-                if (!profile) profile = "learner";
-                if (!routeType) routeType = "basica";
-                setProfile(profile, routeType);
-                if (e.detail && e.detail.profileLabel) {
-                    var badgeEl = document.getElementById("vc-profile-badge");
-                    if (badgeEl) badgeEl.textContent = e.detail.profileLabel;
-                }
-                shell.removeAttribute("aria-hidden");
-                shell.classList.add("vc-visible");
-            });
-
-            document.addEventListener("challenges:close", function () {
-                var shell = document.getElementById("view-challenges");
-                if (!shell) return;
-                shell.setAttribute("aria-hidden", "true");
-                shell.classList.remove("vc-visible");
-                document.dispatchEvent(new CustomEvent("challenges:closed"));
-            });
-
-            document.addEventListener("challenge-flow:closed", function () {
-                var shell = document.getElementById("view-challenges");
-                if (!shell) return;
-                shell.removeAttribute("aria-hidden");
-                shell.classList.add("vc-visible");
-                if (state) renderAll();
-            });
-
-            document.addEventListener("challenge-flow:completed", function (e) {
-                var moduleId = e.detail && e.detail.moduleId;
-                var challengeId = e.detail && e.detail.challengeId;
-                if (!moduleId || !challengeId) return;
-                if (!state) initState();
-                handleChallengeClick(moduleId, challengeId);
-            });
-        })();
-    </script>
-
-    <style>
-        /* Overlay de bloqueo de registro sobre los retos (pieza nueva → estilos propios). */
-        .vc-main {
-            position: relative;
-        }
-        /* Contenedor del overlay: opaca TODA la pantalla (sidebar, botón volver
-           y ejercicios quedan detrás, atenuados), centra la card y bloquea la
-           interacción. Oculto por defecto; se muestra con aria-hidden="false". */
-        .vc-register-lock {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            /* Misma opacidad/blur que el modal de perfil (imagen de referencia). */
-            background: rgba(0, 0, 0, 0.32);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            /* Por encima del NavBar (z-index 40) para opacar TODA la pantalla,
-               y por debajo del AuthModal (100) para que "regístrate aquí" abra
-               el modal encima. */
-            z-index: 90;
-        }
-        .vc-register-lock[aria-hidden="false"] {
-            display: flex;
-        }
-        /* R2: el sidebar de "Retos de Código" y el botón "Volver" quedan
-           RESALTADOS por encima del opacado (no se atenúan) mientras el
-           mensaje de registro está visible. */
-        #view-challenges:has(.vc-register-lock[aria-hidden="false"])
-            #vc-progress-card,
-        #view-challenges:has(.vc-register-lock[aria-hidden="false"])
-            #vc-btn-back {
-            position: relative;
-            z-index: 91;
-        }
-        .vc-register-lock-card {
-            max-width: 420px;
-            text-align: center;
-            background: var(--card-bg, #fff);
-            border: 1px solid var(--border, #ede8df);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 22px 54px rgba(0, 0, 0, 0.14);
-        }
-        /* Barra estilo ventana (mismos dots .d-r/.d-y/.d-g de ProfileModal —
-               son clases globales definidas en global.css) para que esta card
-               comparta la estética de "Selecciona tu Perfil". */
-        .vc-register-lock-winbar {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 9px 14px;
-            background: var(--bg, #f7f2ea);
-            border-bottom: 1px solid var(--border, #ede8df);
-        }
-        .vc-register-lock-inner {
-            padding: 30px 32px 34px;
-        }
-        .vc-register-lock-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 56px;
-            height: 56px;
-            margin: 0 auto 16px;
-            border-radius: 16px;
-            color: var(--accent, #e5621a);
-            background: var(--accent-soft, rgba(229, 98, 26, 0.1));
-        }
-        .vc-register-lock-msg {
-            color: var(--text-secondary, #4b5563);
-            font-size: 1.02rem;
-            line-height: 1.6;
-            text-align: center;
-            margin: 0 auto 22px;
-            max-width: 34ch;
-        }
-        .vc-register-lock-link {
-            display: inline-block;
-            background: var(--accent, #e5621a);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 26px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            box-shadow: 0 6px 16px rgba(229, 98, 26, 0.28);
-            transition:
-                background 0.15s ease,
-                transform 0.1s ease;
-        }
-        .vc-register-lock-link:hover {
-            background: var(--accent-hover, #c94f10);
-            transform: translateY(-1px);
-        }
-    </style>
-
-    <script>
-        import { getSession } from "../lib/api-client";
-
-        (function () {
-            const lock = document.getElementById("vc-register-lock");
-            if (!lock) return;
-
-            async function refresh() {
-                let user = null;
-                try {
-                    user = await getSession();
-                } catch {
-                    user = null;
-                }
-                // Sin sesión → mostrar bloqueo; con sesión → ocultarlo.
-                // lock ya se validó arriba (if !lock return); aserción por el closure.
-                lock!.setAttribute("aria-hidden", user ? "true" : "false");
+            .vc-register-lock {
+                position: fixed;
+                inset: 0;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: rgba(0, 0, 0, 0.32);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                z-index: 9999; /* muy alto para que esté por encima de todo, pero por debajo del modal de auth (100) si quieres, pero 9999 es mayor, así que estará por encima. Para que el auth modal quede por encima, usa 99 y el auth 100 */
+                border-radius: 0; /* sin bordes redondeados */
             }
 
-            // Al abrir el panel de retos, decidir si mostrar el bloqueo.
-            document.addEventListener("challenges:open", refresh);
-            // Si la sesión cambia mientras está abierto, re-evaluar.
-            document.addEventListener("auth:changed", refresh);
-        })();
-    </script>
+            .vc-register-lock[aria-hidden="false"] {
+                display: flex;
+            }
+
+            /* Resaltar la card de progreso y el botón volver cuando el overlay está visible */
+            #view-challenges:has(.vc-register-lock[aria-hidden="false"])
+                .vc-progress-card,
+            #view-challenges:has(.vc-register-lock[aria-hidden="false"])
+                .vc-btn-back {
+                position: relative;
+                z-index: 10000; /* mayor que el overlay (9999) para que queden resaltados por encima */
+                box-shadow:
+                    0 0 0 2px var(--accent),
+                    0 6px 20px rgba(229, 98, 26, 0.3);
+                border-color: var(--accent);
+            }
+            .vc-register-lock-card {
+                max-width: 420px;
+                text-align: center;
+                background: var(--card-bg, #fff);
+                border: 1px solid var(--border, #ede8df);
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 22px 54px rgba(0, 0, 0, 0.14);
+            }
+            .vc-register-lock-winbar {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 9px 14px;
+                background: var(--bg, #f7f2ea);
+                border-bottom: 1px solid var(--border, #ede8df);
+            }
+            .vc-register-lock-inner {
+                padding: 30px 32px 34px;
+            }
+            .vc-register-lock-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 56px;
+                height: 56px;
+                margin: 0 auto 16px;
+                border-radius: 16px;
+                color: var(--accent, #e5621a);
+                background: var(--accent-soft, rgba(229, 98, 26, 0.1));
+            }
+            .vc-register-lock-msg {
+                color: var(--text-secondary, #4b5563);
+                font-size: 1.02rem;
+                line-height: 1.6;
+                text-align: center;
+                margin: 0 auto 22px;
+                max-width: 34ch;
+            }
+            .vc-register-lock-link {
+                display: inline-block;
+                background: var(--accent, #e5621a);
+                color: #fff;
+                border: none;
+                border-radius: 12px;
+                padding: 12px 26px;
+                font-weight: 700;
+                font-size: 0.95rem;
+                cursor: pointer;
+                box-shadow: 0 6px 16px rgba(229, 98, 26, 0.28);
+                transition:
+                    background 0.15s ease,
+                    transform 0.1s ease;
+            }
+            .vc-register-lock-link:hover {
+                background: var(--accent-hover, #c94f10);
+                transform: translateY(-1px);
+            }
+        </style>
+
+        <script>
+            import { getSession } from "../lib/api-client";
+
+            (function () {
+                const lock = document.getElementById("vc-register-lock");
+                if (!lock) return;
+
+                async function refresh() {
+                    let user = null;
+                    try {
+                        user = await getSession();
+                    } catch {
+                        user = null;
+                    }
+                    // Sin sesión → mostrar bloqueo; con sesión → ocultarlo.
+                    // lock ya se validó arriba (if !lock return); aserción por el closure.
+                    lock!.setAttribute("aria-hidden", user ? "true" : "false");
+                }
+
+                // Al abrir el panel de retos, decidir si mostrar el bloqueo.
+                document.addEventListener("challenges:open", refresh);
+                // Si la sesión cambia mientras está abierto, re-evaluar.
+                document.addEventListener("auth:changed", refresh);
+            })();
+        </script>
+    </div>
 </div>

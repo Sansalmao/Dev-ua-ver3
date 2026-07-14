@@ -1243,7 +1243,15 @@ canvas {
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        /* OJO: dejar esto en "none" (no translateY(0)) es intencional.
+           Con animation-fill-mode: forwards, el último keyframe queda como
+           valor computado permanente — y CUALQUIER transform distinto de
+           "none" (incluso translateY(0), que es la identidad) convierte a
+           este elemento en containing block para sus descendientes
+           position:fixed. Eso rompe el overlay de bloqueo de registro
+           (.vc-register-lock), que necesita ser fixed a la ventana
+           completa, no a este contenedor. */
+        transform: none;
     }
 }
 

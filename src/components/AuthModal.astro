@@ -43,21 +43,23 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
             <!-- ── REGISTRO ─────────────────────────────────────────────── -->
             <form id="auth-form-register" class="am-form" data-view="register">
-                <input
-                    class="am-input"
-                    type="text"
-                    name="displayName"
-                    placeholder="Nombre Completo"
-                    autocomplete="name"
-                />
-                <input
-                    class="am-input"
-                    type="email"
-                    name="email"
-                    placeholder="Dirección de correo electrónico"
-                    autocomplete="email"
-                    required
-                />
+                <div class="am-row">
+                    <input
+                        class="am-input"
+                        type="text"
+                        name="displayName"
+                        placeholder="Nombre Completo"
+                        autocomplete="name"
+                    />
+                    <input
+                        class="am-input"
+                        type="email"
+                        name="email"
+                        placeholder="Correo electrónico"
+                        autocomplete="email"
+                        required
+                    />
+                </div>
                 <input
                     class="am-input"
                     type="password"
@@ -390,9 +392,6 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         align-items: center;
         justify-content: center;
         padding: 20px;
-        /* Misma opacidad/blur que el modal de perfil (imagen de referencia).
-           Ahora el badge/título/subtítulo van DENTRO del card (sobre blanco),
-           así que ya no hace falta un overlay oscuro para tapar el fondo. */
         background: rgba(0, 0, 0, 0.32);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
@@ -405,7 +404,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     .am-modal {
         position: relative;
         width: 100%;
-        max-width: 400px;
+        max-width: 480px;
     }
 
     .am-card {
@@ -413,7 +412,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         background: var(--card-bg, #fff);
         border: 1px solid var(--border, #ede8df);
         border-radius: 20px;
-        padding: 24px 22px 20px;
+        padding: 22px 28px 20px;
         box-shadow: 0 22px 54px rgba(0, 0, 0, 0.18);
         text-align: left;
     }
@@ -436,7 +435,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
     .am-header {
         text-align: center;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
     .am-badge {
         display: inline-block;
