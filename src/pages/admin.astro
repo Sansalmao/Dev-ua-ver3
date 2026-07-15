@@ -159,6 +159,14 @@ const today = fmtDate(new Date());
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>&gt;_ ua wg lacnog — Platform Admin Console</title>
+    <!-- Mismas fuentes que el dashboard: sin esto, var(--font-body) (Sora) no
+         existe en esta página y el navegador cae a la fuente del sistema. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+        rel="stylesheet"
+    />
 </head>
 <body>
 <div id="app">
@@ -167,8 +175,11 @@ const today = fmtDate(new Date());
     <aside id="sidebar">
         <div class="sidebar-logo">
             <div class="logo-box">
-                <div class="name">ua wg lacnog</div>
-                <div class="sub">Platform Admin Console</div>
+                <div class="logo-mark">&gt;_</div>
+                <div>
+                    <div class="name">ua wg lacnog</div>
+                    <div class="sub">Platform Admin Console</div>
+                </div>
             </div>
         </div>
 
@@ -526,10 +537,16 @@ const today = fmtDate(new Date());
 
 /* ── RESET & BASE ─────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-size:14px;color:#343A40;background:#F9FAFB;-webkit-font-smoothing:antialiased}
+html,body{
+  height:100%;
+  font-family:var(--font-body);
+  font-size:13px;
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
 
 /* ── TOKENS ───────────────────────────────────────────── */
-/* ── Puente de tokens ─────────────────────────────────── */
 :root{
   --amber: var(--accent);
   --amber-light: var(--accent-bg-soft);
@@ -559,17 +576,24 @@ html,body{height:100%;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;fon
 /* ── SIDEBAR ──────────────────────────────────────────── */
 #sidebar{
   width:256px;flex-shrink:0;display:flex;flex-direction:column;
-  height:100%;background:var(--white);border-right:1px solid var(--gray-200);
+  height:100%;background:var(--surface);border-right:1px solid var(--border);
 }
 .sidebar-logo{
   padding:1rem;border-bottom:1px solid var(--gray-200);
 }
+
 .logo-box{
-  border-radius:var(--radius);padding:.875rem 1rem;
-  background:linear-gradient(135deg,#E9642C,#c84d1e);
+  display:flex;align-items:center;gap:.625rem;
 }
-.logo-box .name{color:#fff;font-size:.9375rem;font-weight:900;letter-spacing:-.02em;line-height:1}
-.logo-box .sub{color:rgba(255,255,255,.65);font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-top:.25rem}
+.logo-mark{
+  width:32px;height:32px;flex-shrink:0;
+  background:var(--accent);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-family:var(--font-mono);font-weight:700;font-size:13px;
+  box-shadow:var(--shadow-accent-sm);
+}
+.logo-box .name{color:var(--accent);font-size:.875rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.logo-box .sub{color:var(--text-secondary);font-size:.625rem;margin-top:1px}
 
 .sidebar-nav{flex:1;padding:.75rem;display:flex;flex-direction:column;gap:.125rem;overflow-y:auto}
 .nav-section-label{padding:.5rem .5rem .25rem;font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-400)}
@@ -607,9 +631,9 @@ html,body{height:100%;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;fon
 .av-sm{width:28px;height:28px;font-size:.625rem}
 .av-md{width:36px;height:36px;font-size:.75rem}
 .av-lg{width:44px;height:44px;font-size:.875rem}
-.av-amber{background:linear-gradient(135deg,#F5A067,#E9642C)}
+.av-amber{background:linear-gradient(135deg,var(--accent-border-soft),var(--accent))}
 .av-teal{background:linear-gradient(135deg,#7CD4CC,#2a9d96)}
-.av-gray{background:linear-gradient(135deg,#D1D5DB,#9CA3AF)}
+.av-gray{background:linear-gradient(135deg,var(--border),var(--text-muted))}
 
 /* ── MAIN COLUMN ──────────────────────────────────────── */
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden}
@@ -617,16 +641,16 @@ html,body{height:100%;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;fon
 /* ── TOPBAR ───────────────────────────────────────────── */
 #topbar{
   height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-  padding:0 1.5rem;background:var(--white);border-bottom:1px solid var(--gray-200);
+  padding:0 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);
 }
 .topbar-title{display:flex;align-items:center;gap:.375rem;font-size:.8125rem}
-.topbar-prompt{color:var(--amber);font-family:monospace;font-weight:700;font-size:.875rem;user-select:none}
+.topbar-prompt{color:var(--accent);font-family:var(--font-mono);font-weight:700;font-size:.875rem;user-select:none}
 .topbar-section{color:var(--gray-400);font-weight:500}
 .topbar-slash{color:var(--gray-300)}
 .topbar-view{color:var(--gray-800);font-weight:600}
 .topbar-right{display:flex;align-items:center;gap:.75rem}
 .status-dot{display:flex;align-items:center;gap:.375rem;font-size:.6875rem;color:var(--gray-400)}
-.dot{width:8px;height:8px;background:#34D399;border-radius:9999px;animation:pulse 2s infinite}
+.dot{width:8px;height:8px;background:var(--green-text);border-radius:9999px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .divider-v{width:1px;height:20px;background:var(--gray-200)}
 #topbar-date{font-size:.6875rem;color:var(--gray-400)}
@@ -684,13 +708,13 @@ html,body{height:100%;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;fon
   transition:background-color .15s,opacity .15s;border:none;padding:.375rem .875rem;
 }
 .btn-primary{background:var(--amber);color:#fff}
-.btn-primary:hover{background:#d15523}
+.btn-primary:hover{background:var(--accent-hover)}
 .btn-danger{background:transparent;color:#DC2626;border:1.5px solid #FCA5A5}
 .btn-danger:hover{background:#FEF2F2}
 .btn-teal{background:var(--teal-light);color:var(--teal-dark);border:1.5px solid var(--teal)}
 .btn-teal:hover{background:#d0f0ee}
 .btn-promote{background:var(--amber-light);color:var(--amber);border:1.5px solid var(--amber-mid)}
-.btn-promote:hover{background:#fde2d0}
+.btn-promote:hover{background:var(--accent-border-light)}
 .btn-full{width:100%;justify-content:center}
 
 /* ── EMPTY STATE ────────────────────────────────────────── */
@@ -713,7 +737,7 @@ thead th{
   border-bottom:1px solid var(--gray-200);
 }
 tbody tr{transition:background .1s}
-tbody tr:hover td{background:#FAFAFA}
+tbody tr:hover td{background:var(--bg)}
 tbody tr:last-child td{border-bottom:none}
 tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bottom:1px solid var(--gray-100);vertical-align:middle}
 
@@ -725,7 +749,7 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
 .badge-amber{background:var(--amber-light);color:var(--amber);border:1px solid var(--amber-mid)}
 .badge-teal{background:var(--teal-light);color:var(--teal-dark);border:1px solid var(--teal)}
 .badge-gray{background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-300)}
-.badge-success{background:#F0FDF4;color:#16A34A;border:1px solid #86EFAC}
+.badge-success{background:var(--green-bg);color:var(--green-text);border:1px solid var(--success-border-light)}
 .badge-error{background:#FEF2F2;color:#DC2626;border:1px solid #FCA5A5}
 
 /* ── COMMUNITY CARDS ─────────────────────────────────────── */
@@ -797,7 +821,7 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
 /* ── PROGRESS TAGS (users) ───────────────────────────────── */
 .tags{display:flex;flex-wrap:wrap;gap:.25rem}
 .status-active{display:flex;align-items:center;gap:.375rem;font-size:.75rem;font-weight:500;color:var(--gray-600)}
-.status-dot-green{width:6px;height:6px;background:#34D399;border-radius:9999px}
+.status-dot-green{width:6px;height:6px;background:var(--green-text);border-radius:9999px}
 
 /* ── TOAST ───────────────────────────────────────────────── */
 #toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
@@ -808,9 +832,9 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
   pointer-events:none;min-width:220px;max-width:320px;
 }
 .toast.visible{transform:translateY(0);opacity:1}
-.toast-success{background:#059669}
+.toast-success{background:var(--green-text)}
 .toast-error{background:#DC2626}
-.toast-info{background:#1F2937}
+.toast-info{background:var(--text)}
 .toast-icon{font-size:1rem;line-height:1}
 
 
@@ -999,9 +1023,7 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
         document.getElementById("users-count").textContent = n;
     }
 
-    /* ── EXPONER EN window ──────────────────────────────────────────────────
-       `define:vars` envuelve TODO el script en un IIFE: sin esto, los
-       onclick/onchange del markup fallan con "... is not defined". */
+    /* ── EXPONER EN window ──────────────────── */
     Object.assign(window, {
         switchView: switchView,
         handleRequest: handleRequest,
