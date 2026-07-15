@@ -2495,6 +2495,28 @@ const feed = feedItems
                     });
             }
 
+            function cycleMemberRole(memberId, name) {
+                fetch("/api/communities/" + state.communityId + "/members/" + memberId + "/role", {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: { Accept: "application/json" },
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok) throw new Error((data && (data.error || data.message)) || "HTTP " + res.status);
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        toast("⚙ " + name + " ahora es " + roleLower(data.role) + ".");
+                        loadMembers(state.communityId);
+                    })
+                    .catch(function (err) {
+                        toast("⚠ " + (err.message || "No se pudo cambiar el rol."));
+                    });
+            }
+
             /* ── CARGA DE RETOS/ENTREGAS ── */
             function langLabel(l) {
                 if (!l) return null;

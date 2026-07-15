@@ -230,3 +230,10 @@ export function saveTopicProgress(topicId: string, state: TopicProgressEntry) {
     },
   );
 }
+
+export function cycleMemberRole(communityId: string, memberId: string) {
+  return apiFetch<{ memberId: string; role: "MEMBER" | "MANAGER" }>(
+    `/api/communities/${communityId}/members/${memberId}/role`,
+    { method: "PATCH" },
+  );
+}
