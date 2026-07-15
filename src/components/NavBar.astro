@@ -1,5 +1,5 @@
 ---
-// Variables: Guía Visual v2.0
+// Barra de navegación
 ---
 
 <nav class="site-nav" aria-label="Navegación principal">
@@ -74,6 +74,16 @@
 <script>
     import { getSession, logout } from "../lib/api-client";
 
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+        })[c]);
+    }
+
     async function renderAuthState() {
         const container = document.getElementById("nav-auth");
         if (!container) return;
@@ -89,9 +99,18 @@
             return;
         }
 
-        const label = user.displayName || user.email;
+        const label = escapeHtml(user.displayName || user.email);
+        const emailAttr = escapeHtml(user.email);
         container.innerHTML = `
-                <span class="auth-user" title="${user.email}">${label}</span>
+                <a class="auth-user-link" href="/dashboard" title="Ir a tu panel — ${emailAttr}">
+                    <svg class="auth-user-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                        <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                        <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                    </svg>
+                    <span class="auth-user">${label}</span>
+                </a>
                 <button type="button" class="btn-auth-logout" id="btn-nav-logout">Salir</button>
             `;
 
@@ -276,17 +295,6 @@
 </style>
 
 <style is:global>
-    /*
-            Estas reglas viven FUERA del <style> scoped de arriba a propósito.
-            El script de este componente reemplaza #nav-auth con
-            `container.innerHTML = "..."` cada vez que carga la página o cambia
-            la sesión — ese HTML se escribe a mano en JS y Astro NO puede
-            agregarle el atributo data-astro-cid-* que usa para "scopear" el
-            CSS del componente. Si estas reglas quedaran en el bloque scoped,
-            dejarían de aplicar justo después del primer render (el botón se ve
-            bien un instante y enseguida pierde el color/negrita). Con
-            is:global, aplican sin importar cómo se generó el HTML.
-        */
     .btn-auth-login,
     .btn-auth-logout {
         font-family: var(--font-mono);
@@ -331,5 +339,36 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .auth-user-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        transition:
+            background var(--transition-fast),
+            color var(--transition-fast);
+    }
+
+    .auth-user-link:hover {
+        background: var(--accent-soft);
+        color: var(--accent);
+    }
+
+    .auth-user-link:hover .auth-user {
+        color: var(--accent);
+    }
+
+    .auth-user-ico {
+        flex-shrink: 0;
+        opacity: 0.75;
+    }
+
+    .auth-user-link:hover .auth-user-ico {
+        opacity: 1;
     }
 </style>

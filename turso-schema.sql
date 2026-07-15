@@ -259,3 +259,4 @@ ALTER TABLE "User" ADD COLUMN "wantsCommunity" BOOLEAN NOT NULL DEFAULT false;
  P R A G M A   f o r e i g n _ k e y s = O N ;  
  P R A G M A   d e f e r _ f o r e i g n _ k e y s = O F F ;  
  
+-- Migracion: 20260715041250_drop_submission_role

@@ -13,9 +13,6 @@ export async function getStaticPaths() {
 
     const paths = [];
 
-    // 2. Mostrar qué archivos encuentra (útil para depurar)
-    console.log("Archivos MDX encontrados:", Object.keys(modules));
-
     for (const [filePath, module] of Object.entries(modules)) {
         try {
             // 3. Extraer frontmatter del módulo MDX
@@ -45,12 +42,6 @@ export async function getStaticPaths() {
             console.error(`❌ Error procesando ${filePath}:`, error);
         }
     }
-
-    // 8. Mostrar rutas generadas
-    console.log(
-        "Rutas generadas:",
-        paths.map((p) => p.params.slug),
-    );
 
     return paths;
 }

@@ -8,6 +8,23 @@ if (!user) {
     return Astro.redirect("/");
 }
 
+// ── Identidad del usuario logueado (para el pie del sidebar) ─────────────────
+const meRecord = await prisma.user.findUnique({
+    where: { id: user.userId },
+    select: { displayName: true, email: true },
+});
+const meName = meRecord?.displayName?.trim() || meRecord?.email || "Usuario";
+function computeInitials(name) {
+    const base = name.includes("@") ? name.split("@")[0] : name;
+    const words = base.trim().split(/[\s._-]+/).filter(Boolean);
+    const letters =
+        words.length >= 2
+            ? words[0][0] + words[1][0]
+            : (words[0] ?? "").slice(0, 2);
+    return letters.toUpperCase() || "U";
+}
+const meInitials = computeInitials(meName);
+
 // Propias ∪ miembro, sin duplicados, marcando la propiedad.
 const { owned, member } = await getUserCommunityContext(user.userId);
 const seen = new Set();
@@ -27,12 +44,7 @@ for (const c of [
     });
 }
 
-// Payload mínimo que necesita el cliente. `meId` sirve para marcar "(tú)".
-
 // ── RUTAS (vista "Rutas de Aprendizaje") ────────────────────────────────────
-// Mapeo: una "ruta" ES una comunidad. Los "módulos" son sus retos, y
-// "completados" son los retos donde ESTE usuario ya tiene una entrega APPROVED
-// (es decir, el progreso propio en esa ruta). El "asignado" es el profesor dueño.
 const full = await prisma.community.findMany({
     where: { id: { in: communities.map((c) => c.id) } },
     select: {
@@ -83,7 +95,6 @@ const routes = await Promise.all(
 const bootstrap = { meId: user.userId, communities, routes };
 
 // ── RESUMEN: KPIs reales ────────────────────────────────────────────────────
-// Todo se calcula sobre las comunidades del usuario (propias ∪ miembro).
 const communityIds = communities.map((c) => c.id);
 const ownedIdsArr = [...ownedIds];
 const isProfesor = user.profileType === "PROFESOR";
@@ -142,7 +153,6 @@ const kpis = {
 };
 
 // ── RESUMEN: feed de actividad ──────────────────────────────────────────────
-// No hay tabla de actividad: se deriva de las fechas de entregas y solicitudes.
 const [recentSubs, recentJoins] = await Promise.all([
     prisma.submission.findMany({
         where: { challenge: { communityId: { in: communityIds } } },
@@ -362,9 +372,9 @@ const feed = feedItems
                     </div>
                 </nav>
                 <div class="sb-profile">
-                    <div class="sb-avatar">FN</div>
+                    <div class="sb-avatar">{meInitials}</div>
                     <div class="flex-1">
-                        <div class="sb-name">fnee</div>
+                        <div class="sb-name" title={meName}>{meName}</div>
                         <span
                             id="role-badge"
                             class="sb-role-badge"
@@ -673,7 +683,7 @@ const feed = feedItems
                                     </p>
                                     <a
                                         class="btn btn-primary btn-sm"
-                                        href="/grid"
+                                        href="/"
                                     >
                                         Explorar comunidades
                                     </a>
@@ -813,12 +823,8 @@ const feed = feedItems
                 font-family: inherit;
             }
 
-            /* Este bloque NO define tokens del design system: esos viven en global.css
-   (importado en el frontmatter) y se usan directo — var(--accent), --bg,
-   --surface, --text, --text-secondary, --border, --font-body, --font-mono…
-   Acá quedan SOLO valores propios del layout del dashboard. */
             :root {
-                --teal: #7cd4cc; /* acento secundario del dashboard (global.css no define teal) */
+                --teal: #7cd4cc;
                 --teal-light: #e8f8f7;
                 --teal-dark: #2a9d96;
                 --radius: 12px;
@@ -986,6 +992,10 @@ const feed = feedItems
                 font-size: 12.5px;
                 font-weight: 700;
                 color: var(--text);
+                max-width: 130px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .sb-role-badge {
                 font-size: 10px;
@@ -1516,18 +1526,45 @@ const feed = feedItems
                 font-weight: 600;
             }
             .filter-select {
-                padding: 6px 10px;
+                padding: 7px 12px;
                 border-radius: var(--radius-xs);
                 border: 1px solid var(--border);
-                background: var(--surface);
+                background: var(--card-bg);
+                font-family: var(--font-body);
                 font-size: 12px;
                 color: var(--text);
                 outline: none;
                 cursor: pointer;
-                transition: border-color 0.15s;
+                transition:
+                    border-color var(--transition-fast),
+                    box-shadow var(--transition-fast),
+                    background var(--transition-fast);
+            }
+            /* Solo los <select> llevan el chevron propio */
+            select.filter-select {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                padding-right: 30px;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 13px;
+            }
+            .filter-select:hover {
+                border-color: var(--accent-border-soft);
+            }
+            select.filter-select:hover,
+            select.filter-select:focus {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e5621a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
             }
             .filter-select:focus {
                 border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-soft);
+            }
+            .filter-select option {
+                background: var(--card-bg);
+                color: var(--text);
             }
 
             /* ── RETOS / SKILLS GRIDS (compartido) ── */
@@ -1739,7 +1776,7 @@ const feed = feedItems
                 color: #c0392b;
             }
 
-            /* ── SKILLS CARDS v4 — aplica a las 6 tarjetas de Rutas ── */
+            /* ── SKILLS CARDS ── */
 
             /* Override de columnas: solo el grid de Rutas pasa a 3 columnas */
             #skills-view .skills-grid {
@@ -1826,7 +1863,7 @@ const feed = feedItems
                 display: flex;
                 align-items: center;
                 transition: width 0.6s ease;
-                min-width: 36px; /* espacio mínimo para mostrar el % */
+                min-width: 36px;
             }
             .sk4-bar-pct {
                 font-size: 11px;
@@ -1925,7 +1962,7 @@ const feed = feedItems
                 background: #dde3ea;
             }
 
-            /* ── SKILL CARD V3.5 (aislada — solo tarjeta 1) ── */
+            /* ── SKILL CARD ── */
             .skill-card-v35 {
                 background: var(--surface);
                 border-radius: 16px;
@@ -1940,7 +1977,7 @@ const feed = feedItems
                 box-shadow: 0 8px 32px rgba(229, 98, 26, 0.18);
             }
 
-            /* Header V3.5 */
+            /* Header */
             .sk35-header {
                 padding: 16px 18px 12px;
                 border-bottom: 1px solid var(--border);
@@ -2376,7 +2413,7 @@ const feed = feedItems
             }
             function roleLower(role) {
                 return String(role || "MEMBER").toLowerCase();
-            } // ADMIN→admin…
+            }
 
             function initialsFrom(name) {
                 var parts = String(name || "")
@@ -2462,12 +2499,8 @@ const feed = feedItems
                             };
                         });
 
-                        /* El rol lo dicta el SERVIDOR (data.viewerRole), no el
-                           cliente: el endpoint ya filtró qué miembros devuelve
-                           según ese rol. Deducirlo acá sería solo cosmético. */
                         state.role = roleLower(data.viewerRole);
 
-                        /* Badges/título dependientes de datos reales. */
                         var sbCount =
                             document.getElementById("sb-members-count");
                         if (sbCount) sbCount.textContent = data.memberCount;
@@ -2610,9 +2643,7 @@ const feed = feedItems
                 );
                 if (tab) switchView(id, tab);
             }
-            /* ── RBAC ──
-               El rol ya NO se cambia desde el cliente: lo fija loadMembers()
-               con el rol real del usuario en la comunidad. */
+            /* ── RBAC ── */
 
             /* ── RENDER MIEMBROS ── */
             function renderMembers() {
@@ -2787,8 +2818,6 @@ const feed = feedItems
                           ICON_CB +
                           "Conceptos Básicos</span>";
 
-                    /* language puede venir null o ser distinto de Java/Python
-                       (p. ej. sql): en ese caso, etiqueta sin ícono. */
                     var langTag = "";
                     if (s.lang) {
                         var lk = s.lang.toLowerCase();
@@ -2867,9 +2896,7 @@ const feed = feedItems
                     pending;
             }
 
-            /* ── Aprobar / rechazar una entrega (API real) ──────────────────
-               El servidor valida que quien revisa sea el profesor dueño de la
-               comunidad; el cliente solo refleja el resultado. */
+            /* ── Aprobar / rechazar una entrega (API real) ────────────────── */
             function _patchSubmission(btn, id, action, okMsg) {
                 var card = btn.closest(".sol-card");
                 if (card) card.style.opacity = "0.5";
@@ -2922,11 +2949,8 @@ const feed = feedItems
             /* ── RENDER RUTAS v4 ── */
             function renderSkills() {
                 var grid = document.getElementById("skills-grid");
-                /* El permiso de editar/promover ya no depende de state.role:
-                   depende de ser el profesor DUEÑO de cada comunidad (r.owned). */
                 var stageF = document.getElementById("filter-stage").value;
                 var trackF = document.getElementById("filter-track").value;
-                /* Banner informativo: se oculta siempre (el permiso es por comunidad). */
                 var adminBanner = document.getElementById("skills-admin-banner");
                 if (adminBanner) adminBanner.classList.add("hidden");
                 grid.innerHTML = "";
@@ -2952,7 +2976,7 @@ const feed = feedItems
 
                 if (filtered.length === 0) {
                     var msg = skillRoutes.length === 0
-                        ? 'Todavía no perteneces a ninguna comunidad. <a href="/grid" style="color:var(--accent);font-weight:700">Explorar comunidades</a>'
+                        ? 'Todavía no perteneces a ninguna comunidad. <a href="/" style="color:var(--accent);font-weight:700">Explorar comunidades</a>'
                         : "Ninguna ruta coincide con los filtros seleccionados";
                     grid.innerHTML =
                         '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text-secondary);font-size:12.5px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)">' +
@@ -3014,8 +3038,6 @@ const feed = feedItems
                         "</span>";
 
                     /* ── Botón de promoción de etapa ── */
-                    /* Promover solo si esta comunidad es TUYA (el servidor exige
-                       ser el profesor dueño) y no está graduada. */
                     var promoteBtn =
                         r.owned && !isImpl && !r.graduated
                             ? '<button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="promoteRouteStage(\'' +
@@ -3075,9 +3097,7 @@ const feed = feedItems
                 });
             }
 
-            /* ── Promoción de etapa (API real) ──────────────────────────────
-               Solo el profesor dueño y verificado puede promover; el servidor
-               además exige un mínimo de retos completados. */
+            /* ── Promoción de etapa ────────────────────────────── */
             function promoteRouteStage(routeId) {
                 var route = skillRoutes.filter(function (r) {
                     return r.id === routeId;
@@ -3112,11 +3132,7 @@ const feed = feedItems
                     });
             }
 
-            /* ── EXPONER HANDLERS EN window ─────────────────────────────────
-               IMPRESCINDIBLE: `define:vars` envuelve TODO este script en un
-               IIFE, así que las funciones NO quedan en el ámbito global. Sin
-               esto, cada onclick="switchView(...)" del markup falla con
-               "switchView is not defined" y las pestañas no responden. */
+            /* ── EXPONER HANDLERS EN window ───────────────────────────────── */
             Object.assign(window, {
                 switchView: switchView,
                 navTo: navTo,
@@ -3146,6 +3162,9 @@ const feed = feedItems
                     if (sbCount) sbCount.textContent = "0";
                 }
             })();
+        </script>
+        <script>
+            import "../lib/enhance-selects";
         </script>
     </body>
 </html>

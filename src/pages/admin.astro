@@ -1,23 +1,4 @@
 ---
-// ============================================================================
-//  Admin Console — reubicado desde el prototipo v2.5 (T1.3 del informe).
-//
-//  DIFERENCIA IMPORTANTE CON EL PROTOTIPO:
-//  El prototipo trataba las "Solicitudes de Profesores" como propuestas de
-//  comunidad (communityName/topic/stage). El backend implementa otra cosa: se
-//  verifica a la PERSONA (User.teacherVerificationStatus). Una vez VERIFIED,
-//  el profesor crea comunidades libremente (requireVerifiedTeacher).
-//  Esta consola refleja el backend real, no el mock.
-//
-//  Se omiten del prototipo (no son de admin / fuera de alcance):
-//   • "Explorar" y "Mis Comunidades" → son vistas de profesor/estudiante y ya
-//     viven en /dashboard.
-//   • El selector de identidad (cycleIdentity): la identidad viene de la sesión.
-//   • Invitaciones: fuera de alcance por decisión de producto.
-//
-//  Los datos se leen por SSR con Prisma (la página ya es admin-only), así que
-//  no hace falta un GET /api/admin/users. Las mutaciones sí usan la API.
-// ============================================================================
 import "../styles/global.css";
 import { prisma } from "@lib/prisma.js";
 
@@ -751,9 +732,7 @@ html, body { height: 100%; font-family: var(--font); font-size: 13px; color: var
                     .join("");
             }
 
-            /* ── EXPONER HANDLERS EN window ─────────────────────────────────
-               `define:vars` envuelve el script en un IIFE: sin esto, los
-               onclick/onchange del markup no encuentran las funciones. */
+            /* ── EXPONER HANDLERS EN window ───────────────────────────────── */
             Object.assign(window, {
                 navTo: navTo,
                 verifyTeacher: verifyTeacher,
@@ -764,6 +743,9 @@ html, body { height: 100%; font-family: var(--font); font-size: 13px; color: var
 
             /* ── INIT ── */
             renderRequests();
+        </script>
+        <script>
+            import "../lib/enhance-selects";
         </script>
     </body>
 </html>

@@ -257,7 +257,6 @@ model Submission {
 
   // Rol del miembro DENTRO de la comunidad (una vez aprobado).
   // Valores: 'ADMIN' | 'MANAGER' | 'MEMBER'. Default MEMBER.
-  role String @default("MEMBER")
 
   reviewedBy   User?     @relation("SubmissionReviewer", fields: [reviewedById], references: [id])
   reviewedById String?

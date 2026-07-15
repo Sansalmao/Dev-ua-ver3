@@ -47,7 +47,7 @@ export class ApiError extends Error {
 
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(path, {
-    credentials: "include", // viaja la cookie de sesión de Better Auth
+    credentials: "include",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -69,15 +69,6 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
-
-/**
- * Sesión actual, leída directamente del endpoint de Better Auth
- * (GET /api/auth/get-session). Devuelve null si no hay sesión.
- *
- * Se usa esto (y no Astro.locals.user) en cualquier componente que viva en
- * una página con `prerender = true` (como la landing), porque ahí no hay
- * request en tiempo real y el middleware nunca corre.
- */
 export async function getSession(): Promise<SessionUser | null> {
   try {
     const data = await apiFetch<{ user: Record<string, any> } | null>(
@@ -96,7 +87,6 @@ export async function getSession(): Promise<SessionUser | null> {
       hasCompletedRouteAPreview: Boolean(u.hasCompletedRouteAPreview),
     };
   } catch {
-    // Sin sesión / error de red → tratamos como "no autenticado".
     return null;
   }
 }
@@ -107,10 +97,6 @@ export function register(input: {
   profileType: ProfileType;
   displayName?: string;
   turnstileToken: string;
-  // Campos extra de Profesor/instructor. OJO: el backend todavía NO los
-  // persiste (User no tiene country/institution/wantsCommunity y register.js
-  // no los reenvía). Se envían ya para que, al agregar soporte en el backend,
-  // funcione sin tocar el front.
   country?: string;
   institution?: string;
   wantsCommunity?: boolean;
@@ -122,9 +108,6 @@ export function register(input: {
 }
 
 export function login(input: { email: string; password: string }) {
-  // Nota: /api/auth/login solo devuelve {id, email, profileType, isAdmin} —
-  // no displayName ni teacherVerificationStatus. Para el perfil completo tras
-  // iniciar sesión, usar getSession() (lee /api/auth/get-session).
   return apiFetch<{
     user: Pick<SessionUser, "id" | "email" | "profileType" | "isAdmin">;
   }>("/api/auth/login", {
@@ -135,6 +118,17 @@ export function login(input: { email: string; password: string }) {
 
 export function logout() {
   return apiFetch<{ ok: true }>("/api/auth/logout", { method: "POST" });
+}
+
+/**
+ * Cambio de contraseña
+ * Valida que el correo exista y reemplaza la contraseña.
+ */
+export function resetPassword(input: { email: string; newPassword: string }) {
+  return apiFetch<{ ok: true }>("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 // ── Comunidades / perfil ─────────────────────────────────────────────────────

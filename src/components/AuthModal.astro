@@ -160,6 +160,14 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
                     autocomplete="current-password"
                     required
                 />
+                <div class="am-forgot-row">
+                    <button
+                        type="button"
+                        class="am-link am-forgot-link"
+                        data-auth-goto="forgot"
+                        >¿Olvidaste tu contraseña?</button
+                    >
+                </div>
                 <button type="submit" class="am-cta am-cta--ready"
                     >$ Ingresar</button
                 >
@@ -172,6 +180,47 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
                     >
                 </p>
             </form>
+
+            <!-- FORM: recuperar / cambiar contraseña -->
+            <form id="auth-form-forgot" class="am-form" data-view="forgot" hidden>
+                <input
+                    class="am-input"
+                    type="email"
+                    name="email"
+                    placeholder="Correo con el que te registraste"
+                    autocomplete="email"
+                    required
+                />
+                <input
+                    class="am-input"
+                    type="password"
+                    name="newPassword"
+                    placeholder="Nueva contraseña (mín. 8 caracteres)"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                />
+                <input
+                    class="am-input"
+                    type="password"
+                    name="confirm"
+                    placeholder="Repite la nueva contraseña"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                />
+                <button type="submit" class="am-cta am-cta--ready"
+                    >$ Cambiar contraseña</button
+                >
+                <p class="am-switch">
+                    ¿Ya la recuerdas?
+                    <button
+                        type="button"
+                        class="am-link"
+                        data-auth-goto="login">Iniciar sesión »</button
+                    >
+                </p>
+            </form>
         </div>
     </div>
 </div>
@@ -180,7 +229,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 ></script>
 
 <script>
-    import { register, login, ApiError } from "../lib/api-client";
+    import { register, login, resetPassword, ApiError } from "../lib/api-client";
 
     declare global {
         interface Window {
@@ -206,6 +255,9 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     const loginForm = document.getElementById(
         "auth-form-login",
     ) as HTMLFormElement;
+    const forgotForm = document.getElementById(
+        "auth-form-forgot",
+    ) as HTMLFormElement;
     const profExtra = document.getElementById("auth-prof-extra")!;
     const profileValue = document.getElementById(
         "auth-profile-value",
@@ -229,16 +281,23 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         errorEl.textContent = "";
     }
 
-    function setView(view: "register" | "login") {
+    function setView(view: "register" | "login" | "forgot") {
         clearError();
         registerForm.hidden = view !== "register";
         loginForm.hidden = view !== "login";
+        forgotForm.hidden = view !== "forgot";
         titleEl.textContent =
-            view === "register" ? "Registrarse" : "Iniciar sesión";
+            view === "register"
+                ? "Registrarse"
+                : view === "forgot"
+                  ? "Recuperar acceso"
+                  : "Iniciar sesión";
         (subtitleEl as HTMLElement).textContent =
             view === "register"
                 ? "Crea una cuenta para seguir tu progreso, mostrar tu conjunto de habilidades y formar parte de la comunidad."
-                : "Ingresa para continuar tu ruta.";
+                : view === "forgot"
+                  ? "Ingresa el correo con el que te registraste y define una nueva contraseña."
+                  : "Ingresa para continuar tu ruta.";
         if (view === "register") maybeRenderTurnstile();
     }
 
@@ -310,9 +369,23 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     for (const el of document.querySelectorAll<HTMLButtonElement>(
         "[data-auth-goto]",
     )) {
-        el.addEventListener("click", () =>
-            setView(el.dataset.authGoto as "register" | "login"),
-        );
+        el.addEventListener("click", () => {
+            const target = el.dataset.authGoto as
+                | "register"
+                | "login"
+                | "forgot";
+            if (target === "forgot") {
+                // Precargar el correo ya escrito en login, si lo hay.
+                const loginEmail =
+                    (loginForm.elements.namedItem("email") as HTMLInputElement | null)
+                        ?.value ?? "";
+                const forgotEmail = forgotForm.elements.namedItem(
+                    "email",
+                ) as HTMLInputElement | null;
+                if (forgotEmail && loginEmail) forgotEmail.value = loginEmail;
+            }
+            setView(target);
+        });
     }
 
     registerForm.addEventListener("submit", async (e) => {
@@ -353,6 +426,58 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
             );
             registerCta.disabled = false;
             registerCta.textContent = "$ Crear cuenta";
+        }
+    });
+
+    forgotForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearError();
+        const data = new FormData(forgotForm);
+        const email = String(data.get("email") ?? "").trim();
+        const newPassword = String(data.get("newPassword") ?? "");
+        const confirm = String(data.get("confirm") ?? "");
+
+        if (newPassword.length < 8) {
+            showError("La contraseña debe tener al menos 8 caracteres.");
+            return;
+        }
+        if (newPassword !== confirm) {
+            showError("Las contraseñas no coinciden.");
+            return;
+        }
+
+        const btn = forgotForm.querySelector<HTMLButtonElement>(
+            'button[type="submit"]',
+        )!;
+        btn.disabled = true;
+        btn.textContent = "Un momento…";
+        try {
+            await resetPassword({ email, newPassword });
+            // Éxito: avisar, precargar login con ese correo y volver a login.
+            document.dispatchEvent(
+                new CustomEvent("toast:show", {
+                    detail: {
+                        message:
+                            "✓ Contraseña actualizada. Ya puedes iniciar sesión.",
+                        duration: 3200,
+                    },
+                }),
+            );
+            forgotForm.reset();
+            const loginEmail = loginForm.elements.namedItem(
+                "email",
+            ) as HTMLInputElement | null;
+            if (loginEmail) loginEmail.value = email;
+            setView("login");
+        } catch (err) {
+            showError(
+                err instanceof ApiError
+                    ? err.message
+                    : "No se pudo cambiar la contraseña.",
+            );
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "$ Cambiar contraseña";
         }
     });
 
@@ -597,6 +722,21 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     }
     .am-link:hover {
         text-decoration: underline;
+    }
+
+    /* Fila del enlace "¿Olvidaste tu contraseña?" dentro del card de login. */
+    .am-forgot-row {
+        display: flex;
+        justify-content: flex-end;
+        margin: -2px 0 2px;
+    }
+    .am-forgot-link {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-secondary, #4b5563);
+    }
+    .am-forgot-link:hover {
+        color: var(--accent, #e5621a);
     }
 
     @media (max-width: 520px) {
