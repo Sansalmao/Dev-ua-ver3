@@ -159,8 +159,6 @@ const today = fmtDate(new Date());
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>&gt;_ ua wg lacnog — Platform Admin Console</title>
-    <!-- Mismas fuentes que el dashboard: sin esto, var(--font-body) (Sora) no
-         existe en esta página y el navegador cae a la fuente del sistema. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -578,22 +576,47 @@ html,body{
   width:256px;flex-shrink:0;display:flex;flex-direction:column;
   height:100%;background:var(--surface);border-right:1px solid var(--border);
 }
+/* ── Logo: valores IDÉNTICOS al .sb-logo del dashboard ──────────────────── */
 .sidebar-logo{
-  padding:1rem;border-bottom:1px solid var(--gray-200);
+  padding:18px 16px 14px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
 }
-
 .logo-box{
-  display:flex;align-items:center;gap:.625rem;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 .logo-mark{
-  width:32px;height:32px;flex-shrink:0;
-  background:var(--accent);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-family:var(--font-mono);font-weight:700;font-size:13px;
-  box-shadow:var(--shadow-accent-sm);
+  width:32px;
+  height:32px;
+  flex-shrink:0;
+  background:var(--accent);
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-family:var(--font-mono);
+  font-weight:700;
+  font-size:13px;
+  box-shadow:0 2px 8px rgba(229, 98, 26, 0.3);
 }
-.logo-box .name{color:var(--accent);font-size:.875rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
-.logo-box .sub{color:var(--text-secondary);font-size:.625rem;margin-top:1px}
+.logo-box .name{
+  font-size:14px;
+  font-weight:800;
+  color:var(--accent);
+  letter-spacing:-0.3px;
+  line-height:1.1;
+  text-transform:none;
+}
+.logo-box .sub{
+  font-size:10px;
+  color:var(--text-secondary);
+  margin-top:1px;
+  text-transform:none;
+  letter-spacing:normal;
+}
 
 .sidebar-nav{flex:1;padding:.75rem;display:flex;flex-direction:column;gap:.125rem;overflow-y:auto}
 .nav-section-label{padding:.5rem .5rem .25rem;font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-400)}
@@ -989,7 +1012,6 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
 
             var okQ = !q || titulo.indexOf(q) !== -1 || fac.indexOf(q) !== -1;
             var okStage = stage === "all" || etapa === stage;
-            // La casilla solo aplica cuando NO se filtró explícitamente por graduadas.
             var okGrad = showGrad || stage === "graduada" || !isGrad;
 
             var visible = okQ && okStage && okGrad;
@@ -1023,7 +1045,7 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
         document.getElementById("users-count").textContent = n;
     }
 
-    /* ── EXPONER EN window ──────────────────── */
+    /* ── EXPONER EN window ────────────── */
     Object.assign(window, {
         switchView: switchView,
         handleRequest: handleRequest,
