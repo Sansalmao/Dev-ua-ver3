@@ -14,6 +14,7 @@ if (!url) {
   );
 }
 
+// Caché del cliente entre recargas en desarrollo (globalThis no está tipado).
 const globalForPrisma = globalThis;
 
 function createClient() {
@@ -21,6 +22,10 @@ function createClient() {
   return new PrismaClient({ adapter });
 }
 
+/**
+ * Cliente Prisma tipado.
+ * @type {import("@prisma/client").PrismaClient}
+ */
 export const prisma = globalForPrisma.__prisma ?? createClient();
 
 if (process.env.NODE_ENV !== "production") {

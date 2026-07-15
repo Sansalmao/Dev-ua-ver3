@@ -4,8 +4,10 @@ import ModuleLayout from "../../layouts/ModuleLayout.astro";
 import { moduleFrontmatterSchema } from "../../lib/module-schema";
 
 export async function getStaticPaths() {
-    // 1. Importar todos los MDX de la MISMA carpeta (./*.mdx)
-    const modules = import.meta.glob("../../data/modulos/**/*.mdx", {
+    const modules = import.meta.glob<{
+        frontmatter?: unknown;
+        default: any;
+    }>("../../data/modulos/**/*.mdx", {
         eager: true,
     });
 
@@ -17,7 +19,7 @@ export async function getStaticPaths() {
     for (const [filePath, module] of Object.entries(modules)) {
         try {
             // 3. Extraer frontmatter del módulo MDX
-            const { frontmatter } = module as { frontmatter?: unknown };
+            const { frontmatter } = module;
 
             // 4. Validar con Zod
             const validatedFrontmatter = moduleFrontmatterSchema.parse(

@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { getUserCommunityContext } from "@lib/community-context.js";
+import { prisma } from "@lib/prisma.js";
 
 const user = Astro.locals.user;
 if (!user) {
@@ -27,7 +28,221 @@ for (const c of [
 }
 
 // Payload mínimo que necesita el cliente. `meId` sirve para marcar "(tú)".
-const bootstrap = { meId: user.userId, communities };
+
+// ── RUTAS (vista "Rutas de Aprendizaje") ────────────────────────────────────
+const full = await prisma.community.findMany({
+    where: { id: { in: communities.map((c) => c.id) } },
+    select: {
+        id: true,
+        name: true,
+        topic: true,
+        profileTrack: true,
+        stage: true,
+        graduated: true,
+        teacher: { select: { displayName: true, email: true } },
+        _count: { select: { challenges: true } },
+    },
+});
+
+const ownedIds = new Set(communities.filter((c) => c.owned).map((c) => c.id));
+
+const routes = await Promise.all(
+    full.map(async (c) => {
+        // Retos de esta comunidad con una entrega APROBADA del usuario actual.
+        const completed = await prisma.challenge.count({
+            where: {
+                communityId: c.id,
+                submissions: {
+                    some: { authorId: user.userId, status: "APPROVED" },
+                },
+            },
+        });
+        return {
+            id: c.id,
+            name: c.topic,
+            subtitle: c.name,
+            modules: c._count.challenges,
+            completed,
+            assignee: c.teacher?.displayName || c.teacher?.email || "—",
+            stage: String(c.stage).toLowerCase(),
+            profileTrack:
+                String(c.profileTrack).toUpperCase() === "TEACHER"
+                    ? "teacher"
+                    : "student",
+            graduated: c.graduated,
+            owned: ownedIds.has(c.id),
+        };
+    }),
+);
+
+const bootstrap = { meId: user.userId, communities, routes };
+
+// ── RESUMEN: KPIs reales ────────────────────────────────────────────────────
+// Todo se calcula sobre las comunidades del usuario (propias ∪ miembro).
+const communityIds = communities.map((c) => c.id);
+const ownedIdsArr = [...ownedIds];
+const isProfesor = user.profileType === "PROFESOR";
+
+const [
+    totalChallenges,
+    myApproved,
+    myPendingSubs,
+    pendingToReview,
+    totalMembers,
+    pendingJoinRequests,
+] = await Promise.all([
+    // Retos disponibles en mis comunidades.
+    prisma.challenge.count({ where: { communityId: { in: communityIds } } }),
+    // Retos que YO completé (entrega aprobada).
+    prisma.submission.count({
+        where: {
+            authorId: user.userId,
+            status: "APPROVED",
+            challenge: { communityId: { in: communityIds } },
+        },
+    }),
+    // Mis entregas esperando revisión.
+    prisma.submission.count({
+        where: { authorId: user.userId, status: "PENDING" },
+    }),
+    // Entregas que YO debo revisar (solo en comunidades que soy dueño).
+    prisma.submission.count({
+        where: {
+            status: "PENDING",
+            challenge: { communityId: { in: ownedIdsArr } },
+        },
+    }),
+    // Miembros aprobados en mis comunidades.
+    prisma.joinRequest.count({
+        where: { status: "APPROVED", communityId: { in: communityIds } },
+    }),
+    // Solicitudes de ingreso pendientes en mis comunidades propias.
+    prisma.joinRequest.count({
+        where: { status: "PENDING", communityId: { in: ownedIdsArr } },
+    }),
+]);
+
+const kpis = {
+    challengesDone: myApproved,
+    challengesTotal: totalChallenges,
+    challengesPct: totalChallenges
+        ? Math.round((myApproved / totalChallenges) * 100)
+        : 0,
+    communities: communities.length,
+    owned: ownedIdsArr.length,
+    // Para profesor: lo que debe revisar. Para estudiante: lo suyo en revisión.
+    pending: isProfesor ? pendingToReview : myPendingSubs,
+    pendingJoins: pendingJoinRequests,
+    members: totalMembers,
+};
+
+// ── RESUMEN: feed de actividad ──────────────────────────────────────────────
+// No hay tabla de actividad: se deriva de las fechas de entregas y solicitudes.
+const [recentSubs, recentJoins] = await Promise.all([
+    prisma.submission.findMany({
+        where: { challenge: { communityId: { in: communityIds } } },
+        select: {
+            id: true,
+            status: true,
+            createdAt: true,
+            reviewedAt: true,
+            author: { select: { displayName: true, email: true } },
+            challenge: {
+                select: { title: true, community: { select: { name: true } } },
+            },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+    }),
+    prisma.joinRequest.findMany({
+        where: { communityId: { in: communityIds } },
+        select: {
+            id: true,
+            status: true,
+            createdAt: true,
+            reviewedAt: true,
+            requester: { select: { displayName: true, email: true } },
+            community: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+    }),
+]);
+
+/** "Hace 2 horas", "Ayer", "Hace 3 días"… */
+function timeAgo(date: Date): string {
+    const ms = Date.now() - date.getTime();
+    const min = Math.floor(ms / 60000);
+    if (min < 1) return "Recién";
+    if (min < 60) return `Hace ${min} minuto${min === 1 ? "" : "s"}`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `Hace ${h} hora${h === 1 ? "" : "s"}`;
+    const d = Math.floor(h / 24);
+    if (d === 1) return "Ayer";
+    if (d < 30) return `Hace ${d} días`;
+    const mo = Math.floor(d / 30);
+    return `Hace ${mo} mes${mo === 1 ? "" : "es"}`;
+}
+
+type FeedItem = { at: Date; teal: boolean; html: string; meta: string };
+const feedItems: FeedItem[] = [];
+
+for (const s of recentSubs) {
+    const who = s.author?.displayName || s.author?.email || "Alguien";
+    const comm = s.challenge?.community?.name ?? "";
+    const title = s.challenge?.title ?? "un reto";
+    if (s.status === "APPROVED" && s.reviewedAt) {
+        feedItems.push({
+            at: s.reviewedAt,
+            teal: false,
+            html: `<strong>${who}</strong> completó el reto "${title}"`,
+            meta: comm,
+        });
+    } else if (s.status === "PENDING") {
+        feedItems.push({
+            at: s.createdAt,
+            teal: true,
+            html: `<strong>${who}</strong> envió una entrega para "${title}" — pendiente de aprobación`,
+            meta: comm,
+        });
+    } else if (s.status === "REJECTED" && s.reviewedAt) {
+        feedItems.push({
+            at: s.reviewedAt,
+            teal: false,
+            html: `La entrega de <strong>${who}</strong> para "${title}" fue rechazada`,
+            meta: comm,
+        });
+    }
+}
+
+for (const j of recentJoins) {
+    const who = j.requester?.displayName || j.requester?.email || "Alguien";
+    const comm = j.community?.name ?? "";
+    if (j.status === "APPROVED" && j.reviewedAt) {
+        feedItems.push({
+            at: j.reviewedAt,
+            teal: true,
+            html: `<strong>${who}</strong> se unió a la comunidad`,
+            meta: comm,
+        });
+    } else if (j.status === "PENDING") {
+        feedItems.push({
+            at: j.createdAt,
+            teal: false,
+            html: `<strong>${who}</strong> solicitó unirse a la comunidad`,
+            meta: comm,
+        });
+    }
+}
+
+const feed = feedItems
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, 6)
+    .map((f) => ({
+        teal: f.teal,
+        html: f.html,
+        time: [timeAgo(f.at), f.meta].filter(Boolean).join(" · "),
+    }));
 ---
 
 <html lang="es">
@@ -149,8 +364,8 @@ const bootstrap = { meId: user.userId, communities };
                             id="role-badge"
                             class="sb-role-badge"
                             data-role="admin"
-                            title="Click para cambiar rol"
-                            onclick="cycleRole()">admin</span
+                            title="Tu rol en esta comunidad"
+                            >member</span
                         >
                     </div>
                 </div>
@@ -267,16 +482,21 @@ const bootstrap = { meId: user.userId, communities };
                                             d="M8 1l2 5h5l-4 3 1.5 5L8 11l-4.5 3L5 9 1 6h5z"
                                         ></path></svg>
                                 </div>
-                                <div class="kpi-label">Módulos Completados</div>
-                                <div class="kpi-value">1 <span>/ 5</span></div>
+                                <div class="kpi-label">Retos Completados</div>
+                                <div class="kpi-value">
+                                    {kpis.challengesDone}
+                                    <span>/ {kpis.challengesTotal}</span>
+                                </div>
                                 <div class="kpi-progress">
                                     <div
                                         class="kpi-progress-bar"
-                                        style="width:20%"
+                                        style={`width:${kpis.challengesPct}%`}
                                     >
                                     </div>
                                 </div>
-                                <div class="kpi-sub">UA Academic Curricula</div>
+                                <div class="kpi-sub">
+                                    {kpis.challengesPct}% de tus retos
+                                </div>
                             </div>
                             <div class="kpi-card">
                                 <div class="kpi-icon teal">
@@ -291,21 +511,13 @@ const bootstrap = { meId: user.userId, communities };
                                         ></path><path d="M6 13V9h4v4"
                                         ></path></svg>
                                 </div>
-                                <div class="kpi-label">Skills Activos</div>
-                                <div class="kpi-value">7</div>
-                                <div class="kpi-tag">
-                                    <svg
-                                        width="10"
-                                        height="10"
-                                        viewBox="0 0 10 10"
-                                        ><circle
-                                            cx="5"
-                                            cy="5"
-                                            r="4"
-                                            fill="#B7610A"></circle></svg
-                                    >JavaScript
+                                <div class="kpi-label">Tus Comunidades</div>
+                                <div class="kpi-value">{kpis.communities}</div>
+                                <div class="kpi-sub">
+                                    {kpis.owned > 0
+                                        ? `${kpis.owned} propia${kpis.owned === 1 ? "" : "s"}`
+                                        : "Membresías"}
                                 </div>
-                                <div class="kpi-sub">+2 esta semana</div>
                             </div>
                             <div class="kpi-card">
                                 <div class="kpi-icon amber">
@@ -322,9 +534,11 @@ const bootstrap = { meId: user.userId, communities };
                                             r="6"></circle></svg>
                                 </div>
                                 <div class="kpi-label">Retos Pendientes</div>
-                                <div class="kpi-value c-amber">3</div>
+                                <div class="kpi-value c-amber">{kpis.pending}</div>
                                 <div class="kpi-sub c-amber fw-7">
-                                    ⚡ Requieren aprobación
+                                    {isProfesor
+                                        ? "⚡ Requieren tu aprobación"
+                                        : "⚡ Tus entregas en revisión"}
                                 </div>
                             </div>
                             <div class="kpi-card">
@@ -344,78 +558,48 @@ const bootstrap = { meId: user.userId, communities };
                                             d="M12 9c1.7 0 3 1.3 3 3"
                                         ></path></svg>
                                 </div>
-                                <div class="kpi-label">Miembros Activos</div>
-                                <div class="kpi-value">12</div>
-                                <div class="kpi-progress">
-                                    <div
-                                        class="kpi-progress-bar gp-bar teal"
-                                        style="width:80%"
-                                    >
-                                    </div>
-                                </div>
+                                <div class="kpi-label">Miembros</div>
+                                <div class="kpi-value">{kpis.members}</div>
                                 <div class="kpi-sub">
-                                    8 con actividad reciente
+                                    {kpis.pendingJoins > 0
+                                        ? `${kpis.pendingJoins} solicitud${kpis.pendingJoins === 1 ? "" : "es"} por revisar`
+                                        : "Sin solicitudes pendientes"}
                                 </div>
                             </div>
                         </div>
 
                         <div class="feed-card">
                             <div class="feed-header">Actividad Reciente</div>
-                            <div class="feed-item">
-                                <div class="feed-dot"></div>
-                                <div>
-                                    <div class="feed-text">
-                                        <strong>Martín Solís</strong> completó el
-                                        reto "CSS Grid Layouts" en Módulo 2 — UA TechBoost
-                                    </div><div class="feed-time">
-                                        Hace 2 horas
+                            {
+                                feed.length === 0 ? (
+                                    <div class="muted-sm" style="padding:10px 0">
+                                        Todavía no hay actividad en tus
+                                        comunidades. Aparecerá aquí cuando haya
+                                        entregas o nuevos miembros.
                                     </div>
-                                </div>
-                            </div>
-                            <div class="feed-item">
-                                <div class="feed-dot teal"></div>
-                                <div>
-                                    <div class="feed-text">
-                                        <strong>Valeria Oquendo</strong> envió reto
-                                        para "Semantic HTML Blog" — pendiente de aprobación
-                                    </div><div class="feed-time">
-                                        Hace 4 horas · UA Academic Curricula
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="feed-item">
-                                <div class="feed-dot"></div>
-                                <div>
-                                    <div class="feed-text">
-                                        Evento <strong>UA Day 2026</strong> confirmado
-                                        — 28 de mayo, Ciudad de México
-                                    </div><div class="feed-time">
-                                        Ayer · Anuncio oficial
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="feed-item">
-                                <div class="feed-dot teal"></div>
-                                <div>
-                                    <div class="feed-text">
-                                        <strong>Tomás Bracamonte</strong> fue asignado
-                                        como colaborador académico del Módulo 3
-                                    </div><div class="feed-time">
-                                        Hace 2 días · UA TechBoost
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="feed-item">
-                                <div class="feed-dot"></div>
-                                <div>
-                                    <div class="feed-text">
-                                        <strong>Ana Torres</strong> comenzó la ruta
-                                        "UA Academic Curricula" — Módulo 1
-                                    </div><div class="feed-time">
-                                        Hace 3 días
-                                    </div>
-                                </div>
-                            </div>
+                                ) : (
+                                    feed.map((f) => (
+                                        <div class="feed-item">
+                                            <div
+                                                class={
+                                                    f.teal
+                                                        ? "feed-dot teal"
+                                                        : "feed-dot"
+                                                }
+                                            />
+                                            <div>
+                                                <div
+                                                    class="feed-text"
+                                                    set:html={f.html}
+                                                />
+                                                <div class="feed-time">
+                                                    {f.time}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )
+                            }
                         </div>
                     </section>
 
@@ -535,12 +719,6 @@ const bootstrap = { meId: user.userId, communities };
                                                     </select>
                                                 )}
                                             </div>
-                                            <button
-                                                class="btn btn-primary btn-sm"
-                                                onclick="toast('✉ Formulario de invitación abierto')"
-                                            >
-                                                + Invitar Miembro
-                                            </button>
                                         </div>
                                         <div class="overflow-x-auto">
                                             <table class="members-table">
@@ -2128,177 +2306,11 @@ const bootstrap = { meId: user.userId, communities };
             /* ── MOCK DATA ── */
             var members = [];
 
-            var solutions = [
-                {
-                    title: "Single-Page CV",
-                    author: "Martín Solís",
-                    lang: "Python",
-                    ruta: "Implementación Técnica",
-                    rating: 4.8,
-                    date: "2026-04-18",
-                    pending: false,
-                },
-                {
-                    title: "Basic HTML Website",
-                    author: "Valeria Oquendo",
-                    lang: "Java",
-                    ruta: "Conceptos Básicos",
-                    rating: 4.5,
-                    date: "2026-04-17",
-                    pending: true,
-                },
-                {
-                    title: "CSS Grid Dashboard",
-                    author: "Tomás Bracamonte",
-                    lang: "Java",
-                    ruta: "Implementación Técnica",
-                    rating: 4.9,
-                    date: "2026-04-16",
-                    pending: false,
-                },
-                {
-                    title: "Personal Portfolio",
-                    author: "Ana Torres",
-                    lang: "Python",
-                    ruta: "Conceptos Básicos",
-                    rating: 4.2,
-                    date: "2026-04-15",
-                    pending: true,
-                },
-                {
-                    title: "Semantic HTML Blog",
-                    author: "Miguel Soto",
-                    lang: "Python",
-                    ruta: "Conceptos Básicos",
-                    rating: 4.6,
-                    date: "2026-04-14",
-                    pending: true,
-                },
-                {
-                    title: "JS Calculator",
-                    author: "Laura Ramírez",
-                    lang: "Java",
-                    ruta: "Implementación Técnica",
-                    rating: 4.7,
-                    date: "2026-04-13",
-                    pending: false,
-                },
-                {
-                    title: "Flexbox Landing Page",
-                    author: "Sofía Guerrero",
-                    lang: "Java",
-                    ruta: "Conceptos Básicos",
-                    rating: 4.3,
-                    date: "2026-04-12",
-                    pending: false,
-                },
-                {
-                    title: "Async Fetch Demo",
-                    author: "Roberto Chávez",
-                    lang: "Python",
-                    ruta: "Implementación Técnica",
-                    rating: 4.1,
-                    date: "2026-04-11",
-                    pending: false,
-                },
-            ];
+            /* Retos/entregas: se cargan desde la API (loadSubmissions). */
+            var solutions = [];
 
-            var skillRoutes = [
-                {
-                    id: "route1",
-                    name: "Course Track Overview",
-                    subtitle:
-                        "UA Academic Curricula: Ciencias de la Computación",
-                    modules: 11,
-                    completed: 3,
-                    assignee: "Martín Solís",
-                    ac: "MS",
-                    color: "#7CD4CC",
-                    last: "Fundamentos de Algoritmos",
-                    level: "Básico",
-                    v35: true,
-                    profileTrack: "student",
-                    stage: "conceptos_clave",
-                },
-                {
-                    id: "route2",
-                    name: "Learning Path Dashboard",
-                    subtitle:
-                        "UA Academic Curricula: Gestión de Proyectos Ágiles",
-                    modules: 11,
-                    completed: 0,
-                    assignee: "Osvaldo Citterio",
-                    ac: "OC",
-                    color: "#5B8DEF",
-                    last: "Not started",
-                    level: "Básico",
-                    v35: false,
-                    profileTrack: "student",
-                    stage: "conceptos_clave",
-                },
-                {
-                    id: "route3",
-                    name: "Course Track Overview",
-                    subtitle:
-                        "UA Academic Curricula: Desarrollo Web Full Stack",
-                    modules: 8,
-                    completed: 5,
-                    assignee: "Valeria Oquendo",
-                    ac: "VO",
-                    color: "#9B7EDE",
-                    last: "APIs RESTful con Node.js",
-                    level: "Intermedio",
-                    v35: false,
-                    profileTrack: "student",
-                    stage: "implementacion_tecnica",
-                },
-                {
-                    id: "route4",
-                    name: "Learning Path Dashboard",
-                    subtitle:
-                        "UA Academic Curricula: Redes y Telecomunicaciones",
-                    modules: 6,
-                    completed: 0,
-                    assignee: "Tomás Bracamonte",
-                    ac: "TB",
-                    color: "#50C878",
-                    last: "Not started",
-                    level: "Intermedio",
-                    v35: false,
-                    profileTrack: "student",
-                    stage: "conceptos_clave",
-                },
-                {
-                    id: "route5",
-                    name: "Course Track Overview",
-                    subtitle: "UA Academic Curricula: Seguridad Informática",
-                    modules: 9,
-                    completed: 2,
-                    assignee: "Sofía Guerrero",
-                    ac: "SG",
-                    color: "#F5A623",
-                    last: "Criptografía Básica",
-                    level: "Avanzado",
-                    v35: false,
-                    profileTrack: "student",
-                    stage: "conceptos_clave",
-                },
-                {
-                    id: "route6",
-                    name: "Learning Path Dashboard",
-                    subtitle: "UA TechBoost Q2 2026",
-                    modules: 3,
-                    completed: 1,
-                    assignee: "Ana Torres",
-                    ac: "AT",
-                    color: "#FF6B6B",
-                    last: "Sprint Planning Workshop",
-                    level: "Básico",
-                    v35: false,
-                    profileTrack: "teacher",
-                    stage: "conceptos_clave",
-                },
-            ];
+            /* Rutas = comunidades del usuario (datos reales del servidor). */
+            var skillRoutes = bootstrap.routes || [];
 
             /* Etiquetas de etapa por perfil — */
             var STAGE_LABELS = {
@@ -2479,9 +2491,71 @@ const bootstrap = { meId: user.userId, communities };
                     });
             }
 
+            /* ── CARGA DE RETOS/ENTREGAS ── */
+            function langLabel(l) {
+                if (!l) return null;
+                var v = String(l).toLowerCase();
+                return v.charAt(0).toUpperCase() + v.slice(1); // java → Java
+            }
+
+            function loadSubmissions(communityId) {
+                var grid = document.getElementById("solutions-grid");
+                if (grid) {
+                    grid.innerHTML =
+                        '<div class="muted-sm" style="grid-column:1/-1;padding:18px">Cargando retos…</div>';
+                }
+
+                fetch("/api/communities/" + communityId + "/submissions", {
+                    credentials: "include",
+                    headers: { Accept: "application/json" },
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        solutions = (data.submissions || []).map(function (s) {
+                            return {
+                                id: s.id,
+                                title: s.challenge ? s.challenge.title : "(reto)",
+                                author: s.author
+                                    ? s.author.displayName || s.author.email
+                                    : "—",
+                                lang: langLabel(s.language),
+                                ruta: stageLabelEs(
+                                    s.challenge ? s.challenge.requiredStage : "",
+                                ),
+                                rating: typeof s.rating === "number" ? s.rating : 0,
+                                date: String(s.createdAt || "").slice(0, 10),
+                                pending: s.status === "PENDING",
+                                repoUrl: s.repoUrl || null,
+                            };
+                        });
+                        renderSolutions();
+                    })
+                    .catch(function (err) {
+                        solutions = [];
+                        renderSolutions();
+                        var g = document.getElementById("solutions-grid");
+                        if (g)
+                            g.innerHTML =
+                                '<div style="grid-column:1/-1;padding:18px;color:#b23b3b">No se pudieron cargar los retos: ' +
+                                err.message +
+                                "</div>";
+                    });
+            }
+
             function onCommunityChange(id) {
                 state.communityId = id;
                 loadMembers(id);
+                loadSubmissions(id);
             }
 
             /* ── NAVEGACIÓN ── */
@@ -2510,18 +2584,7 @@ const bootstrap = { meId: user.userId, communities };
                 );
                 if (tab) switchView(id, tab);
             }
-
             /* ── RBAC ── */
-            function cycleRole() {
-                var roles = ["admin", "manager", "member"];
-                state.role =
-                    roles[(roles.indexOf(state.role) + 1) % roles.length];
-                var badge = document.getElementById("role-badge");
-                badge.textContent = state.role;
-                badge.setAttribute("data-role", state.role);
-                toast("🔄 Rol cambiado a: " + state.role);
-                reRender();
-            }
 
             /* ── RENDER MIEMBROS ── */
             function renderMembers() {
@@ -2545,7 +2608,7 @@ const bootstrap = { meId: user.userId, communities };
                     /* ── VISTA MEMBER: solo su propia fila, solo columnas Miembro + Rol ── */
                     theadRow.innerHTML = "<th>Miembro</th><th>Rol</th>";
 
-                    /* La fila propia se identifica por isMe (no se asume que sea la primera). */
+                    /* La fila propia se identifica por isMe */
                     var me =
                         members.filter(function (m) {
                             return m.isMe;
@@ -2572,7 +2635,7 @@ const bootstrap = { meId: user.userId, communities };
                     return;
                 }
 
-                /* ── VISTA ADMIN / MANAGER: tabla completa ── */
+                /* ── VISTA ADMIN / MANAGER ── */
                 theadRow.innerHTML =
                     "<th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>" +
                     '<th style="min-width:140px">Progreso</th><th>Acciones</th>';
@@ -2696,14 +2759,23 @@ const bootstrap = { meId: user.userId, communities };
                           ICON_CB +
                           "Conceptos Básicos</span>";
 
-                    var isJava = s.lang === "Java";
-                    var langTag =
-                        '<span class="sol-lang-tag ' +
-                        (isJava ? "java" : "python") +
-                        '">' +
-                        (isJava ? ICON_JAVA : ICON_PYTHON) +
-                        s.lang +
-                        "</span>";
+                    var langTag = "";
+                    if (s.lang) {
+                        var lk = s.lang.toLowerCase();
+                        var langIcon =
+                            lk === "java"
+                                ? ICON_JAVA
+                                : lk === "python"
+                                  ? ICON_PYTHON
+                                  : "";
+                        langTag =
+                            '<span class="sol-lang-tag ' +
+                            (lk === "java" ? "java" : "python") +
+                            '">' +
+                            langIcon +
+                            s.lang +
+                            "</span>";
+                    }
 
                     var full = Math.floor(s.rating),
                         hasHalf = s.rating - full >= 0.3;
@@ -2719,15 +2791,14 @@ const bootstrap = { meId: user.userId, communities };
                     var actions =
                         canApprove && s.pending
                             ? '<div class="sol-actions-v2">' +
-                              '<button class="sol-action-btn sol-btn-approve" onclick="approveSolution(this,' +
-                              JSON.stringify(s.title) +
-                              ')">Aprobar</button>' +
-                              '<button class="sol-action-btn sol-btn-reject"  onclick="rejectSolution(this,' +
-                              JSON.stringify(s.title) +
-                              ')">Rechazar</button>' +
+                              '<button class="sol-action-btn sol-btn-approve" onclick=\'approveSolution(this,' +
+                              JSON.stringify(s.id) +
+                              ')\'>Aprobar</button>' +
+                              '<button class="sol-action-btn sol-btn-reject" onclick=\'rejectSolution(this,' +
+                              JSON.stringify(s.id) +
+                              ')\'>Rechazar</button>' +
                               "</div>"
                             : "";
-
                     var card = document.createElement("div");
                     card.className = "sol-card";
                     card.innerHTML =
@@ -2752,11 +2823,12 @@ const bootstrap = { meId: user.userId, communities };
                         stars +
                         " <span>" +
                         s.rating +
-                        '</span></span><button class="sol-github-btn" onclick="toast(\'🔗 Repo: ' +
-                        s.title +
-                        "')\">" +
-                        ICON_GH +
-                        "GitHub Repo</button></div>" +
+                        '</span></span>' +
+                        (s.repoUrl
+                            ? '<a class="sol-github-btn" href="' + s.repoUrl +
+                              '" target="_blank" rel="noopener noreferrer">' + ICON_GH + 'GitHub Repo</a>'
+                            : "") +
+                        "</div>" +
                         actions;
                     grid.appendChild(card);
                 });
@@ -2765,38 +2837,64 @@ const bootstrap = { meId: user.userId, communities };
                     pending;
             }
 
-            function _mutSolution(btn, title, fn) {
-                btn.closest(".sol-card").style.opacity = "0.5";
-                var idx = solutions.findIndex(function (s) {
-                    return s.title === title;
+            /* ── Aprobar / rechazar una entrega ────────────────── */
+            function _patchSubmission(btn, id, action, okMsg) {
+                var card = btn.closest(".sol-card");
+                if (card) card.style.opacity = "0.5";
+                var buttons = card ? card.querySelectorAll("button") : [];
+                buttons.forEach(function (b) {
+                    b.disabled = true;
                 });
-                if (idx !== -1) fn(idx);
-                setTimeout(renderSolutions, 300);
-            }
-            function approveSolution(btn, title) {
-                _mutSolution(btn, title, function (i) {
-                    solutions[i].pending = false;
-                    toast("✓ Reto aprobado: " + title);
-                });
-            }
-            function rejectSolution(btn, title) {
-                _mutSolution(btn, title, function (i) {
-                    solutions.splice(i, 1);
-                    toast("✗ Reto rechazado: " + title);
-                });
+
+                fetch("/api/submissions/" + id, {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({ action: action }),
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function () {
+                        toast(okMsg);
+                        /* Recargar desde el servidor: es la fuente de verdad. */
+                        if (state.communityId) loadSubmissions(state.communityId);
+                    })
+                    .catch(function (err) {
+                        if (card) card.style.opacity = "";
+                        buttons.forEach(function (b) {
+                            b.disabled = false;
+                        });
+                        toast("⚠ " + err.message);
+                    });
             }
 
-            /* ── RENDER RUTAS v4 ── */
+            function approveSolution(btn, id) {
+                _patchSubmission(btn, id, "APPROVE", "✓ Reto aprobado");
+            }
+            function rejectSolution(btn, id) {
+                _patchSubmission(btn, id, "REJECT", "✗ Reto rechazado");
+            }
+
+            /* ── RENDER RUTAS ── */
             function renderSkills() {
                 var grid = document.getElementById("skills-grid");
-                var canEdit = state.role === "admin";
                 var stageF = document.getElementById("filter-stage").value;
                 var trackF = document.getElementById("filter-track").value;
-                document
-                    .getElementById("skills-admin-banner")
-                    .classList.toggle("hidden", canEdit);
-                document.getElementById("skills-current-role").textContent =
-                    state.role;
+                /* Banner informativo: se oculta siempre (el permiso es por comunidad). */
+                var adminBanner = document.getElementById("skills-admin-banner");
+                if (adminBanner) adminBanner.classList.add("hidden");
                 grid.innerHTML = "";
 
                 /* SVG reutilizables para los tres estados de ícono */
@@ -2819,8 +2917,13 @@ const bootstrap = { meId: user.userId, communities };
                 });
 
                 if (filtered.length === 0) {
+                    var msg = skillRoutes.length === 0
+                        ? 'Todavía no perteneces a ninguna comunidad. <a href="/grid" style="color:var(--accent);font-weight:700">Explorar comunidades</a>'
+                        : "Ninguna ruta coincide con los filtros seleccionados";
                     grid.innerHTML =
-                        '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text-secondary);font-size:12.5px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)">Ninguna ruta coincide con los filtros seleccionados</div>';
+                        '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text-secondary);font-size:12.5px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)">' +
+                        msg +
+                        "</div>";
                     return;
                 }
 
@@ -2878,7 +2981,7 @@ const bootstrap = { meId: user.userId, communities };
 
                     /* ── Botón de promoción de etapa ── */
                     var promoteBtn =
-                        canEdit && !isImpl
+                        r.owned && !isImpl && !r.graduated
                             ? '<button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="promoteRouteStage(\'' +
                               r.id +
                               "')\">→ Promover a Implementación Técnica</button>"
@@ -2914,14 +3017,14 @@ const bootstrap = { meId: user.userId, communities };
                         r.modules +
                         "</div>" +
                         "</div>" +
-                        /* Línea divisoria */
                         '<hr class="sk4-divider">' +
-                        /* Sección de desafíos */
                         '<div class="sk4-challenges">' +
                         '<div class="sk4-ch-header">' +
                         '<div class="sk4-ch-title">Desafíos de Código</div>' +
-                        '<div class="sk4-ch-level">Nivel: ' +
-                        r.level +
+                        '<div class="sk4-ch-level">' +
+                        r.modules +
+                        " reto" +
+                        (r.modules === 1 ? "" : "s") +
                         "</div>" +
                         "</div>" +
                         '<div class="sk4-icons">' +
@@ -2934,24 +3037,43 @@ const bootstrap = { meId: user.userId, communities };
                 });
             }
 
-            /* ── Promoción manual de etapa ── */
+            /* ── Promoción de etapa ────────────────────────────── */
             function promoteRouteStage(routeId) {
                 var route = skillRoutes.filter(function (r) {
                     return r.id === routeId;
                 })[0];
                 if (!route || route.stage === "implementacion_tecnica") return;
-                route.stage = "implementacion_tecnica";
-                toast(
-                    '→ "' +
-                        route.subtitle +
-                        '" promovida a Implementación Técnica',
-                );
-                renderSkills();
+
+                fetch("/api/communities/" + routeId + "/promote", {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: { Accept: "application/json" },
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        route.stage = String(
+                            data.community.stage || "IMPLEMENTACION_TECNICA",
+                        ).toLowerCase();
+                        toast('→ "' + route.subtitle + '" promovida a Implementación Técnica');
+                        renderSkills();
+                    })
+                    .catch(function (err) {
+                        toast("⚠ " + err.message);
+                    });
             }
 
             /* ── INIT ── */
             (function () {
-                renderSolutions();
                 renderSkills();
 
                 var list = bootstrap.communities || [];
@@ -2961,6 +3083,7 @@ const bootstrap = { meId: user.userId, communities };
                     var sel = document.getElementById("community-select");
                     if (sel) sel.value = state.communityId;
                     loadMembers(state.communityId);
+                    loadSubmissions(state.communityId);
                 } else {
                     var sbCount = document.getElementById("sb-members-count");
                     if (sbCount) sbCount.textContent = "0";
