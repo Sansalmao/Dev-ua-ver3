@@ -7,9 +7,6 @@ import TopicCard from "../components/TopicCard.astro";
 import Toast from "../components/Toast.astro";
 import { RUTAS, ICONS } from "../lib/rutas";
 
-/*
- * SSG con ruta por defecto educator_basica.
- */
 const RUTA_DEFAULT = "educator_basica";
 const ruta = RUTAS[RUTA_DEFAULT];
 const total = ruta.temas.length;
@@ -76,148 +73,11 @@ const total = ruta.temas.length;
         </div>
     </div>
 
-    <!-- Toast singleton: debe estar en el DOM antes de que cualquier
-         script intente disparar "toast:show" -->
     <Toast />
 </BaseLayout>
 
-<style>
-    .grid-view {
-        max-width: 1140px;
-        margin: 0 auto;
-        padding: 36px 40px 80px;
-    }
-
-    .grid-head {
-        margin-bottom: 24px;
-    }
-
-    .grid-title-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 8px;
-    }
-
-    .grid-title-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .grid-prefix {
-        font-family: var(--font-mono);
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--accent);
-    }
-
-    .grid-title {
-        font-size: clamp(22px, 3vw, 26px);
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -0.01em;
-        line-height: 1.2;
-    }
-
-    .grid-badge {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--accent);
-        background: var(--accent-bg-soft);
-        border: 1px solid var(--accent-border-light);
-        padding: 4px 12px;
-        border-radius: 100px;
-        white-space: nowrap;
-    }
-
-    .grid-desc {
-        font-size: 14px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-        max-width: 660px;
-    }
-
-    .btn-change {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 18px;
-        border-radius: 8px;
-        background: var(--accent);
-        color: var(--card-bg);
-        font-family: var(--font-body);
-        font-size: 13px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        white-space: nowrap;
-        flex-shrink: 0;
-        transition:
-            background var(--transition-fast),
-            transform var(--transition-fast);
-    }
-
-    .btn-change:hover {
-        background: var(--accent-hover);
-        transform: translateX(-2px);
-    }
-
-    .btn-change:active {
-        transform: translateX(0);
-    }
-
-    .grid-layout {
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
-    }
-
-    .grid-side {
-        flex-shrink: 0;
-        position: sticky;
-        top: 88px;
-    }
-
-    .grid-topics {
-        flex: 1;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-        gap: 16px;
-    }
-
-    @media (max-width: 900px) {
-        .grid-view {
-            padding: 24px 20px 60px;
-        }
-
-        .grid-layout {
-            flex-direction: column;
-        }
-
-        .grid-side {
-            position: static;
-            width: 100%;
-        }
-
-        .grid-side :global(.progress-panel) {
-            max-width: 100%;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .grid-title-row {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
-</style>
-
 <script>
-    const STORAGE_KEY = "ua_skills_v2";
+    const STORAGE_KEY = "ua_skills";
 
     interface TemaEstado {
         visitado: boolean;
@@ -254,10 +114,28 @@ const total = ruta.temas.length;
     }
 
     // ── IMPORTACIONES ESTÁTICAS ───────────────────────────────────────────────
-    // Astro/Vite procesa este import estático en build time y lo incluye
-    // en el bundle del cliente. La ruta "../lib/rutas" resuelve correctamente
-    // desde src/pages/ → src/lib/rutas.ts.
     import { RUTAS, resolverRuta } from "../lib/rutas";
+    import {
+        getSession,
+        getTopicProgress,
+        saveTopicProgress,
+    } from "../lib/api-client";
+
+    let isLoggedIn = false;
+
+    function persistTema(
+        store: StoreShape,
+        id: string,
+        estado: TemaEstado,
+    ) {
+        store.temas[id] = estado;
+        guardarEstado(store);
+        if (isLoggedIn) {
+            saveTopicProgress(id, estado).catch((err) => {
+                console.error("[grid] No se pudo guardar el progreso en la cuenta:", err);
+            });
+        }
+    }
 
     // ── TOAST ─────────────────────────────────────────────────────────────────
     function toast(message: string, duration = 2800) {
@@ -313,8 +191,6 @@ const total = ruta.temas.length;
             }
         }
 
-        // Actualizar solo el texto del botón/enlace, sin reemplazar el nodo.
-        // Así se conserva el <a href> si el tema tiene slug.
         const btn = card.querySelector<HTMLElement>(".btn-iniciar");
         if (btn) {
             const nuevoTexto =
@@ -385,9 +261,6 @@ const total = ruta.temas.length;
             const id = (btn as HTMLElement).dataset.id;
             if (!id) return;
 
-            // Si el elemento es un <a> con href real, dejar que el
-            // navegador maneje el click normalmente. Solo actualizamos
-            // el estado en localStorage antes de salir.
             const esEnlace =
                 btn.tagName === "A" &&
                 (btn as HTMLAnchorElement).getAttribute("href") !== "#";
@@ -398,24 +271,19 @@ const total = ruta.temas.length;
             };
 
             if (esEnlace) {
-                // Guardar progreso como visitado antes de navegar
-                // para que al volver con el breadcrumb el estado sea correcto.
                 if (!est.visitado && !est.completado) {
-                    store.temas[id] = { visitado: true, completado: false };
-                    guardarEstado(store);
+                    persistTema(store, id, { visitado: true, completado: false });
                 }
-                // No llamar e.preventDefault(): el <a> navega normalmente.
                 return;
             }
 
-            // A partir de aquí: botones sin slug (sin módulo todavía)
+            // A partir de aquí: botones sin slug
             if (est.completado) {
                 toast("Módulo completado — revisando contenido");
                 return;
             }
 
-            store.temas[id] = { visitado: true, completado: false };
-            guardarEstado(store);
+            persistTema(store, id, { visitado: true, completado: false });
             actualizarCardDOM(id, "progreso");
 
             const completadosActuales = temas.filter(
@@ -425,8 +293,7 @@ const total = ruta.temas.length;
             toast("Módulo iniciado — progreso guardado");
 
             setTimeout(() => {
-                store.temas[id] = { visitado: true, completado: true };
-                guardarEstado(store);
+                persistTema(store, id, { visitado: true, completado: true });
                 actualizarCardDOM(id, "completado");
 
                 const completadosFinal = temas.filter(
@@ -489,8 +356,21 @@ const total = ruta.temas.length;
         restaurarCards(store, rutaData.temas);
         registrarBotones(store, rutaData.temas);
 
-        // Revelar el grid después de restaurar el estado correcto
-        // para evitar el flash del contenido estático por defecto
+        // ── Progreso por cuenta ──
+        getSession()
+            .then((user) => {
+                if (!user) return;
+                isLoggedIn = true;
+                return getTopicProgress().then(({ progress }) => {
+                    store.temas = progress;
+                    guardarEstado(store); // refresca la caché local con lo real de la cuenta
+                    restaurarCards(store, rutaData.temas);
+                });
+            })
+            .catch((err) => {
+                console.error("[grid] No se pudo hidratar el progreso de la cuenta:", err);
+            });
+
         const grid = document.getElementById("view-grid");
         if (grid) {
             grid.style.transition = "opacity 0.2s ease";

@@ -65,6 +65,8 @@ model User {
   submissions         Submission[] @relation("SubmissionAuthor")
   reviewedSubmissions Submission[] @relation("SubmissionReviewer")
 
+  topicProgress TopicProgress[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -268,4 +270,36 @@ model Submission {
   @@unique([challengeId, authorId])
   @@index([challengeId, status])
   @@index([authorId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  TOPIC PROGRESS  (progreso del currículum estático de src/lib/rutas.ts)
+//
+//  Modelo APARTE de Challenge/Submission a propósito: "temas" (eb-00, ea-01,
+//  etc.) viven hardcodeados en código, no en la base — no hay Community ni
+//  Challenge detrás. Antes esto vivía solo en localStorage (se perdía al
+//  cambiar de dispositivo); ahora, si hay sesión, se persiste acá.
+//
+//  Un usuario sin cuenta sigue usando localStorage tal cual (sin cambios) —
+//  esta tabla solo aplica a usuarios logueados.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TopicProgress {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // Id fijo del tema en RUTAS (src/lib/rutas.ts), ej. "eb-00", "ea-03".
+  // Sin FK: el currículum no está modelado en la base, vive en código.
+  topicId String
+
+  visitado   Boolean @default(false)
+  completado Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, topicId])
+  @@index([userId])
 }

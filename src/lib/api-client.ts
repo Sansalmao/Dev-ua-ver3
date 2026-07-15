@@ -209,3 +209,24 @@ export function updateRoutePreviewProgress() {
     { method: "PATCH" },
   );
 }
+
+export interface TopicProgressEntry {
+  visitado: boolean;
+  completado: boolean;
+}
+export type TopicProgressMap = Record<string, TopicProgressEntry>;
+
+export function getTopicProgress() {
+  return apiFetch<{ progress: TopicProgressMap }>("/api/users/me/topic-progress");
+}
+
+export function saveTopicProgress(topicId: string, state: TopicProgressEntry) {
+  return apiFetch<{ progress: TopicProgressEntry & { topicId: string } }>(
+    "/api/users/me/topic-progress",
+    {
+      method: "PUT",
+      body: JSON.stringify({ topicId, ...state }),
+      keepalive: true,
+    },
+  );
+}
