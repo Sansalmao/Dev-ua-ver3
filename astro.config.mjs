@@ -14,7 +14,17 @@ export default defineConfig({
     checkOrigin: false,
   },
 
-  integrations: [react(), mdx(), sentry()],
+  integrations: [
+    react(),
+    mdx(),
+    sentry({
+      sourceMapsUploadOptions: {
+        project: "javascript-astro",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        telemetry: false,
+      },
+    }),
+  ],
 
   vite: {
     plugins: [tailwindcss()],

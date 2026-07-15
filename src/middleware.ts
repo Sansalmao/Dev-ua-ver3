@@ -2,6 +2,10 @@ import { defineMiddleware } from "astro:middleware";
 import { auth } from "./lib/auth-server.js";
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.isPrerendered) {
+    context.locals.user = null;
+    return next();
+  }
 
   const result = await auth.api.getSession({
     headers: context.request.headers,
