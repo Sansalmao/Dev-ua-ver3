@@ -1,1011 +1,2971 @@
 ---
-// ============================================================================
-//  Dashboard v2.0 — reubicado desde el prototipo (T1.4 del informe).
-//
-//  Se conservan su <style> y <script> ORIGINALES:
-//    • <style is:global>  → tiene su propio design system (ámbar/teal). Según
-//      el informe NO se reescribe con Tailwind. `is:global` evita que Astro
-//      le agregue scoping y rompa los selectores.
-//    • <script is:inline> → el markup usa handlers inline (onclick="switchView(...)"),
-//      así que las funciones deben quedar en el ámbito global, sin bundling.
-//
-//  Protección de ruta: la app es SSR y el middleware ya resolvió la sesión de
-//  Better Auth, así que basta con leer Astro.locals.user (no hay que tocar cookies).
-//
-//  ESTADO: los datos siguen siendo los MOCK del prototipo (members, solutions,
-//  skillRoutes). El cableado a la API es el paso siguiente.
-// ============================================================================
+import "../styles/global.css";
+import { getUserCommunityContext } from "@lib/community-context.js";
+
 const user = Astro.locals.user;
 if (!user) {
     return Astro.redirect("/");
 }
+
+// Propias ∪ miembro, sin duplicados, marcando la propiedad.
+const { owned, member } = await getUserCommunityContext(user.userId);
+const seen = new Set();
+const communities = [];
+for (const c of [
+    ...owned.map((x) => ({ ...x, owned: true })),
+    ...member.map((x) => ({ ...x, owned: false })),
+]) {
+    if (seen.has(c.id)) continue;
+    seen.add(c.id);
+    communities.push({
+        id: c.id,
+        name: c.name,
+        profileTrack: c.profileTrack,
+        stage: c.stage,
+        owned: c.owned,
+    });
+}
+
+// Payload mínimo que necesita el cliente. `meId` sirve para marcar "(tú)".
+const bootstrap = { meId: user.userId, communities };
 ---
 
 <html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>&gt;_ ua wg lacnog — Comunidad de Práctica</title>
-</head>
-<body>
-<div id="app">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>&gt;_ ua wg lacnog — Comunidad de Práctica</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div id="app">
+            <!-- ═══ SIDEBAR ═══ -->
+            <aside id="sidebar">
+                <div class="sb-logo">
+                    <div class="sb-logo-mark">&gt;_</div>
+                    <div>
+                        <div class="sb-logo-text">ua wg lacnog</div>
+                        <div class="sb-logo-sub">Comunidad de Práctica</div>
+                    </div>
+                </div>
+                <nav class="sb-nav">
+                    <div class="sb-section">Principal</div>
+                    <div
+                        class="sb-item active"
+                        data-nav="overview"
+                        onclick="navTo('overview',this)"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><rect x="1" y="1" width="6" height="6" rx="1.5"
+                            ></rect><rect
+                                x="9"
+                                y="1"
+                                width="6"
+                                height="6"
+                                rx="1.5"></rect><rect
+                                x="1"
+                                y="9"
+                                width="6"
+                                height="6"
+                                rx="1.5"></rect><rect
+                                x="9"
+                                y="9"
+                                width="6"
+                                height="6"
+                                rx="1.5"></rect></svg
+                        >
+                        <span>Dashboard</span>
+                    </div>
+                    <div
+                        class="sb-item"
+                        data-nav="skills-view"
+                        onclick="navTo('skills-view',this)"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><path
+                                d="M2 12V7l6-5 6 5v5a1 1 0 01-1 1H3a1 1 0 01-1-1z"
+                            ></path><path d="M6 13V9h4v4"></path></svg
+                        >
+                        <span>Skills / Rutas</span>
+                    </div>
+                    <div
+                        class="sb-item"
+                        data-nav="members-view"
+                        onclick="navTo('members-view',this)"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><circle cx="6" cy="5" r="3"></circle><path
+                                d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"
+                            ></path><circle cx="12" cy="5" r="2"></circle><path
+                                d="M12 9c1.7 0 3 1.3 3 3"></path></svg
+                        >
+                        <span>Miembros</span>
+                        <span class="sb-badge" id="sb-members-count">12</span>
+                    </div>
+                    <div
+                        class="sb-item"
+                        data-nav="solutions-view"
+                        onclick="navTo('solutions-view',this)"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><path
+                                d="M5 3H3a1 1 0 00-1 1v9a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1h-2"
+                            ></path><path
+                                d="M6 1h4a1 1 0 011 1v2H5V2a1 1 0 011-1z"
+                            ></path><path d="M5 8h6M5 11h4"></path></svg
+                        >
+                        <span>Retos</span>
+                        <span class="sb-badge teal" id="sb-pending-count"
+                            >3</span
+                        >
+                    </div>
+                </nav>
+                <div class="sb-profile">
+                    <div class="sb-avatar">FN</div>
+                    <div class="flex-1">
+                        <div class="sb-name">fnee</div>
+                        <span
+                            id="role-badge"
+                            class="sb-role-badge"
+                            data-role="admin"
+                            title="Click para cambiar rol"
+                            onclick="cycleRole()">admin</span
+                        >
+                    </div>
+                </div>
+            </aside>
 
-  <!-- ═══ SIDEBAR ═══ -->
-  <aside id="sidebar">
-    <div class="sb-logo">
-      <div class="sb-logo-mark">&gt;_</div>
-      <div>
-        <div class="sb-logo-text">ua wg lacnog</div>
-        <div class="sb-logo-sub">Comunidad de Práctica</div>
-      </div>
-    </div>
-    <nav class="sb-nav">
-      <div class="sb-section">Principal</div>
-      <div class="sb-item active" data-nav="overview" onclick="navTo('overview',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-        <span>Dashboard</span>
-      </div>
-      <div class="sb-item" data-nav="skills-view" onclick="navTo('skills-view',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12V7l6-5 6 5v5a1 1 0 01-1 1H3a1 1 0 01-1-1z"/><path d="M6 13V9h4v4"/></svg>
-        <span>Skills / Rutas</span>
-      </div>
-      <div class="sb-item" data-nav="members-view" onclick="navTo('members-view',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="3"/><path d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><circle cx="12" cy="5" r="2"/><path d="M12 9c1.7 0 3 1.3 3 3"/></svg>
-        <span>Miembros</span>
-        <span class="sb-badge" id="sb-members-count">12</span>
-      </div>
-      <div class="sb-item" data-nav="solutions-view" onclick="navTo('solutions-view',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3H3a1 1 0 00-1 1v9a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1h-2"/><path d="M6 1h4a1 1 0 011 1v2H5V2a1 1 0 011-1z"/><path d="M5 8h6M5 11h4"/></svg>
-        <span>Retos</span>
-        <span class="sb-badge teal" id="sb-pending-count">3</span>
-      </div>
-      <div class="sb-section">Comunidad</div>
-      <div class="sb-item" onclick="toast('📅 UA Day 2026 — 28 de mayo, Ciudad de México')">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="12" rx="1"/><path d="M5 1v4M11 1v4M1 7h14"/></svg>
-        <span>Eventos</span>
-      </div>
-      <div class="sb-item" onclick="toast('📘 UA Academic Curricula — 5 módulos activos')">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L2 5v2l6-4 6 4V5L8 1z"/><path d="M4 8v5h8V8M8 13v-3"/></svg>
-        <span>Currículum</span>
-      </div>
-      <div class="sb-item" onclick="toast('📊 UA TechBoost — Resultados Q1 2026')">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11l4-4 3 3 5-6"/><circle cx="14" cy="4" r="1.5"/></svg>
-        <span>Analítica</span>
-      </div>
-    </nav>
-    <div class="sb-profile">
-      <div class="sb-avatar">FN</div>
-      <div class="flex-1">
-        <div class="sb-name">fnee</div>
-        <span id="role-badge" class="sb-role-badge" data-role="admin" title="Click para cambiar rol" onclick="cycleRole()">admin</span>
-      </div>
-    </div>
-  </aside>
+            <!-- ═══ MAIN ═══ -->
+            <div id="main">
+                <header class="topbar">
+                    <div class="topbar-title">
+                        &gt;_ Comunidad de Práctica <span>/ UA WG LACNOG</span>
+                    </div>
+                </header>
 
-  <!-- ═══ MAIN ═══ -->
-  <div id="main">
-    <header class="topbar">
-      <div class="topbar-title">&gt;_ Comunidad de Práctica <span>/ UA WG LACNOG</span></div>
-      <button class="btn btn-primary" onclick="toast('✉ Formulario de invitación abierto')">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l7 5 7-5"/><rect x="1" y="3" width="14" height="10" rx="1"/></svg>
-        + Invitar Miembro
-      </button>
-      <button class="btn btn-dark" onclick="toast('🔄 Progreso reseteado (simulación)')">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a5 5 0 105-5H6M6 1L3 4l3 3"/></svg>
-        Reset
-      </button>
-    </header>
+                <div class="view-tabs">
+                    <div
+                        class="view-tab active"
+                        data-view="overview"
+                        onclick="switchView('overview',this)"
+                    >
+                        <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><rect x="1" y="1" width="6" height="6" rx="1"
+                            ></rect><rect
+                                x="9"
+                                y="1"
+                                width="6"
+                                height="6"
+                                rx="1"></rect><rect
+                                x="1"
+                                y="9"
+                                width="6"
+                                height="6"
+                                rx="1"></rect><rect
+                                x="9"
+                                y="9"
+                                width="6"
+                                height="6"
+                                rx="1"></rect></svg
+                        >
+                        Resumen
+                    </div>
+                    <div
+                        class="view-tab"
+                        data-view="skills-view"
+                        onclick="switchView('skills-view',this)"
+                    >
+                        <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><path d="M2 12V7l6-5 6 5v5"></path><path
+                                d="M6 13V9h4v4"></path></svg
+                        >
+                        Rutas de Aprendizaje
+                    </div>
+                    <div
+                        class="view-tab"
+                        data-view="members-view"
+                        onclick="switchView('members-view',this)"
+                    >
+                        <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><circle cx="6" cy="5" r="3"></circle><path
+                                d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"></path></svg
+                        >
+                        Miembros
+                    </div>
+                    <div
+                        class="view-tab"
+                        data-view="solutions-view"
+                        onclick="switchView('solutions-view',this)"
+                    >
+                        <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><rect x="2" y="2" width="12" height="12" rx="1.5"
+                            ></rect><path d="M5 6h6M5 9h4"></path></svg
+                        >
+                        Retos
+                    </div>
+                </div>
 
-    <div class="view-tabs">
-      <div class="view-tab active" data-view="overview" onclick="switchView('overview',this)">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-        Resumen
-      </div>
-      <div class="view-tab" data-view="skills-view" onclick="switchView('skills-view',this)">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12V7l6-5 6 5v5"/><path d="M6 13V9h4v4"/></svg>
-        Rutas de Aprendizaje
-      </div>
-      <div class="view-tab" data-view="members-view" onclick="switchView('members-view',this)">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="3"/><path d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
-        Miembros
-      </div>
-      <div class="view-tab" data-view="solutions-view" onclick="switchView('solutions-view',this)">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4"/></svg>
-        Retos
-      </div>
-    </div>
+                <div id="content">
+                    <!-- ══ RESUMEN ══ -->
+                    <section id="overview" class="view-section active">
+                        <div class="kpi-grid">
+                            <div class="kpi-card active">
+                                <div class="kpi-icon amber">
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        stroke="var(--accent)"
+                                        stroke-width="1.5"
+                                        ><path
+                                            d="M8 1l2 5h5l-4 3 1.5 5L8 11l-4.5 3L5 9 1 6h5z"
+                                        ></path></svg>
+                                </div>
+                                <div class="kpi-label">Módulos Completados</div>
+                                <div class="kpi-value">1 <span>/ 5</span></div>
+                                <div class="kpi-progress">
+                                    <div
+                                        class="kpi-progress-bar"
+                                        style="width:20%"
+                                    >
+                                    </div>
+                                </div>
+                                <div class="kpi-sub">UA Academic Curricula</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon teal">
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        stroke="var(--teal-dark)"
+                                        stroke-width="1.5"
+                                        ><path d="M2 12V7l6-5 6 5v5"
+                                        ></path><path d="M6 13V9h4v4"
+                                        ></path></svg>
+                                </div>
+                                <div class="kpi-label">Skills Activos</div>
+                                <div class="kpi-value">7</div>
+                                <div class="kpi-tag">
+                                    <svg
+                                        width="10"
+                                        height="10"
+                                        viewBox="0 0 10 10"
+                                        ><circle
+                                            cx="5"
+                                            cy="5"
+                                            r="4"
+                                            fill="#B7610A"></circle></svg
+                                    >JavaScript
+                                </div>
+                                <div class="kpi-sub">+2 esta semana</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon amber">
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        stroke="var(--accent)"
+                                        stroke-width="1.5"
+                                        ><path d="M8 2v5l3 3"></path><circle
+                                            cx="8"
+                                            cy="9"
+                                            r="6"></circle></svg>
+                                </div>
+                                <div class="kpi-label">Retos Pendientes</div>
+                                <div class="kpi-value c-amber">3</div>
+                                <div class="kpi-sub c-amber fw-7">
+                                    ⚡ Requieren aprobación
+                                </div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon teal">
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        stroke="var(--teal-dark)"
+                                        stroke-width="1.5"
+                                        ><circle cx="6" cy="5" r="3"
+                                        ></circle><path
+                                            d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"
+                                        ></path><circle cx="12" cy="5" r="2"
+                                        ></circle><path
+                                            d="M12 9c1.7 0 3 1.3 3 3"
+                                        ></path></svg>
+                                </div>
+                                <div class="kpi-label">Miembros Activos</div>
+                                <div class="kpi-value">12</div>
+                                <div class="kpi-progress">
+                                    <div
+                                        class="kpi-progress-bar gp-bar teal"
+                                        style="width:80%"
+                                    >
+                                    </div>
+                                </div>
+                                <div class="kpi-sub">
+                                    8 con actividad reciente
+                                </div>
+                            </div>
+                        </div>
 
-    <div id="content">
+                        <div class="feed-card">
+                            <div class="feed-header">Actividad Reciente</div>
+                            <div class="feed-item">
+                                <div class="feed-dot"></div>
+                                <div>
+                                    <div class="feed-text">
+                                        <strong>Martín Solís</strong> completó el
+                                        reto "CSS Grid Layouts" en Módulo 2 — UA TechBoost
+                                    </div><div class="feed-time">
+                                        Hace 2 horas
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="feed-item">
+                                <div class="feed-dot teal"></div>
+                                <div>
+                                    <div class="feed-text">
+                                        <strong>Valeria Oquendo</strong> envió reto
+                                        para "Semantic HTML Blog" — pendiente de aprobación
+                                    </div><div class="feed-time">
+                                        Hace 4 horas · UA Academic Curricula
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="feed-item">
+                                <div class="feed-dot"></div>
+                                <div>
+                                    <div class="feed-text">
+                                        Evento <strong>UA Day 2026</strong> confirmado
+                                        — 28 de mayo, Ciudad de México
+                                    </div><div class="feed-time">
+                                        Ayer · Anuncio oficial
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="feed-item">
+                                <div class="feed-dot teal"></div>
+                                <div>
+                                    <div class="feed-text">
+                                        <strong>Tomás Bracamonte</strong> fue asignado
+                                        como colaborador académico del Módulo 3
+                                    </div><div class="feed-time">
+                                        Hace 2 días · UA TechBoost
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="feed-item">
+                                <div class="feed-dot"></div>
+                                <div>
+                                    <div class="feed-text">
+                                        <strong>Ana Torres</strong> comenzó la ruta
+                                        "UA Academic Curricula" — Módulo 1
+                                    </div><div class="feed-time">
+                                        Hace 3 días
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-      <!-- ══ RESUMEN ══ -->
-      <section id="overview" class="view-section active">
-        <div class="kpi-grid">
-          <div class="kpi-card active">
-            <div class="kpi-icon amber"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--amber)" stroke-width="1.5"><path d="M8 1l2 5h5l-4 3 1.5 5L8 11l-4.5 3L5 9 1 6h5z"/></svg></div>
-            <div class="kpi-label">Módulos Completados</div>
-            <div class="kpi-value">1 <span>/ 5</span></div>
-            <div class="kpi-progress"><div class="kpi-progress-bar" style="width:20%"></div></div>
-            <div class="kpi-sub">UA Academic Curricula</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-icon teal"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--teal-dark)" stroke-width="1.5"><path d="M2 12V7l6-5 6 5v5"/><path d="M6 13V9h4v4"/></svg></div>
-            <div class="kpi-label">Skills Activos</div>
-            <div class="kpi-value">7</div>
-            <div class="kpi-tag"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#B7610A"/></svg>JavaScript</div>
-            <div class="kpi-sub">+2 esta semana</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-icon amber"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--amber)" stroke-width="1.5"><path d="M8 2v5l3 3"/><circle cx="8" cy="9" r="6"/></svg></div>
-            <div class="kpi-label">Retos Pendientes</div>
-            <div class="kpi-value c-amber">3</div>
-            <div class="kpi-sub c-amber fw-7">⚡ Requieren aprobación</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-icon teal"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--teal-dark)" stroke-width="1.5"><circle cx="6" cy="5" r="3"/><path d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><circle cx="12" cy="5" r="2"/><path d="M12 9c1.7 0 3 1.3 3 3"/></svg></div>
-            <div class="kpi-label">Miembros Activos</div>
-            <div class="kpi-value">12</div>
-            <div class="kpi-progress"><div class="kpi-progress-bar gp-bar teal" style="width:80%"></div></div>
-            <div class="kpi-sub">8 con actividad reciente</div>
-          </div>
+                    <!-- ══ RUTAS ══ -->
+                    <section id="skills-view" class="view-section">
+                        <div
+                            id="skills-admin-banner"
+                            class="info-banner hidden"
+                        >
+                            ⚠ Solo el rol <b>Admin</b> puede editar rutas. Estás en
+                            modo <b id="skills-current-role">manager</b>.
+                        </div>
+                        <div class="filters-bar">
+                            <span class="filter-label">Filtrar por etapa:</span>
+                            <select
+                                class="filter-select"
+                                id="filter-stage"
+                                onchange="renderSkills()"
+                            >
+                                <option value="">Todas las etapas</option>
+                                <option value="conceptos_clave"
+                                    >Conceptos Clave</option
+                                >
+                                <option value="implementacion_tecnica"
+                                    >Implementación Técnica</option
+                                >
+                            </select>
+                            <span class="filter-label">Filtrar por perfil:</span
+                            >
+                            <select
+                                class="filter-select"
+                                id="filter-track"
+                                onchange="renderSkills()"
+                            >
+                                <option value="">Todos los perfiles</option>
+                                <option value="student"
+                                    >Estudiantes/Profesionales</option
+                                >
+                                <option value="teacher"
+                                    >Profesores/Instructores</option
+                                >
+                            </select>
+                        </div>
+                        <div class="skills-grid" id="skills-grid"></div>
+                    </section>
+
+                    <!-- ══ MIEMBROS ══ -->
+                    <section id="members-view" class="view-section">
+                        {
+                            communities.length === 0 ? (
+                                <div
+                                    class="table-card"
+                                    style="text-align:center;padding:44px 24px"
+                                >
+                                    <div style="font-size:15px;font-weight:700;margin-bottom:6px">
+                                        Todavía no perteneces a ninguna
+                                        comunidad
+                                    </div>
+                                    <p
+                                        class="muted-sm"
+                                        style="max-width:460px;margin:0 auto 18px;line-height:1.5"
+                                    >
+                                        Cuando te unas a una comunidad o crees
+                                        la tuya, aquí verás a sus miembros, su
+                                        rol y su progreso.
+                                    </p>
+                                    <a
+                                        class="btn btn-primary btn-sm"
+                                        href="/grid"
+                                    >
+                                        Explorar comunidades
+                                    </a>
+                                </div>
+                            ) : (
+                                <>
+                                    <div
+                                        id="members-rbac-banner"
+                                        class="info-banner hidden"
+                                    >
+                                        🔒 Como <b>Manager</b>, los perfiles
+                                        Admin y Manager son de solo lectura.
+                                    </div>
+                                    <div
+                                        id="members-member-banner"
+                                        class="info-banner hidden"
+                                        style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark)"
+                                    >
+                                        👤 Solo puedes ver tu propio perfil. Las
+                                        columnas de ruta, progreso y acciones
+                                        son visibles únicamente para Admin y
+                                        Manager.
+                                    </div>
+                                    <div class="table-card">
+                                        <div class="table-header">
+                                            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0">
+                                                <div class="table-title">
+                                                    Gestión de Miembros
+                                                </div>
+                                                {communities.length > 1 && (
+                                                    <select
+                                                        id="community-select"
+                                                        class="filter-select"
+                                                        onchange="onCommunityChange(this.value)"
+                                                    >
+                                                        {communities.map(
+                                                            (c) => (
+                                                                <option
+                                                                    value={c.id}
+                                                                >
+                                                                    {c.name}
+                                                                    {c.owned
+                                                                        ? " · (tuya)"
+                                                                        : ""}
+                                                                </option>
+                                                            ),
+                                                        )}
+                                                    </select>
+                                                )}
+                                            </div>
+                                            <button
+                                                class="btn btn-primary btn-sm"
+                                                onclick="toast('✉ Formulario de invitación abierto')"
+                                            >
+                                                + Invitar Miembro
+                                            </button>
+                                        </div>
+                                        <div class="overflow-x-auto">
+                                            <table class="members-table">
+                                                <thead>
+                                                    <tr id="members-thead-row">
+                                                        <>
+                                                            <th>Miembro</th>
+                                                            <th>Rol</th>
+                                                            <th>
+                                                                Ruta de Skills
+                                                            </th>
+                                                        </>
+                                                        <>
+                                                            <th style="min-width:140px">
+                                                                Progreso
+                                                            </th>
+                                                            <th>Acciones</th>
+                                                        </>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="members-tbody" />
+                                            </table>
+                                        </div>
+                                    </div>
+                                </>
+                            )
+                        }
+                    </section>
+
+                    <!-- ══ RETOS ══ -->
+                    <section id="solutions-view" class="view-section">
+                        <div class="filters-bar">
+                            <span class="filter-label"
+                                >Filtrar por Skill/Ruta:</span
+                            >
+                            <select
+                                class="filter-select"
+                                id="filter-skill"
+                                onchange="renderSolutions()"
+                            >
+                                <option value="">Todas las rutas</option>
+                                <option value="Conceptos Básicos"
+                                    >Conceptos Básicos</option
+                                >
+                                <option value="Implementación Técnica"
+                                    >Implementación Técnica</option
+                                >
+                            </select>
+                            <span class="filter-label">Ordenar por:</span>
+                            <select
+                                class="filter-select"
+                                id="filter-sort"
+                                onchange="renderSolutions()"
+                            >
+                                <option value="date">Más reciente</option>
+                                <option value="rating">Mayor rating</option>
+                                <option value="pending"
+                                    >Retos pendientes primero</option
+                                >
+                            </select>
+                            <span
+                                id="sol-counter"
+                                style="margin-left:auto;font-size:11.5px;color:var(--text-secondary)"
+                            ></span>
+                        </div>
+                        <div class="solutions-grid" id="solutions-grid"></div>
+                    </section>
+                </div>
+            </div>
         </div>
 
-        <div class="feed-card">
-          <div class="feed-header">Actividad Reciente</div>
-          <div class="feed-item">
-            <div class="feed-dot"></div>
-            <div><div class="feed-text"><strong>Martín Solís</strong> completó el reto "CSS Grid Layouts" en Módulo 2 — UA TechBoost</div><div class="feed-time">Hace 2 horas</div></div>
-          </div>
-          <div class="feed-item">
-            <div class="feed-dot teal"></div>
-            <div><div class="feed-text"><strong>Valeria Oquendo</strong> envió reto para "Semantic HTML Blog" — pendiente de aprobación</div><div class="feed-time">Hace 4 horas · UA Academic Curricula</div></div>
-          </div>
-          <div class="feed-item">
-            <div class="feed-dot"></div>
-            <div><div class="feed-text">Evento <strong>UA Day 2026</strong> confirmado — 28 de mayo, Ciudad de México</div><div class="feed-time">Ayer · Anuncio oficial</div></div>
-          </div>
-          <div class="feed-item">
-            <div class="feed-dot teal"></div>
-            <div><div class="feed-text"><strong>Tomás Bracamonte</strong> fue asignado como colaborador académico del Módulo 3</div><div class="feed-time">Hace 2 días · UA TechBoost</div></div>
-          </div>
-          <div class="feed-item">
-            <div class="feed-dot"></div>
-            <div><div class="feed-text"><strong>Ana Torres</strong> comenzó la ruta "UA Academic Curricula" — Módulo 1</div><div class="feed-time">Hace 3 días</div></div>
-          </div>
-        </div>
-      </section>
+        <div id="toast"></div>
 
-      <!-- ══ RUTAS ══ -->
-      <section id="skills-view" class="view-section">
-        <div id="skills-admin-banner" class="info-banner hidden">
-          ⚠ Solo el rol <b>Admin</b> puede editar rutas. Estás en modo <b id="skills-current-role">manager</b>.
-        </div>
-        <div class="filters-bar">
-          <span class="filter-label">Filtrar por etapa:</span>
-          <select class="filter-select" id="filter-stage" onchange="renderSkills()">
-            <option value="">Todas las etapas</option>
-            <option value="conceptos_clave">Conceptos Clave</option>
-            <option value="implementacion_tecnica">Implementación Técnica</option>
-          </select>
-          <span class="filter-label">Filtrar por perfil:</span>
-          <select class="filter-select" id="filter-track" onchange="renderSkills()">
-            <option value="">Todos los perfiles</option>
-            <option value="student">Estudiantes/Profesionales</option>
-            <option value="teacher">Profesores/Instructores</option>
-          </select>
-        </div>
-        <div class="skills-grid" id="skills-grid"></div>
-      </section>
-
-      <!-- ══ MIEMBROS ══ -->
-      <section id="members-view" class="view-section">
-        <div id="members-rbac-banner" class="info-banner hidden">
-          🔒 Como <b>Manager</b>, los perfiles Admin y Manager son de solo lectura.
-        </div>
-        <div id="members-member-banner" class="info-banner hidden" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark)">
-          👤 Solo puedes ver tu propio perfil. Las columnas de ruta, progreso y acciones son visibles únicamente para Admin y Manager.
-        </div>
-        <div class="table-card">
-          <div class="table-header">
-            <div class="table-title">Gestión de Miembros</div>
-            <button class="btn btn-primary btn-sm" onclick="toast('✉ Formulario de invitación abierto')">+ Invitar Miembro</button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="members-table">
-              <thead>
-                <tr id="members-thead-row">
-                  <th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>
-                  <th style="min-width:140px">Progreso</th><th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="members-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ══ RETOS ══ -->
-      <section id="solutions-view" class="view-section">
-        <div class="filters-bar">
-          <span class="filter-label">Filtrar por Skill/Ruta:</span>
-          <select class="filter-select" id="filter-skill" onchange="renderSolutions()">
-            <option value="">Todas las rutas</option>
-            <option value="Conceptos Básicos">Conceptos Básicos</option>
-            <option value="Implementación Técnica">Implementación Técnica</option>
-          </select>
-          <span class="filter-label">Ordenar por:</span>
-          <select class="filter-select" id="filter-sort" onchange="renderSolutions()">
-            <option value="date">Más reciente</option>
-            <option value="rating">Mayor rating</option>
-            <option value="pending">Retos pendientes primero</option>
-          </select>
-          <span id="sol-counter" style="margin-left:auto;font-size:11.5px;color:var(--muted)"></span>
-        </div>
-        <div class="solutions-grid" id="solutions-grid"></div>
-      </section>
-
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<style is:global>
-
-/* ═══════════════════════════════════════
+        <style is:global>
+            /* ═══════════════════════════════════════
    DESIGN SYSTEM — UA WG LACNOG v2.5
    ═══════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-button, select { font-family: inherit; }
-
-:root {
-  --amber:       #E9642C;
-  --amber-light: #FEF0E8;
-  --amber-mid:   #F5A067;
-  --teal:        #7CD4CC;
-  --teal-light:  #E8F8F7;
-  --teal-dark:   #2a9d96;
-  --bg:          #F8F9FA;
-  --surface:     #FFFFFF;
-  --text:        #343A40;
-  --muted:       #6C757D;
-  --border:      #E9ECEF;
-  --shadow:      0 2px 8px rgba(0,0,0,.07);
-  --shadow-md:   0 4px 16px rgba(0,0,0,.10);
-  --radius:      12px;
-  --radius-xs:   6px;
-  --sidebar-w:   228px;
-  --font:        'Segoe UI', system-ui, -apple-system, sans-serif;
-}
-
-html, body { height: 100%; font-family: var(--font); font-size: 13px; color: var(--text); background: var(--bg); overflow: hidden; }
-
-/* ── LAYOUT ── */
-#app  { display: flex; height: 100vh; overflow: hidden; }
-#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-
-/* ── SIDEBAR ── */
-#sidebar {
-  width: var(--sidebar-w); min-width: var(--sidebar-w);
-  background: var(--surface); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; height: 100vh;
-  overflow: hidden; position: relative; z-index: 10;
-}
-.sb-logo { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.sb-logo-mark { width: 32px; height: 32px; background: var(--amber); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 13px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(233,100,44,.3); }
-.sb-logo-text { font-size: 14px; font-weight: 800; color: var(--amber); letter-spacing: -.3px; }
-.sb-logo-sub  { font-size: 10px; color: var(--muted); margin-top: 1px; }
-.sb-section   { padding: 14px 16px 4px; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .7px; text-transform: uppercase; }
-.sb-nav { flex: 1; overflow-y: auto; padding: 6px 0; }
-.sb-nav::-webkit-scrollbar { width: 4px; }
-.sb-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.sb-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px; cursor: pointer; border-radius: var(--radius-xs); margin: 1px 8px; transition: all .15s; color: var(--muted); font-size: 12.5px; user-select: none; }
-.sb-item:hover  { background: var(--bg); color: var(--text); }
-.sb-item.active { background: var(--amber-light); color: var(--amber); font-weight: 700; }
-.sb-item svg    { width: 16px; height: 16px; flex-shrink: 0; }
-.sb-badge { margin-left: auto; background: var(--amber); color: #fff; border-radius: 10px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
-.sb-badge.teal { background: var(--teal); }
-.sb-profile { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.sb-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--amber), var(--amber-mid)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(233,100,44,.25); }
-.sb-name { font-size: 12.5px; font-weight: 700; color: var(--text); }
-.sb-role-badge { font-size: 10px; cursor: pointer; padding: 2px 8px; border-radius: 10px; transition: all .15s; font-weight: 600; display: inline-block; }
-.sb-role-badge[data-role="admin"]   { background: var(--amber-light); color: var(--amber);     border: 1px solid var(--amber);  }
-.sb-role-badge[data-role="manager"] { background: var(--teal-light);  color: var(--teal-dark); border: 1px solid var(--teal);   }
-.sb-role-badge[data-role="member"]  { background: var(--bg);          color: var(--muted);     border: 1px solid var(--border); }
-
-/* ── TOPBAR ── */
-.topbar { padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.topbar-title { font-size: 15px; font-weight: 800; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar-title span { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 4px; }
-
-/* ── BUTTONS ── */
-.btn { border: none; cursor: pointer; border-radius: var(--radius-xs); padding: 7px 14px; font-size: 12px; font-weight: 700; transition: all .15s; display: inline-flex; align-items: center; gap: 5px; }
-.btn-primary { background: var(--amber); color: #fff; }
-.btn-primary:hover { background: #d45a25; }
-.btn-dark    { background: #343A40; color: #fff; }
-.btn-dark:hover { background: #23272b; }
-.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-.btn-outline:hover { border-color: var(--amber); color: var(--amber); }
-.btn-sm { padding: 4px 10px; font-size: 11px; }
-
-/* ── VIEW TABS ── */
-.view-tabs { display: flex; padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
-.view-tabs::-webkit-scrollbar { height: 0; }
-.view-tab { padding: 10px 18px; font-size: 12.5px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 500; transition: all .15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
-.view-tab.active { color: var(--amber); border-bottom-color: var(--amber); font-weight: 700; }
-.view-tab:hover:not(.active) { color: var(--text); }
-
-/* ── CONTENT ── */
-#content { flex: 1; overflow-y: auto; padding: 20px; }
-#content::-webkit-scrollbar { width: 6px; }
-#content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.view-section { display: none; animation: fadeIn .2s ease; }
-.view-section.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
-/* ── KPI GRID ── */
-.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
-@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-.kpi-card { background: var(--surface); border-radius: var(--radius); padding: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); transition: border-color .2s, box-shadow .2s; }
-.kpi-card:hover, .kpi-card.active { border-color: var(--amber); box-shadow: var(--shadow-md); }
-.kpi-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-.kpi-icon.amber { background: var(--amber-light); }
-.kpi-icon.teal  { background: var(--teal-light); }
-.kpi-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-.kpi-value { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1.1; }
-.kpi-value span { font-size: 15px; font-weight: 400; color: var(--muted); }
-.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 5px; }
-.kpi-progress { margin-top: 10px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.kpi-progress-bar { height: 100%; background: var(--amber); border-radius: 2px; }
-.kpi-tag { display: inline-flex; align-items: center; gap: 4px; background: #FFF9E6; color: #B7610A; border-radius: 4px; padding: 2px 7px; font-size: 10px; font-weight: 700; margin-top: 6px; }
-
-/* ── FEED ── */
-.feed-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 14px; }
-.feed-header { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; margin-bottom: 10px; }
-.feed-item { display: flex; gap: 11px; padding: 9px 0; border-bottom: 1px solid var(--border); }
-.feed-item:last-child { border-bottom: none; padding-bottom: 0; }
-.feed-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); margin-top: 5px; flex-shrink: 0; }
-.feed-dot.teal { background: var(--teal); }
-.feed-text { font-size: 12.5px; color: var(--text); line-height: 1.45; }
-.feed-time { font-size: 10.5px; color: var(--muted); margin-top: 3px; }
-
-/* ── INFO BANNER ── */
-.info-banner { background: var(--amber-light); border: 1px solid var(--amber); border-radius: var(--radius-xs); padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--amber); font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.info-banner.hidden { display: none; }
-
-/* ── MEMBER TABLE ── */
-.table-card { background: var(--surface); border-radius: var(--radius); border: 2px solid var(--amber); box-shadow: var(--shadow-md); overflow: hidden; }
-.table-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-.table-title { font-size: 14px; font-weight: 800; color: var(--text); }
-.members-table { width: 100%; border-collapse: collapse; }
-.members-table thead tr { background: var(--bg); }
-.members-table th { padding: 9px 14px; font-size: 10.5px; font-weight: 700; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); letter-spacing: .3px; text-transform: uppercase; }
-.members-table td { padding: 10px 14px; font-size: 12.5px; border-bottom: 1px solid var(--border); }
-.members-table tbody tr:last-child td { border-bottom: none; }
-.members-table tbody tr:hover td { background: var(--bg); }
-.member-cell { display: flex; align-items: center; gap: 9px; }
-.m-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; flex-shrink: 0; }
-.role-pill   { padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; }
-.role-admin   { background: var(--amber-light); color: var(--amber); }
-.role-manager { background: var(--teal-light);  color: var(--teal-dark); }
-.role-member  { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-.row-disabled td { opacity: .45; pointer-events: none; }
-/* Ruta badges — shared base */
-.ruta-tag   { display: inline-flex; align-items: center; gap: 5px; border: 1px solid; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
-.ruta-impl  { background: var(--amber-light); color: var(--amber);    border-color: var(--amber-mid); }
-.ruta-basic { background: var(--teal-light);  color: var(--teal-dark); border-color: var(--teal);     }
-/* Member action buttons */
-.m-btn { display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-xs); padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all .15s; border: 1px solid; }
-.m-btn-edit   { background: var(--amber-light); color: var(--amber);  border-color: var(--amber-mid); }
-.m-btn-edit:hover   { background: var(--amber); color: #fff; }
-.m-btn-delete { background: #FDE8E8; color: #C0392B; border-color: #F5A0A0; }
-.m-btn-delete:hover { background: #C0392B; color: #fff; }
-.action-btn { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 5px; font-size: 11px; color: var(--muted); transition: all .15s; }
-.action-btn:hover { background: var(--amber-light); color: var(--amber); }
-/* Progress cell */
-.prog-cell { display: flex; align-items: center; gap: 8px; }
-.gp-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.gp-bar { height: 100%; background: var(--amber); border-radius: 3px; }
-.gp-bar.teal { background: var(--teal); }
-.prog-pct { font-size: 11px; font-weight: 700; color: var(--amber); width: 32px; text-align: right; }
-/* Utility */
-.muted-sm { font-size: 11px; color: var(--muted); }
-.c-amber   { color: var(--amber); }
-.fw-7      { font-weight: 700; }
-.btn-full  { margin-top: 8px; width: 100%; font-size: 11px; }
-
-/* ── FILTROS ── */
-.filters-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-.filter-label { font-size: 12px; color: var(--muted); font-weight: 600; }
-.filter-select { padding: 6px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); background: var(--surface); font-size: 12px; color: var(--text); outline: none; cursor: pointer; transition: border-color .15s; }
-.filter-select:focus { border-color: var(--amber); }
-
-/* ── RETOS / SKILLS GRIDS (compartido) ── */
-.solutions-grid, .skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-@media (max-width: 900px) { .solutions-grid, .skills-grid { grid-template-columns: 1fr; } }
-.sol-card { background: var(--surface); border-radius: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); padding: 18px 20px 16px; display: flex; flex-direction: column; transition: box-shadow .2s, border-color .2s; }
-.sol-card:hover { box-shadow: var(--shadow-md); border-color: #D8DCE0; }
-.sol-row-top  { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
-.sol-row-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.sol-row-lang { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
-.sol-tag-row  { margin-bottom: 8px; }
-.sol-title-v2 { font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.2; }
-.sol-author-v2 { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); font-weight: 500; }
-.sol-author-icon { width: 22px; height: 22px; background: var(--amber-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.sol-date-v2 { font-size: 12px; color: var(--muted); font-weight: 500; }
-/* Shared pill base */
-.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0; border: 1.5px solid; }
-.sol-status-pending  { background: var(--amber-light); color: var(--amber);  border-color: var(--amber-mid); }
-.sol-status-approved { background: #E8FDE8; color: #1a7a3a; border-color: #C6EFD8; }
-/* Shared ruta tag base */
-.sol-ruta-tag { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid; }
-.sol-ruta-tag-impl  { background: var(--amber-light); color: var(--amber);    border-color: var(--amber-mid); }
-.sol-ruta-tag-basic { background: var(--teal-light);  color: var(--teal-dark); border-color: var(--teal);     }
-.sol-lang-tag        { display: inline-flex; align-items: center; gap: 6px; background: #F0F4FF; border: 1.5px solid #A8C8F0; border-radius: 10px; padding: 5px 12px; font-size: 12px; font-weight: 700; }
-.sol-lang-tag.java   { color: #2D4A8A; }
-.sol-lang-tag.python { color: #1F4E79; }
-.sol-stars { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; color: var(--amber); font-weight: 800; }
-.sol-stars span { color: var(--text); font-size: 12px; }
-.sol-github-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; background: #1E2A3A; color: #fff; border: none; border-radius: 7px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .15s; flex-shrink: 0; }
-.sol-github-btn:hover { background: #2D3F55; }
-.sol-actions-v2 { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 8px; }
-/* Shared action button base */
-.sol-action-btn { border: none; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all .15s; }
-.sol-btn-approve { background: #FDECEA; color: var(--amber); }
-.sol-btn-approve:hover { background: var(--amber); color: #fff; }
-.sol-btn-reject  { background: #F1F3F5; color: var(--muted); }
-.sol-btn-reject:hover { background: #FDE8E8; color: #C0392B; }
-
-/* ── SKILLS CARDS v4 — aplica a las 6 tarjetas de Rutas ── */
-
-/* Override de columnas: solo el grid de Rutas pasa a 3 columnas */
-#skills-view .skills-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
-@media (max-width: 1100px) { #skills-view .skills-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 680px)  { #skills-view .skills-grid { grid-template-columns: 1fr; } }
-
-.skill-card-v4 {
-  background: var(--surface);
-  border-radius: 16px;
-  border: 2px solid var(--amber);
-  box-shadow: 0 2px 10px rgba(233,100,44,.08);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow .2s, transform .15s;
-}
-.skill-card-v4:hover {
-  box-shadow: 0 6px 24px rgba(233,100,44,.16);
-  transform: translateY(-2px);
-}
-
-/* Sección superior: etiqueta + título */
-.sk4-header { padding: 16px 18px 14px; }
-.sk4-type   { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: .8px; text-transform: uppercase; margin-bottom: 5px; }
-.sk4-title  { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.3; }
-
-/* Fila de progreso: nombre + barra + tema */
-.sk4-prog-row { display: flex; align-items: center; gap: 12px; padding: 8px 18px 16px; }
-.sk4-name     { font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap; flex-shrink: 0; }
-.sk4-bar-wrap { flex: 1; height: 22px; background: #E9ECEF; border-radius: 11px; overflow: hidden; min-width: 0; }
-.sk4-bar {
-  height: 100%; border-radius: 11px;
-  background: linear-gradient(90deg, var(--amber) 0%, var(--amber-mid) 100%);
-  display: flex; align-items: center;
-  transition: width .6s ease;
-  min-width: 36px; /* espacio mínimo para mostrar el % */
-}
-.sk4-bar-pct  { font-size: 11px; font-weight: 800; color: #fff; padding-left: 9px; white-space: nowrap; }
-.sk4-tema     { font-size: 13px; color: var(--text); white-space: nowrap; flex-shrink: 0; }
-.sk4-tema b   { font-weight: 800; }
-
-/* Divisor */
-.sk4-divider  { border: none; border-top: 1px solid var(--border); margin: 0; }
-
-/* Sección inferior: desafíos */
-.sk4-challenges { padding: 12px 18px 16px; }
-.sk4-ch-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.sk4-ch-title   { font-size: 11px; font-weight: 800; color: var(--text); letter-spacing: .5px; text-transform: uppercase; }
-.sk4-ch-level   { font-size: 12px; color: var(--muted); }
-.sk4-icons      { display: flex; gap: 6px; flex-wrap: wrap; }
-
-/* Íconos de desafío */
-.sk4-icon {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; border: 2px solid;
-}
-.sk4-icon.done    { background: #DCFCE7; border-color: #86EFAC; color: #16A34A; }
-.sk4-icon.current { background: var(--amber-light); border-color: var(--amber); color: var(--amber); }
-.sk4-icon.locked  { background: #F8F9FA; border-color: #CED4DA; color: #ADB5BD; }
-
-/* SVG compartidos para íconos */
-
-.sk-seg-wrap { display: flex; gap: 3px; margin-bottom: 6px; }
-.sk-seg { flex: 1; height: 5px; border-radius: 2px; }
-.sk-seg.done  { background: var(--amber); }
-.sk-seg.empty { background: #DDE3EA; }
-
-/* ── SKILL CARD V3.5 (aislada — solo tarjeta 1) ── */
-.skill-card-v35 {
-  background: var(--surface);
-  border-radius: 16px;
-  border: 2px solid var(--amber);
-  box-shadow: 0 4px 20px rgba(233,100,44,.12);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow .2s;
-}
-.skill-card-v35:hover { box-shadow: 0 8px 32px rgba(233,100,44,.18); }
-
-/* Header V3.5 */
-.sk35-header { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); }
-.sk35-type   { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 3px; }
-.sk35-title  { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.25; }
-
-/* Foto + info del asignado */
-.sk35-assignee-row { display: flex; align-items: center; gap: 11px; padding: 12px 18px 10px; }
-.sk35-photo-wrap   { position: relative; flex-shrink: 0; }
-.sk35-photo {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--border);
-}
-.sk35-online {
-  width: 11px; height: 11px;
-  border-radius: 50%;
-  background: #22C55E;
-  border: 2px solid var(--surface);
-  position: absolute; bottom: 1px; right: 1px;
-}
-.sk35-name  { font-size: 14px; font-weight: 800; color: var(--text); }
-.sk35-count { font-size: 13px; font-weight: 700; color: var(--muted); margin-left: auto; white-space: nowrap; }
-
-/* Barra sólida V3.5 */
-.sk35-bar-section { padding: 0 18px 12px; }
-.sk35-bar-wrap    { height: 18px; background: #E9ECEF; border-radius: 9px; overflow: hidden; position: relative; }
-.sk35-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--amber) 0%, var(--amber-mid) 100%);
-  border-radius: 9px;
-  display: flex; align-items: center;
-  transition: width .6s ease;
-}
-.sk35-bar-pct { font-size: 10px; font-weight: 800; color: #fff; padding-left: 8px; white-space: nowrap; }
-
-/* Mosaico de desafíos */
-.sk35-mosaic { padding: 10px 18px 12px; border-top: 1px solid var(--border); }
-.sk35-mosaic-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .4px; text-transform: uppercase; margin-bottom: 8px; }
-.sk35-icons { display: flex; gap: 6px; flex-wrap: wrap; }
-.sk35-icon  {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.sk35-icon.green  { background: #D1FAE5; color: #059669; border: 1.5px solid #6EE7B7; }
-.sk35-icon.orange { background: var(--amber-light); color: var(--amber); border: 1.5px solid var(--amber-mid); }
-.sk35-icon.grey   { background: #F1F3F5; color: #CED4DA; border: 1.5px solid #DEE2E6; }
-
-/* Footer V3.5 */
-.sk35-footer { padding: 6px 18px 10px; display: flex; justify-content: flex-end; }
-.sk35-version { font-size: 9px; color: #ADB5BD; font-style: italic; }
-.skill-card { background: var(--surface); border-radius: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s, border-color .2s; }
-.skill-card:hover { box-shadow: var(--shadow-md); border-color: #C8D0D8; }
-.sk-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
-.sk-type-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .4px; text-transform: uppercase; margin-bottom: 4px; }
-.sk-title { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.25; }
-.sk-modules-preview { padding: 14px 20px 10px; display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
-.sk-mod-dot       { width: 28px; height: 6px; border-radius: 3px; }
-.sk-mod-dot.done  { background: var(--amber); }
-.sk-mod-dot.empty { background: var(--border); }
-.sk-footer { margin: 0 12px 12px; background: var(--bg); border-radius: 12px; padding: 10px 14px; border: 1px solid var(--border); }
-.sk-assignee-row  { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.sk-avatar-wrap   { position: relative; flex-shrink: 0; }
-.sk-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; }
-.sk-online-dot { width: 9px; height: 9px; border-radius: 50%; background: #22C55E; border: 2px solid var(--bg); position: absolute; bottom: 0; right: 0; }
-.sk-assignee-name  { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
-.sk-progress-count { font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
-.sk-bar-wrap { height: 8px; background: #DDE3EA; border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
-.sk-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--amber), var(--amber-mid)); position: relative; }
-.sk-bar::after { content: attr(data-pct); position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 800; color: #fff; white-space: nowrap; }
-.sk-bar.zero { background: #DDE3EA; }
-.sk-bar.zero::after { color: var(--muted); left: 2px; }
-.sk-last-completed { font-size: 11px; color: var(--muted); }
-.sk-last-completed b { color: var(--text); }
-
-/* ── UTILIDADES ── */
-.overflow-x-auto { overflow-x: auto; }
-.flex-1 { flex: 1; min-width: 0; }
-
-/* ── TOAST ── */
-#toast { position: fixed; bottom: 22px; right: 22px; background: #23272b; color: #fff; padding: 11px 18px; border-radius: var(--radius-xs); font-size: 12.5px; font-weight: 600; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow-md); max-width: 320px; }
-#toast.show { opacity: 1; transform: none; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 720px) {
-  #sidebar { width: 60px; min-width: 60px; }
-  .sb-logo-text, .sb-logo-sub, .sb-item span, .sb-section, .sb-badge, .sb-name, .sb-role-badge { display: none; }
-  .sb-logo { padding: 14px 12px; justify-content: center; }
-  .sb-item { justify-content: center; padding: 10px; margin: 1px 4px; }
-  .sb-profile { justify-content: center; }
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-</style>
-
-<script is:inline>
-
-'use strict';
-
-/* ── ESTADO ── */
-var state = { role: 'admin', currentView: 'overview' };
-
-/* ── MOCK DATA ── */
-var members = [
-  { name: 'fnee (tú)',        initials: 'FN', color: '#E9642C', role: 'admin',   progress: 25, ruta: 'Implementación Técnica' },
-  { name: 'Martín Solís',     initials: 'MS', color: '#7CD4CC', role: 'admin',   progress: 60, ruta: 'Conceptos Básicos'       },
-  { name: 'Valeria Oquendo',  initials: 'VO', color: '#5B8DEF', role: 'manager', progress: 45, ruta: 'Implementación Técnica'  },
-  { name: 'Tomás Bracamonte', initials: 'TB', color: '#9B7EDE', role: 'manager', progress: 38, ruta: 'Conceptos Básicos'       },
-  { name: 'Ana Torres',       initials: 'AT', color: '#F5A623', role: 'member',  progress: 15, ruta: 'Conceptos Básicos'       },
-  { name: 'Miguel Soto',      initials: 'MS', color: '#50C878', role: 'member',  progress: 30, ruta: 'Implementación Técnica'  },
-  { name: 'Laura Ramírez',    initials: 'LR', color: '#FF6B6B', role: 'member',  progress: 20, ruta: 'Conceptos Básicos'       },
-  { name: 'Carlos Ibáñez',    initials: 'CI', color: '#4ECDC4', role: 'member',  progress: 10, ruta: 'Implementación Técnica'  },
-  { name: 'Patricia Vega',    initials: 'PV', color: '#A29BFE', role: 'member',  progress:  5, ruta: 'Conceptos Básicos'       },
-  { name: 'Jorge Mendoza',    initials: 'JM', color: '#FD79A8', role: 'member',  progress: 18, ruta: 'Implementación Técnica'  },
-  { name: 'Sofía Guerrero',   initials: 'SG', color: '#74B9FF', role: 'member',  progress: 42, ruta: 'Implementación Técnica'  },
-  { name: 'Roberto Chávez',   initials: 'RC', color: '#55EFC4', role: 'member',  progress:  8, ruta: 'Conceptos Básicos'       },
-];
-
-var solutions = [
-  { title: 'Single-Page CV',       author: 'Martín Solís',     lang: 'Python', ruta: 'Implementación Técnica', rating: 4.8, date: '2026-04-18', pending: false },
-  { title: 'Basic HTML Website',   author: 'Valeria Oquendo',  lang: 'Java',   ruta: 'Conceptos Básicos',      rating: 4.5, date: '2026-04-17', pending: true  },
-  { title: 'CSS Grid Dashboard',   author: 'Tomás Bracamonte', lang: 'Java',   ruta: 'Implementación Técnica', rating: 4.9, date: '2026-04-16', pending: false },
-  { title: 'Personal Portfolio',   author: 'Ana Torres',       lang: 'Python', ruta: 'Conceptos Básicos',      rating: 4.2, date: '2026-04-15', pending: true  },
-  { title: 'Semantic HTML Blog',   author: 'Miguel Soto',      lang: 'Python', ruta: 'Conceptos Básicos',      rating: 4.6, date: '2026-04-14', pending: true  },
-  { title: 'JS Calculator',        author: 'Laura Ramírez',    lang: 'Java',   ruta: 'Implementación Técnica', rating: 4.7, date: '2026-04-13', pending: false },
-  { title: 'Flexbox Landing Page', author: 'Sofía Guerrero',   lang: 'Java',   ruta: 'Conceptos Básicos',      rating: 4.3, date: '2026-04-12', pending: false },
-  { title: 'Async Fetch Demo',     author: 'Roberto Chávez',   lang: 'Python', ruta: 'Implementación Técnica', rating: 4.1, date: '2026-04-11', pending: false },
-];
-
-var skillRoutes = [
-  { id: 'route1', name: 'Course Track Overview',   subtitle: 'UA Academic Curricula: Ciencias de la Computación',  modules: 11, completed: 3, assignee: 'Martín Solís',     ac: 'MS', color: '#7CD4CC', last: 'Fundamentos de Algoritmos',  level: 'Básico',      v35: true,  profileTrack: 'student', stage: 'conceptos_clave'      },
-  { id: 'route2', name: 'Learning Path Dashboard', subtitle: 'UA Academic Curricula: Gestión de Proyectos Ágiles', modules: 11, completed: 0, assignee: 'Osvaldo Citterio', ac: 'OC', color: '#5B8DEF', last: 'Not started',                level: 'Básico',      v35: false, profileTrack: 'student', stage: 'conceptos_clave'      },
-  { id: 'route3', name: 'Course Track Overview',   subtitle: 'UA Academic Curricula: Desarrollo Web Full Stack',    modules:  8, completed: 5, assignee: 'Valeria Oquendo',  ac: 'VO', color: '#9B7EDE', last: 'APIs RESTful con Node.js',   level: 'Intermedio',  v35: false, profileTrack: 'student', stage: 'implementacion_tecnica' },
-  { id: 'route4', name: 'Learning Path Dashboard', subtitle: 'UA Academic Curricula: Redes y Telecomunicaciones',  modules:  6, completed: 0, assignee: 'Tomás Bracamonte', ac: 'TB', color: '#50C878', last: 'Not started',                level: 'Intermedio',  v35: false, profileTrack: 'student', stage: 'conceptos_clave'      },
-  { id: 'route5', name: 'Course Track Overview',   subtitle: 'UA Academic Curricula: Seguridad Informática',        modules:  9, completed: 2, assignee: 'Sofía Guerrero',   ac: 'SG', color: '#F5A623', last: 'Criptografía Básica',        level: 'Avanzado',    v35: false, profileTrack: 'student', stage: 'conceptos_clave'      },
-  { id: 'route6', name: 'Learning Path Dashboard', subtitle: 'UA TechBoost Q2 2026',                                modules:  3, completed: 1, assignee: 'Ana Torres',       ac: 'AT', color: '#FF6B6B', last: 'Sprint Planning Workshop',   level: 'Básico',      v35: false, profileTrack: 'teacher', stage: 'conceptos_clave'      },
-];
-
-/* Etiquetas de etapa por perfil — informe v1.5, hallazgo N6.
-   Misma estructura de dos etapas, texto distinto según el perfil. */
-var STAGE_LABELS = {
-  teacher: { conceptos_clave: 'Conceptos Clave para Educadores/Instructores', implementacion_tecnica: 'Implementación Técnica' },
-  student: { conceptos_clave: 'Conceptos Clave',                              implementacion_tecnica: 'Implementación Técnica' }
-};
-var TRACK_LABELS = { teacher: 'Track: Profesores/Instructores', student: 'Track: Estudiantes/Profesionales' };
-
-/* ── ICONOS SVG (hoisted — definidos una sola vez) ── */
-var ICON_JAVA = '<svg width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M12.3 23.6s-1.2.7.85.93c2.48.28 3.75.24 6.48-.27 0 0 .72.45 1.72.84-6.12 2.62-13.85-.15-9.05-1.5z" fill="#F89820"/><path d="M11.5 20.4s-1.34 1 .7 1.2c2.63.27 4.7.29 8.3-.4 0 0 .5.51 1.28.79-7.35 2.15-15.54.17-10.28-1.59z" fill="#F89820"/><path d="M17.6 14.5c1.5 1.72-.39 3.27-.39 3.27s3.8-1.96 2.06-4.42c-1.63-2.3-2.88-3.44 3.88-7.38 0 0-10.6 2.65-5.55 8.53z" fill="#F89820"/><path d="M25.1 26.1s.89.73-.98 1.3c-3.55 1.07-14.78 1.4-17.9.04-1.12-.49.98-1.16 1.64-1.3.69-.15 1.08-.12 1.08-.12-1.24-.87-8.02 1.72-3.44 2.46 12.48 2.02 22.76-.91 19.6-2.38z" fill="#F89820"/><path d="M12.9 17.1s-5.67 1.35-2.01 1.84c1.55.2 4.63.15 7.5-.08 2.35-.19 4.7-.6 4.7-.6s-.83.35-1.42.76c-5.76 1.51-16.88.81-13.68-.74 2.7-1.32 4.91-1.18 4.91-1.18z" fill="#F89820"/><path d="M22.3 21.9c5.86-3.04 3.15-5.97 1.26-5.57-.46.1-.67.19-.67.19s.17-.27.5-.38c3.73-1.31 6.6 3.87-1.21 5.93 0 0 .09-.08.12-.17z" fill="#F89820"/><path d="M19 5s3.24 3.24-3.07 8.22c-5.05 3.99-1.15 6.27 0 8.87-2.95-2.66-5.11-5.01-3.66-7.19C14.28 11.9 20.5 10.25 19 5z" fill="#F89820"/><path d="M13.5 29.6c5.63.36 14.27-.2 14.48-2.85 0 0-.39 1.01-4.65 1.8-4.81.89-10.74.79-14.26.22 0 0 .72.59 4.43.83z" fill="#F89820"/></svg>';
-var ICON_PYTHON = '<svg width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M15.9 2C9.1 2 9.5 4.9 9.5 4.9l.01 3.1h6.5v.93H6.4S2 8.4 2 15.3s3.85 6.65 3.85 6.65H8.1v-3.2s-.13-3.85 3.79-3.85h6.52s3.67.06 3.67-3.54V5.93S22.6 2 15.9 2zm-3.6 2.07c.66 0 1.19.53 1.19 1.19S12.96 6.45 12.3 6.45s-1.19-.53-1.19-1.19.53-1.19 1.19-1.19z" fill="#306998"/><path d="M16.1 30c6.8 0 6.4-2.9 6.4-2.9l-.01-3.1h-6.5v-.93h9.62S30 23.6 30 16.7s-3.85-6.65-3.85-6.65H23.9v3.2s.13 3.85-3.79 3.85h-6.52S9.92 17.04 9.92 20.64V26.07S9.4 30 16.1 30zm3.6-2.07c-.66 0-1.19-.53-1.19-1.19s.53-1.19 1.19-1.19 1.19.53 1.19 1.19-.53 1.19-1.19 1.19z" fill="#FFD43B"/></svg>';
-var ICON_GH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.004 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>';
-var ICON_PERSON = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--amber)" stroke-width="1.6"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>';
-var ICON_CB = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1l1.5 4.5H14l-3.75 2.75 1.44 4.42L8 10 4.31 12.67l1.44-4.42L2 5.5h4.5z"/></svg>';
-var ICON_IT = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6l-3 2 3 2M12 6l3 2-3 2M9 3l-2 10"/></svg>';
-
-/* ── UTILIDADES ── */
-function toast(msg) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toast._t);
-  toast._t = setTimeout(function() { el.classList.remove('show'); }, 2800);
-}
-
-function reRender() {
-  var v = state.currentView;
-  if (v === 'members-view')   renderMembers();
-  if (v === 'solutions-view') renderSolutions();
-  if (v === 'skills-view')    renderSkills();
-}
-
-/* ── NAVEGACIÓN ── */
-function switchView(id, el) {
-  document.querySelectorAll('.view-section').forEach(function(s) { s.classList.remove('active'); });
-  document.querySelectorAll('.view-tab').forEach(function(t) { t.classList.remove('active'); });
-  document.getElementById(id).classList.add('active');
-  el.classList.add('active');
-  state.currentView = id;
-  reRender();
-}
-
-function navTo(id, el) {
-  document.querySelectorAll('.sb-item').forEach(function(i) { i.classList.remove('active'); });
-  el.classList.add('active');
-  var tab = document.querySelector('.view-tab[data-view="' + id + '"]');
-  if (tab) switchView(id, tab);
-}
-
-/* ── RBAC ── */
-function cycleRole() {
-  var roles = ['admin', 'manager', 'member'];
-  state.role = roles[(roles.indexOf(state.role) + 1) % roles.length];
-  var badge = document.getElementById('role-badge');
-  badge.textContent = state.role;
-  badge.setAttribute('data-role', state.role);
-  toast('🔄 Rol cambiado a: ' + state.role);
-  reRender();
-}
-
-/* ── RENDER MIEMBROS ── */
-function renderMembers() {
-  var tbody     = document.getElementById('members-tbody');
-  var theadRow  = document.getElementById('members-thead-row');
-  var isManager = state.role === 'manager';
-  var isMember  = state.role === 'member';
-
-  /* Banners RBAC */
-  document.getElementById('members-rbac-banner').classList.toggle('hidden', !isManager);
-  document.getElementById('members-member-banner').classList.toggle('hidden', !isMember);
-
-  tbody.innerHTML = '';
-
-  if (isMember) {
-    /* ── VISTA MEMBER: solo su propia fila, solo columnas Miembro + Rol ── */
-    theadRow.innerHTML = '<th>Miembro</th><th>Rol</th>';
-
-    /* El usuario propio es siempre el primer elemento del array (fnee) */
-    var me = members[0];
-    var row = document.createElement('tr');
-    row.innerHTML =
-      '<td><div class="member-cell">' +
-        '<div class="m-avatar" style="background:' + me.color + '">' + me.initials + '</div>' +
-        '<span>' + me.name + '</span>' +
-      '</div></td>' +
-      '<td><span class="role-pill role-member">' + me.role + '</span></td>';
-    tbody.appendChild(row);
-    return; /* no continuar con el render completo */
-  }
-
-  /* ── VISTA ADMIN / MANAGER: tabla completa ── */
-  theadRow.innerHTML =
-    '<th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>' +
-    '<th style="min-width:140px">Progreso</th><th>Acciones</th>';
-
-  members.forEach(function(m) {
-    var isRestricted = isManager && (m.role === 'admin' || m.role === 'manager');
-    var roleClass = m.role === 'admin' ? 'role-admin' : m.role === 'manager' ? 'role-manager' : 'role-member';
-
-    var isImpl   = m.ruta === 'Implementación Técnica';
-    var rutaSvg  = isImpl
-      ? '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M9 3l5 5-5 5"/></svg>'
-      : '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>';
-    var rutaBadge = '<span class="ruta-tag ' + (isImpl ? 'ruta-impl' : 'ruta-basic') + '">' + rutaSvg + m.ruta + '</span>';
-
-    var actions;
-    if (isRestricted) {
-      actions = '<span class="muted-sm">🔒 Restringido</span>';
-    } else if (state.role === 'admin') {
-      actions =
-        '<button class="m-btn m-btn-edit" onclick="toast(\'✏ Editando: ' + m.name + '\')">' +
-          '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>Editar</button> ' +
-        '<button class="m-btn m-btn-delete" onclick="toast(\'🗑 Eliminado: ' + m.name + '\')">' +
-          '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"/></svg>Eliminar</button>';
-    } else {
-      /* manager sobre filas no restringidas */
-      actions =
-        '<button class="action-btn" onclick="toast(\'✏ Editando: ' + m.name + '\')">✏ Editar</button>' +
-        '<button class="action-btn" onclick="toast(\'⚙ Rol: ' + m.name + '\')">⚙ Rol</button>';
-    }
-
-    var row = document.createElement('tr');
-    if (isRestricted) row.className = 'row-disabled';
-    row.innerHTML =
-      '<td><div class="member-cell"><div class="m-avatar" style="background:' + m.color + '">' + m.initials + '</div><span>' + m.name + '</span></div></td>' +
-      '<td><span class="role-pill ' + roleClass + '">' + m.role + '</span></td>' +
-      '<td>' + rutaBadge + '</td>' +
-      '<td><div class="prog-cell"><div class="gp-bar-wrap"><div class="gp-bar" style="width:' + m.progress + '%"></div></div><span class="prog-pct">' + m.progress + '%</span></div></td>' +
-      '<td>' + actions + '</td>';
-    tbody.appendChild(row);
-  });
-}
-
-/* ── RENDER RETOS ── */
-function renderSolutions() {
-  var grid    = document.getElementById('solutions-grid');
-  var counter = document.getElementById('sol-counter');
-  var rutaF   = document.getElementById('filter-skill').value;
-  var sortF   = document.getElementById('filter-sort').value;
-  var canApprove = state.role !== 'member';
-
-  var filtered = solutions.filter(function(s) { return !rutaF || s.ruta === rutaF; });
-  filtered.sort(function(a, b) {
-    if (sortF === 'rating')  return b.rating - a.rating;
-    if (sortF === 'pending') return (b.pending ? 1 : 0) - (a.pending ? 1 : 0);
-    return b.date.localeCompare(a.date);
-  });
-
-  counter.textContent = filtered.length + ' reto' + (filtered.length !== 1 ? 's' : '');
-  grid.innerHTML = '';
-  var pending = 0;
-
-  filtered.forEach(function(s) {
-    if (s.pending) pending++;
-
-    var statusPill = s.pending
-      ? '<span class="pill sol-status-pending"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--amber)"><path d="M9 1L4 9h4v6l6-8H9V1z"/></svg>Pendiente</span>'
-      : '<span class="pill sol-status-approved"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#1a7a3a" stroke-width="2"><path d="M2 8l4 4 8-8"/></svg>Aprobada</span>';
-
-    var isImpl = s.ruta === 'Implementación Técnica';
-    var rutaTag = isImpl
-      ? '<span class="sol-ruta-tag sol-ruta-tag-impl">' + ICON_IT + 'Implementación Técnica</span>'
-      : '<span class="sol-ruta-tag sol-ruta-tag-basic">' + ICON_CB + 'Conceptos Básicos</span>';
-
-    var isJava = s.lang === 'Java';
-    var langTag = '<span class="sol-lang-tag ' + (isJava ? 'java' : 'python') + '">' + (isJava ? ICON_JAVA : ICON_PYTHON) + s.lang + '</span>';
-
-    var full = Math.floor(s.rating), hasHalf = (s.rating - full) >= 0.3;
-    var stars = '<span class="c-amber">★</span>'.repeat(full)
-      + (hasHalf ? '<span class="c-amber" style="opacity:.5">★</span>' : '')
-      + '<span style="color:var(--border)">★</span>'.repeat(5 - full - (hasHalf ? 1 : 0));
-
-    var actions = (canApprove && s.pending)
-      ? '<div class="sol-actions-v2">' +
-          '<button class="sol-action-btn sol-btn-approve" onclick="approveSolution(this,' + JSON.stringify(s.title) + ')">Aprobar</button>' +
-          '<button class="sol-action-btn sol-btn-reject"  onclick="rejectSolution(this,' + JSON.stringify(s.title) + ')">Rechazar</button>' +
-        '</div>'
-      : '';
-
-    var card = document.createElement('div');
-    card.className = 'sol-card';
-    card.innerHTML =
-      '<div class="sol-row-top"><div class="sol-title-v2">' + s.title + '</div>' + statusPill + '</div>' +
-      '<div class="sol-row-meta"><div class="sol-author-v2"><div class="sol-author-icon">' + ICON_PERSON + '</div>' + s.author + '</div><div class="sol-date-v2">' + s.date + '</div></div>' +
-      '<div class="sol-tag-row">' + rutaTag + '</div>' +
-      '<div class="sol-row-lang">' + langTag + '<span class="sol-stars">' + stars + ' <span>' + s.rating + '</span></span><button class="sol-github-btn" onclick="toast(\'🔗 Repo: ' + s.title + '\')">' + ICON_GH + 'GitHub Repo</button></div>' +
-      actions;
-    grid.appendChild(card);
-  });
-
-  document.getElementById('sb-pending-count').textContent = pending;
-}
-
-function _mutSolution(btn, title, fn) {
-  btn.closest('.sol-card').style.opacity = '0.5';
-  var idx = solutions.findIndex(function(s) { return s.title === title; });
-  if (idx !== -1) fn(idx);
-  setTimeout(renderSolutions, 300);
-}
-function approveSolution(btn, title) {
-  _mutSolution(btn, title, function(i) { solutions[i].pending = false; toast('✓ Reto aprobado: ' + title); });
-}
-function rejectSolution(btn, title) {
-  _mutSolution(btn, title, function(i) { solutions.splice(i, 1); toast('✗ Reto rechazado: ' + title); });
-}
-
-/* ── RENDER RUTAS v4 ── */
-function renderSkills() {
-  var grid     = document.getElementById('skills-grid');
-  var canEdit  = state.role === 'admin';
-  var stageF   = document.getElementById('filter-stage').value;
-  var trackF   = document.getElementById('filter-track').value;
-  document.getElementById('skills-admin-banner').classList.toggle('hidden', canEdit);
-  document.getElementById('skills-current-role').textContent = state.role;
-  grid.innerHTML = '';
-
-  /* SVG reutilizables para los tres estados de ícono */
-  var SVG_CHECK  = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8l4 4 8-8"/></svg>';
-  var SVG_CURR   = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="6"/></svg>';
-  var SVG_LOCK   = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>';
-  var SVG_ARROW  = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M9 3l5 5-5 5"/></svg>';
-  var SVG_DOT    = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>';
-
-  var filtered = skillRoutes.filter(function(r) {
-    return (!stageF || r.stage === stageF) && (!trackF || r.profileTrack === trackF);
-  });
-
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--muted);font-size:12.5px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)">Ninguna ruta coincide con los filtros seleccionados</div>';
-    return;
-  }
-
-  filtered.forEach(function(r) {
-    var pct  = Math.round((r.completed / r.modules) * 100);
-    var card = document.createElement('div');
-    card.className = 'skill-card-v4';
-
-    /* ── Construir fila de íconos ──
-       Regla: íconos anteriores al índice `completed` = done (verde),
-       el índice exacto `completed` = current (naranja, si no está al 100%),
-       el resto = locked (gris). Si completed === 0 todos son locked. */
-    var icons = '';
-    for (var i = 0; i < r.modules; i++) {
-      if (i < r.completed) {
-        icons += '<div class="sk4-icon done">'    + SVG_CHECK + '</div>';
-      } else if (i === r.completed && r.completed < r.modules) {
-        icons += '<div class="sk4-icon current">' + SVG_CURR  + '</div>';
-      } else {
-        icons += '<div class="sk4-icon locked">'  + SVG_LOCK  + '</div>';
-      }
-    }
-
-    /* ── Barra de progreso ──
-       Si el porcentaje es 0 se omite la barra de relleno
-       (el contenedor `sk4-bar-wrap` aparece vacío = gris completo). */
-    var barHtml = pct > 0
-      ? '<div class="sk4-bar" style="width:' + pct + '%">' +
-          '<span class="sk4-bar-pct">' + pct + '%</span>' +
-        '</div>'
-      : '';
-
-    /* ── Badge de etapa (informe v1.5, N4) ──
-       Reutiliza el mismo componente .ruta-tag ya usado en Miembros,
-       evitando CSS nuevo. Texto resuelto por perfil vía STAGE_LABELS. */
-    var isImpl = r.stage === 'implementacion_tecnica';
-    var stageLabel = STAGE_LABELS[r.profileTrack][r.stage];
-    var stageBadge = '<span class="ruta-tag ' + (isImpl ? 'ruta-impl' : 'ruta-basic') + '">' + (isImpl ? SVG_ARROW : SVG_DOT) + stageLabel + '</span>';
-
-    /* ── Botón de promoción de etapa (informe v1.5, N3 — recomendación provisional) ──
-       Solo visible para admin, y solo en rutas que aún están en conceptos_clave. */
-    var promoteBtn = (canEdit && !isImpl)
-      ? '<button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="promoteRouteStage(\'' + r.id + '\')">→ Promover a Implementación Técnica</button>'
-      : '';
-
-    card.innerHTML =
-      /* Encabezado: etiqueta tipo + título + etapa + track */
-      '<div class="sk4-header">' +
-        '<div class="sk4-type">' + r.name + '</div>' +
-        '<div class="sk4-title">' + r.subtitle + '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">' +
-          stageBadge +
-          '<span class="muted-sm">' + TRACK_LABELS[r.profileTrack] + '</span>' +
-        '</div>' +
-      '</div>' +
-
-      /* Fila de progreso: nombre | barra | Tema X/Y */
-      '<div class="sk4-prog-row">' +
-        '<div class="sk4-name">' + r.assignee + '</div>' +
-        '<div class="sk4-bar-wrap">' + barHtml + '</div>' +
-        '<div class="sk4-tema"><b>Tema:</b> ' + r.completed + '/' + r.modules + '</div>' +
-      '</div>' +
-
-      /* Línea divisoria */
-      '<hr class="sk4-divider">' +
-
-      /* Sección de desafíos */
-      '<div class="sk4-challenges">' +
-        '<div class="sk4-ch-header">' +
-          '<div class="sk4-ch-title">Desafíos de Código</div>' +
-          '<div class="sk4-ch-level">Nivel: ' + r.level + '</div>' +
-        '</div>' +
-        '<div class="sk4-icons">' + icons + '</div>' +
-        promoteBtn +
-      '</div>';
-
-    grid.appendChild(card);
-  });
-}
-
-/* ── Promoción manual de etapa (informe v1.5, N3) ──
-   Acción provisional reservada al rol admin, mientras el equipo define
-   si la transición debe ser manual, aprobada o basada en métricas. */
-function promoteRouteStage(routeId) {
-  var route = skillRoutes.filter(function(r) { return r.id === routeId; })[0];
-  if (!route || route.stage === 'implementacion_tecnica') return;
-  route.stage = 'implementacion_tecnica';
-  toast('→ "' + route.subtitle + '" promovida a Implementación Técnica');
-  renderSkills();
-}
-
-/* ── INIT ── */
-(function() {
-  renderMembers();
-  renderSolutions();
-  renderSkills();
-})();
-
-</script>
-</body>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            button,
+            select {
+                font-family: inherit;
+            }
+
+            /* Este bloque NO define tokens del design system: esos viven en global.css
+   (importado en el frontmatter) y se usan directo — var(--accent), --bg,
+   --surface, --text, --text-secondary, --border, --font-body, --font-mono…
+   Acá quedan SOLO valores propios del layout del dashboard. */
+            :root {
+                --teal: #7cd4cc; /* acento secundario del dashboard (global.css no define teal) */
+                --teal-light: #e8f8f7;
+                --teal-dark: #2a9d96;
+                --radius: 12px;
+                --radius-xs: 6px;
+                --sidebar-w: 228px;
+            }
+
+            html,
+            body {
+                height: 100%;
+                font-family: var(--font-body);
+                font-size: 13px;
+                color: var(--text);
+                background: var(--bg);
+                overflow: hidden;
+            }
+
+            /* ── LAYOUT ── */
+            #app {
+                display: flex;
+                height: 100vh;
+                overflow: hidden;
+            }
+            #main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                min-width: 0;
+            }
+
+            /* ── SIDEBAR ── */
+            #sidebar {
+                width: var(--sidebar-w);
+                min-width: var(--sidebar-w);
+                background: var(--surface);
+                border-right: 1px solid var(--border);
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+                position: relative;
+                z-index: 10;
+            }
+            .sb-logo {
+                padding: 18px 16px 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
+            }
+            .sb-logo-mark {
+                width: 32px;
+                height: 32px;
+                background: var(--accent);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                font-family: var(--font-mono);
+                font-weight: 700;
+                font-size: 13px;
+                flex-shrink: 0;
+                box-shadow: 0 2px 8px rgba(229, 98, 26, 0.3);
+            }
+            .sb-logo-text {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--accent);
+                letter-spacing: -0.3px;
+            }
+            .sb-logo-sub {
+                font-size: 10px;
+                color: var(--text-secondary);
+                margin-top: 1px;
+            }
+            .sb-section {
+                padding: 14px 16px 4px;
+                font-size: 10px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.7px;
+                text-transform: uppercase;
+            }
+            .sb-nav {
+                flex: 1;
+                overflow-y: auto;
+                padding: 6px 0;
+            }
+            .sb-nav::-webkit-scrollbar {
+                width: 4px;
+            }
+            .sb-nav::-webkit-scrollbar-thumb {
+                background: var(--border);
+                border-radius: 4px;
+            }
+            .sb-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 14px;
+                cursor: pointer;
+                border-radius: var(--radius-xs);
+                margin: 1px 8px;
+                transition: all 0.15s;
+                color: var(--text-secondary);
+                font-size: 12.5px;
+                user-select: none;
+            }
+            .sb-item:hover {
+                background: var(--bg);
+                color: var(--text);
+            }
+            .sb-item.active {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                font-weight: 700;
+            }
+            .sb-item svg {
+                width: 16px;
+                height: 16px;
+                flex-shrink: 0;
+            }
+            .sb-badge {
+                margin-left: auto;
+                background: var(--accent);
+                color: #fff;
+                border-radius: 10px;
+                padding: 2px 7px;
+                font-size: 10px;
+                font-weight: 700;
+            }
+            .sb-badge.teal {
+                background: var(--teal);
+            }
+            .sb-profile {
+                padding: 12px 14px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+            .sb-avatar {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                background: linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-border-soft)
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                font-weight: 800;
+                font-size: 12px;
+                flex-shrink: 0;
+                box-shadow: 0 2px 6px rgba(229, 98, 26, 0.25);
+            }
+            .sb-name {
+                font-size: 12.5px;
+                font-weight: 700;
+                color: var(--text);
+            }
+            .sb-role-badge {
+                font-size: 10px;
+                cursor: pointer;
+                padding: 2px 8px;
+                border-radius: 10px;
+                transition: all 0.15s;
+                font-weight: 600;
+                display: inline-block;
+            }
+            .sb-role-badge[data-role="admin"] {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                border: 1px solid var(--accent);
+            }
+            .sb-role-badge[data-role="manager"] {
+                background: var(--teal-light);
+                color: var(--teal-dark);
+                border: 1px solid var(--teal);
+            }
+            .sb-role-badge[data-role="member"] {
+                background: var(--bg);
+                color: var(--text-secondary);
+                border: 1px solid var(--border);
+            }
+
+            /* ── TOPBAR ── */
+            .topbar {
+                padding: 12px 20px;
+                background: var(--surface);
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+            .topbar-title {
+                font-size: 15px;
+                font-weight: 800;
+                color: var(--text);
+                flex: 1;
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .topbar-title span {
+                font-weight: 400;
+                color: var(--text-secondary);
+                font-size: 13px;
+                margin-left: 4px;
+            }
+
+            /* ── BUTTONS ── */
+            .btn {
+                border: none;
+                cursor: pointer;
+                border-radius: var(--radius-xs);
+                padding: 7px 14px;
+                font-size: 12px;
+                font-weight: 700;
+                transition: all 0.15s;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+            }
+            .btn-primary {
+                background: var(--accent);
+                color: #fff;
+            }
+            .btn-primary:hover {
+                background: #d45a25;
+            }
+            .btn-dark {
+                background: var(--text);
+                color: #fff;
+            }
+            .btn-dark:hover {
+                background: #23272b;
+            }
+            .btn-outline {
+                background: transparent;
+                color: var(--text);
+                border: 1px solid var(--border);
+            }
+            .btn-outline:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .btn-sm {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+
+            /* ── VIEW TABS ── */
+            .view-tabs {
+                display: flex;
+                padding: 0 20px;
+                background: var(--surface);
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
+                overflow-x: auto;
+            }
+            .view-tabs::-webkit-scrollbar {
+                height: 0;
+            }
+            .view-tab {
+                padding: 10px 18px;
+                font-size: 12.5px;
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                color: var(--text-secondary);
+                font-weight: 500;
+                transition: all 0.15s;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .view-tab.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+                font-weight: 700;
+            }
+            .view-tab:hover:not(.active) {
+                color: var(--text);
+            }
+
+            /* ── CONTENT ── */
+            #content {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px;
+            }
+            #content::-webkit-scrollbar {
+                width: 6px;
+            }
+            #content::-webkit-scrollbar-thumb {
+                background: var(--border);
+                border-radius: 4px;
+            }
+            .view-section {
+                display: none;
+                animation: fadeIn 0.2s ease;
+            }
+            .view-section.active {
+                display: block;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+
+            /* ── KPI GRID ── */
+            .kpi-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 14px;
+                margin-bottom: 20px;
+            }
+            @media (max-width: 900px) {
+                .kpi-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            .kpi-card {
+                background: var(--surface);
+                border-radius: var(--radius);
+                padding: 16px;
+                border: 1.5px solid var(--border);
+                box-shadow: var(--shadow-soft);
+                transition:
+                    border-color 0.2s,
+                    box-shadow 0.2s;
+            }
+            .kpi-card:hover,
+            .kpi-card.active {
+                border-color: var(--accent);
+                box-shadow: var(--shadow-card-hover);
+            }
+            .kpi-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            .kpi-icon.amber {
+                background: var(--accent-bg-soft);
+            }
+            .kpi-icon.teal {
+                background: var(--teal-light);
+            }
+            .kpi-label {
+                font-size: 10px;
+                color: var(--text-secondary);
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            .kpi-value {
+                font-size: 24px;
+                font-weight: 800;
+                color: var(--text);
+                line-height: 1.1;
+            }
+            .kpi-value span {
+                font-size: 15px;
+                font-weight: 400;
+                color: var(--text-secondary);
+            }
+            .kpi-sub {
+                font-size: 11px;
+                color: var(--text-secondary);
+                margin-top: 5px;
+            }
+            .kpi-progress {
+                margin-top: 10px;
+                height: 4px;
+                background: var(--border);
+                border-radius: 2px;
+                overflow: hidden;
+            }
+            .kpi-progress-bar {
+                height: 100%;
+                background: var(--accent);
+                border-radius: 2px;
+            }
+            .kpi-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                background: #fff9e6;
+                color: #b7610a;
+                border-radius: 4px;
+                padding: 2px 7px;
+                font-size: 10px;
+                font-weight: 700;
+                margin-top: 6px;
+            }
+
+            /* ── FEED ── */
+            .feed-card {
+                background: var(--surface);
+                border-radius: var(--radius);
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-soft);
+                padding: 14px;
+            }
+            .feed-header {
+                font-size: 10px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.6px;
+                text-transform: uppercase;
+                margin-bottom: 10px;
+            }
+            .feed-item {
+                display: flex;
+                gap: 11px;
+                padding: 9px 0;
+                border-bottom: 1px solid var(--border);
+            }
+            .feed-item:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            .feed-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--accent);
+                margin-top: 5px;
+                flex-shrink: 0;
+            }
+            .feed-dot.teal {
+                background: var(--teal);
+            }
+            .feed-text {
+                font-size: 12.5px;
+                color: var(--text);
+                line-height: 1.45;
+            }
+            .feed-time {
+                font-size: 10.5px;
+                color: var(--text-secondary);
+                margin-top: 3px;
+            }
+
+            /* ── INFO BANNER ── */
+            .info-banner {
+                background: var(--accent-bg-soft);
+                border: 1px solid var(--accent);
+                border-radius: var(--radius-xs);
+                padding: 10px 14px;
+                margin-bottom: 14px;
+                font-size: 12px;
+                color: var(--accent);
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .info-banner.hidden {
+                display: none;
+            }
+
+            /* ── MEMBER TABLE ── */
+            .table-card {
+                background: var(--surface);
+                border-radius: var(--radius);
+                border: 2px solid var(--accent);
+                box-shadow: var(--shadow-card-hover);
+                overflow: hidden;
+            }
+            .table-header {
+                padding: 14px 18px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid var(--border);
+            }
+            .table-title {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--text);
+            }
+            .members-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .members-table thead tr {
+                background: var(--bg);
+            }
+            .members-table th {
+                padding: 9px 14px;
+                font-size: 10.5px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                text-align: left;
+                border-bottom: 1px solid var(--border);
+                letter-spacing: 0.3px;
+                text-transform: uppercase;
+            }
+            .members-table td {
+                padding: 10px 14px;
+                font-size: 12.5px;
+                border-bottom: 1px solid var(--border);
+            }
+            .members-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+            .members-table tbody tr:hover td {
+                background: var(--bg);
+            }
+            .member-cell {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+            }
+            .m-avatar {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 11px;
+                color: #fff;
+                flex-shrink: 0;
+            }
+            .role-pill {
+                padding: 2px 9px;
+                border-radius: 20px;
+                font-size: 10.5px;
+                font-weight: 700;
+            }
+            .role-admin {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+            }
+            .role-manager {
+                background: var(--teal-light);
+                color: var(--teal-dark);
+            }
+            .role-member {
+                background: var(--bg);
+                color: var(--text-secondary);
+                border: 1px solid var(--border);
+            }
+            .row-disabled td {
+                opacity: 0.45;
+                pointer-events: none;
+            }
+            /* Ruta badges — shared base */
+            .ruta-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                border: 1px solid;
+                border-radius: 20px;
+                padding: 3px 10px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+            .ruta-impl {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                border-color: var(--accent-border-soft);
+            }
+            .ruta-basic {
+                background: var(--teal-light);
+                color: var(--teal-dark);
+                border-color: var(--teal);
+            }
+            /* Member action buttons */
+            .m-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                border-radius: var(--radius-xs);
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.15s;
+                border: 1px solid;
+            }
+            .m-btn-edit {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                border-color: var(--accent-border-soft);
+            }
+            .m-btn-edit:hover {
+                background: var(--accent);
+                color: #fff;
+            }
+            .m-btn-delete {
+                background: #fde8e8;
+                color: #c0392b;
+                border-color: #f5a0a0;
+            }
+            .m-btn-delete:hover {
+                background: #c0392b;
+                color: #fff;
+            }
+            .action-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 5px;
+                font-size: 11px;
+                color: var(--text-secondary);
+                transition: all 0.15s;
+            }
+            .action-btn:hover {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+            }
+            /* Progress cell */
+            .prog-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .gp-bar-wrap {
+                flex: 1;
+                height: 5px;
+                background: var(--border);
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            .gp-bar {
+                height: 100%;
+                background: var(--accent);
+                border-radius: 3px;
+            }
+            .gp-bar.teal {
+                background: var(--teal);
+            }
+            .prog-pct {
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--accent);
+                width: 32px;
+                text-align: right;
+            }
+            /* Utility */
+            .muted-sm {
+                font-size: 11px;
+                color: var(--text-secondary);
+            }
+            .c-amber {
+                color: var(--accent);
+            }
+            .fw-7 {
+                font-weight: 700;
+            }
+            .btn-full {
+                margin-top: 8px;
+                width: 100%;
+                font-size: 11px;
+            }
+
+            /* ── FILTROS ── */
+            .filters-bar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 14px;
+                flex-wrap: wrap;
+            }
+            .filter-label {
+                font-size: 12px;
+                color: var(--text-secondary);
+                font-weight: 600;
+            }
+            .filter-select {
+                padding: 6px 10px;
+                border-radius: var(--radius-xs);
+                border: 1px solid var(--border);
+                background: var(--surface);
+                font-size: 12px;
+                color: var(--text);
+                outline: none;
+                cursor: pointer;
+                transition: border-color 0.15s;
+            }
+            .filter-select:focus {
+                border-color: var(--accent);
+            }
+
+            /* ── RETOS / SKILLS GRIDS (compartido) ── */
+            .solutions-grid,
+            .skills-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            @media (max-width: 900px) {
+                .solutions-grid,
+                .skills-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .sol-card {
+                background: var(--surface);
+                border-radius: 16px;
+                border: 1.5px solid var(--border);
+                box-shadow: var(--shadow-soft);
+                padding: 18px 20px 16px;
+                display: flex;
+                flex-direction: column;
+                transition:
+                    box-shadow 0.2s,
+                    border-color 0.2s;
+            }
+            .sol-card:hover {
+                box-shadow: var(--shadow-card-hover);
+                border-color: #d8dce0;
+            }
+            .sol-row-top {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 10px;
+                margin-bottom: 6px;
+            }
+            .sol-row-meta {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+            }
+            .sol-row-lang {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-bottom: 4px;
+            }
+            .sol-tag-row {
+                margin-bottom: 8px;
+            }
+            .sol-title-v2 {
+                font-size: 16px;
+                font-weight: 800;
+                color: var(--text);
+                line-height: 1.2;
+            }
+            .sol-author-v2 {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                font-size: 13px;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+            .sol-author-icon {
+                width: 22px;
+                height: 22px;
+                background: var(--accent-bg-soft);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .sol-date-v2 {
+                font-size: 12px;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+            /* Shared pill base */
+            .pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                border-radius: 20px;
+                padding: 4px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+                flex-shrink: 0;
+                border: 1.5px solid;
+            }
+            .sol-status-pending {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                border-color: var(--accent-border-soft);
+            }
+            .sol-status-approved {
+                background: #e8fde8;
+                color: #1a7a3a;
+                border-color: #c6efd8;
+            }
+            /* Shared ruta tag base */
+            .sol-ruta-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border-radius: 20px;
+                padding: 5px 14px;
+                font-size: 12px;
+                font-weight: 700;
+                border: 1.5px solid;
+            }
+            .sol-ruta-tag-impl {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                border-color: var(--accent-border-soft);
+            }
+            .sol-ruta-tag-basic {
+                background: var(--teal-light);
+                color: var(--teal-dark);
+                border-color: var(--teal);
+            }
+            .sol-lang-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #f0f4ff;
+                border: 1.5px solid #a8c8f0;
+                border-radius: 10px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .sol-lang-tag.java {
+                color: #2d4a8a;
+            }
+            .sol-lang-tag.python {
+                color: #1f4e79;
+            }
+            .sol-stars {
+                display: inline-flex;
+                align-items: center;
+                gap: 3px;
+                font-size: 13px;
+                color: var(--accent);
+                font-weight: 800;
+            }
+            .sol-stars span {
+                color: var(--text);
+                font-size: 12px;
+            }
+            .sol-github-btn {
+                margin-left: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: #1e2a3a;
+                color: #fff;
+                border: none;
+                border-radius: 7px;
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.15s;
+                flex-shrink: 0;
+            }
+            .sol-github-btn:hover {
+                background: #2d3f55;
+            }
+            .sol-actions-v2 {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 6px;
+                padding-top: 8px;
+                border-top: 1px solid var(--border);
+                margin-top: 8px;
+            }
+            /* Shared action button base */
+            .sol-action-btn {
+                border: none;
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .sol-btn-approve {
+                background: #fdecea;
+                color: var(--accent);
+            }
+            .sol-btn-approve:hover {
+                background: var(--accent);
+                color: #fff;
+            }
+            .sol-btn-reject {
+                background: #f1f3f5;
+                color: var(--text-secondary);
+            }
+            .sol-btn-reject:hover {
+                background: #fde8e8;
+                color: #c0392b;
+            }
+
+            /* ── SKILLS CARDS v4 — aplica a las 6 tarjetas de Rutas ── */
+
+            /* Override de columnas: solo el grid de Rutas pasa a 3 columnas */
+            #skills-view .skills-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+            @media (max-width: 1100px) {
+                #skills-view .skills-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            @media (max-width: 680px) {
+                #skills-view .skills-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .skill-card-v4 {
+                background: var(--surface);
+                border-radius: 16px;
+                border: 2px solid var(--accent);
+                box-shadow: 0 2px 10px rgba(229, 98, 26, 0.08);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                transition:
+                    box-shadow 0.2s,
+                    transform 0.15s;
+            }
+            .skill-card-v4:hover {
+                box-shadow: 0 6px 24px rgba(229, 98, 26, 0.16);
+                transform: translateY(-2px);
+            }
+
+            /* Sección superior: etiqueta + título */
+            .sk4-header {
+                padding: 16px 18px 14px;
+            }
+            .sk4-type {
+                font-size: 10px;
+                font-weight: 800;
+                color: var(--text-secondary);
+                letter-spacing: 0.8px;
+                text-transform: uppercase;
+                margin-bottom: 5px;
+            }
+            .sk4-title {
+                font-size: 15px;
+                font-weight: 800;
+                color: var(--text);
+                line-height: 1.3;
+            }
+
+            /* Fila de progreso: nombre + barra + tema */
+            .sk4-prog-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 18px 16px;
+            }
+            .sk4-name {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--text);
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .sk4-bar-wrap {
+                flex: 1;
+                height: 22px;
+                background: #e9ecef;
+                border-radius: 11px;
+                overflow: hidden;
+                min-width: 0;
+            }
+            .sk4-bar {
+                height: 100%;
+                border-radius: 11px;
+                background: linear-gradient(
+                    90deg,
+                    var(--accent) 0%,
+                    var(--accent-border-soft) 100%
+                );
+                display: flex;
+                align-items: center;
+                transition: width 0.6s ease;
+                min-width: 36px; /* espacio mínimo para mostrar el % */
+            }
+            .sk4-bar-pct {
+                font-size: 11px;
+                font-weight: 800;
+                color: #fff;
+                padding-left: 9px;
+                white-space: nowrap;
+            }
+            .sk4-tema {
+                font-size: 13px;
+                color: var(--text);
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .sk4-tema b {
+                font-weight: 800;
+            }
+
+            /* Divisor */
+            .sk4-divider {
+                border: none;
+                border-top: 1px solid var(--border);
+                margin: 0;
+            }
+
+            /* Sección inferior: desafíos */
+            .sk4-challenges {
+                padding: 12px 18px 16px;
+            }
+            .sk4-ch-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+            .sk4-ch-title {
+                font-size: 11px;
+                font-weight: 800;
+                color: var(--text);
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+            .sk4-ch-level {
+                font-size: 12px;
+                color: var(--text-secondary);
+            }
+            .sk4-icons {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+
+            /* Íconos de desafío */
+            .sk4-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                border: 2px solid;
+            }
+            .sk4-icon.done {
+                background: #dcfce7;
+                border-color: #86efac;
+                color: #16a34a;
+            }
+            .sk4-icon.current {
+                background: var(--accent-bg-soft);
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .sk4-icon.locked {
+                background: #f8f9fa;
+                border-color: #ced4da;
+                color: #adb5bd;
+            }
+
+            /* SVG compartidos para íconos */
+
+            .sk-seg-wrap {
+                display: flex;
+                gap: 3px;
+                margin-bottom: 6px;
+            }
+            .sk-seg {
+                flex: 1;
+                height: 5px;
+                border-radius: 2px;
+            }
+            .sk-seg.done {
+                background: var(--accent);
+            }
+            .sk-seg.empty {
+                background: #dde3ea;
+            }
+
+            /* ── SKILL CARD V3.5 (aislada — solo tarjeta 1) ── */
+            .skill-card-v35 {
+                background: var(--surface);
+                border-radius: 16px;
+                border: 2px solid var(--accent);
+                box-shadow: 0 4px 20px rgba(229, 98, 26, 0.12);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                transition: box-shadow 0.2s;
+            }
+            .skill-card-v35:hover {
+                box-shadow: 0 8px 32px rgba(229, 98, 26, 0.18);
+            }
+
+            /* Header V3.5 */
+            .sk35-header {
+                padding: 16px 18px 12px;
+                border-bottom: 1px solid var(--border);
+            }
+            .sk35-type {
+                font-size: 10px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                margin-bottom: 3px;
+            }
+            .sk35-title {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--text);
+                line-height: 1.25;
+            }
+
+            /* Foto + info del asignado */
+            .sk35-assignee-row {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+                padding: 12px 18px 10px;
+            }
+            .sk35-photo-wrap {
+                position: relative;
+                flex-shrink: 0;
+            }
+            .sk35-photo {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid var(--border);
+            }
+            .sk35-online {
+                width: 11px;
+                height: 11px;
+                border-radius: 50%;
+                background: #22c55e;
+                border: 2px solid var(--surface);
+                position: absolute;
+                bottom: 1px;
+                right: 1px;
+            }
+            .sk35-name {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--text);
+            }
+            .sk35-count {
+                font-size: 13px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                margin-left: auto;
+                white-space: nowrap;
+            }
+
+            /* Barra sólida V3.5 */
+            .sk35-bar-section {
+                padding: 0 18px 12px;
+            }
+            .sk35-bar-wrap {
+                height: 18px;
+                background: #e9ecef;
+                border-radius: 9px;
+                overflow: hidden;
+                position: relative;
+            }
+            .sk35-bar {
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    var(--accent) 0%,
+                    var(--accent-border-soft) 100%
+                );
+                border-radius: 9px;
+                display: flex;
+                align-items: center;
+                transition: width 0.6s ease;
+            }
+            .sk35-bar-pct {
+                font-size: 10px;
+                font-weight: 800;
+                color: #fff;
+                padding-left: 8px;
+                white-space: nowrap;
+            }
+
+            /* Mosaico de desafíos */
+            .sk35-mosaic {
+                padding: 10px 18px 12px;
+                border-top: 1px solid var(--border);
+            }
+            .sk35-mosaic-label {
+                font-size: 10px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.4px;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+            }
+            .sk35-icons {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+            .sk35-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                flex-shrink: 0;
+            }
+            .sk35-icon.green {
+                background: #d1fae5;
+                color: #059669;
+                border: 1.5px solid #6ee7b7;
+            }
+            .sk35-icon.orange {
+                background: var(--accent-bg-soft);
+                color: var(--accent);
+                border: 1.5px solid var(--accent-border-soft);
+            }
+            .sk35-icon.grey {
+                background: #f1f3f5;
+                color: #ced4da;
+                border: 1.5px solid #dee2e6;
+            }
+
+            /* Footer V3.5 */
+            .sk35-footer {
+                padding: 6px 18px 10px;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .sk35-version {
+                font-size: 9px;
+                color: #adb5bd;
+                font-style: italic;
+            }
+            .skill-card {
+                background: var(--surface);
+                border-radius: 16px;
+                border: 1.5px solid var(--border);
+                box-shadow: var(--shadow-soft);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                transition:
+                    box-shadow 0.2s,
+                    border-color 0.2s;
+            }
+            .skill-card:hover {
+                box-shadow: var(--shadow-card-hover);
+                border-color: #c8d0d8;
+            }
+            .sk-header {
+                padding: 18px 20px 14px;
+                border-bottom: 1px solid var(--border);
+            }
+            .sk-type-label {
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.4px;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+            .sk-title {
+                font-size: 15px;
+                font-weight: 800;
+                color: var(--text);
+                line-height: 1.25;
+            }
+            .sk-modules-preview {
+                padding: 14px 20px 10px;
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+                flex: 1;
+            }
+            .sk-mod-dot {
+                width: 28px;
+                height: 6px;
+                border-radius: 3px;
+            }
+            .sk-mod-dot.done {
+                background: var(--accent);
+            }
+            .sk-mod-dot.empty {
+                background: var(--border);
+            }
+            .sk-footer {
+                margin: 0 12px 12px;
+                background: var(--bg);
+                border-radius: 12px;
+                padding: 10px 14px;
+                border: 1px solid var(--border);
+            }
+            .sk-assignee-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+            .sk-avatar-wrap {
+                position: relative;
+                flex-shrink: 0;
+            }
+            .sk-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 13px;
+                color: #fff;
+            }
+            .sk-online-dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                background: #22c55e;
+                border: 2px solid var(--bg);
+                position: absolute;
+                bottom: 0;
+                right: 0;
+            }
+            .sk-assignee-name {
+                font-size: 13px;
+                font-weight: 700;
+                color: var(--text);
+                flex: 1;
+            }
+            .sk-progress-count {
+                font-size: 13px;
+                font-weight: 700;
+                color: var(--text-secondary);
+                white-space: nowrap;
+            }
+            .sk-bar-wrap {
+                height: 8px;
+                background: #dde3ea;
+                border-radius: 4px;
+                overflow: hidden;
+                margin-bottom: 6px;
+            }
+            .sk-bar {
+                height: 100%;
+                border-radius: 4px;
+                background: linear-gradient(
+                    90deg,
+                    var(--accent),
+                    var(--accent-border-soft)
+                );
+                position: relative;
+            }
+            .sk-bar::after {
+                content: attr(data-pct);
+                position: absolute;
+                left: 6px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 9px;
+                font-weight: 800;
+                color: #fff;
+                white-space: nowrap;
+            }
+            .sk-bar.zero {
+                background: #dde3ea;
+            }
+            .sk-bar.zero::after {
+                color: var(--text-secondary);
+                left: 2px;
+            }
+            .sk-last-completed {
+                font-size: 11px;
+                color: var(--text-secondary);
+            }
+            .sk-last-completed b {
+                color: var(--text);
+            }
+
+            /* ── UTILIDADES ── */
+            .overflow-x-auto {
+                overflow-x: auto;
+            }
+            .flex-1 {
+                flex: 1;
+                min-width: 0;
+            }
+
+            /* ── TOAST ── */
+            #toast {
+                position: fixed;
+                bottom: 22px;
+                right: 22px;
+                background: #23272b;
+                color: #fff;
+                padding: 11px 18px;
+                border-radius: var(--radius-xs);
+                font-size: 12.5px;
+                font-weight: 600;
+                opacity: 0;
+                transform: translateY(8px);
+                transition: all 0.3s;
+                pointer-events: none;
+                z-index: 9999;
+                box-shadow: var(--shadow-card-hover);
+                max-width: 320px;
+            }
+            #toast.show {
+                opacity: 1;
+                transform: none;
+            }
+
+            /* ── RESPONSIVE ── */
+            @media (max-width: 720px) {
+                #sidebar {
+                    width: 60px;
+                    min-width: 60px;
+                }
+                .sb-logo-text,
+                .sb-logo-sub,
+                .sb-item span,
+                .sb-section,
+                .sb-badge,
+                .sb-name,
+                .sb-role-badge {
+                    display: none;
+                }
+                .sb-logo {
+                    padding: 14px 12px;
+                    justify-content: center;
+                }
+                .sb-item {
+                    justify-content: center;
+                    padding: 10px;
+                    margin: 1px 4px;
+                }
+                .sb-profile {
+                    justify-content: center;
+                }
+                .kpi-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+        </style>
+
+        <script define:vars={{ bootstrap }}>
+            "use strict";
+
+            /* ── ESTADO ── */
+            var state = {
+                role: "member",
+                currentView: "overview",
+                communityId: null,
+            };
+
+            /* ── MOCK DATA ── */
+            var members = [];
+
+            var solutions = [
+                {
+                    title: "Single-Page CV",
+                    author: "Martín Solís",
+                    lang: "Python",
+                    ruta: "Implementación Técnica",
+                    rating: 4.8,
+                    date: "2026-04-18",
+                    pending: false,
+                },
+                {
+                    title: "Basic HTML Website",
+                    author: "Valeria Oquendo",
+                    lang: "Java",
+                    ruta: "Conceptos Básicos",
+                    rating: 4.5,
+                    date: "2026-04-17",
+                    pending: true,
+                },
+                {
+                    title: "CSS Grid Dashboard",
+                    author: "Tomás Bracamonte",
+                    lang: "Java",
+                    ruta: "Implementación Técnica",
+                    rating: 4.9,
+                    date: "2026-04-16",
+                    pending: false,
+                },
+                {
+                    title: "Personal Portfolio",
+                    author: "Ana Torres",
+                    lang: "Python",
+                    ruta: "Conceptos Básicos",
+                    rating: 4.2,
+                    date: "2026-04-15",
+                    pending: true,
+                },
+                {
+                    title: "Semantic HTML Blog",
+                    author: "Miguel Soto",
+                    lang: "Python",
+                    ruta: "Conceptos Básicos",
+                    rating: 4.6,
+                    date: "2026-04-14",
+                    pending: true,
+                },
+                {
+                    title: "JS Calculator",
+                    author: "Laura Ramírez",
+                    lang: "Java",
+                    ruta: "Implementación Técnica",
+                    rating: 4.7,
+                    date: "2026-04-13",
+                    pending: false,
+                },
+                {
+                    title: "Flexbox Landing Page",
+                    author: "Sofía Guerrero",
+                    lang: "Java",
+                    ruta: "Conceptos Básicos",
+                    rating: 4.3,
+                    date: "2026-04-12",
+                    pending: false,
+                },
+                {
+                    title: "Async Fetch Demo",
+                    author: "Roberto Chávez",
+                    lang: "Python",
+                    ruta: "Implementación Técnica",
+                    rating: 4.1,
+                    date: "2026-04-11",
+                    pending: false,
+                },
+            ];
+
+            var skillRoutes = [
+                {
+                    id: "route1",
+                    name: "Course Track Overview",
+                    subtitle:
+                        "UA Academic Curricula: Ciencias de la Computación",
+                    modules: 11,
+                    completed: 3,
+                    assignee: "Martín Solís",
+                    ac: "MS",
+                    color: "#7CD4CC",
+                    last: "Fundamentos de Algoritmos",
+                    level: "Básico",
+                    v35: true,
+                    profileTrack: "student",
+                    stage: "conceptos_clave",
+                },
+                {
+                    id: "route2",
+                    name: "Learning Path Dashboard",
+                    subtitle:
+                        "UA Academic Curricula: Gestión de Proyectos Ágiles",
+                    modules: 11,
+                    completed: 0,
+                    assignee: "Osvaldo Citterio",
+                    ac: "OC",
+                    color: "#5B8DEF",
+                    last: "Not started",
+                    level: "Básico",
+                    v35: false,
+                    profileTrack: "student",
+                    stage: "conceptos_clave",
+                },
+                {
+                    id: "route3",
+                    name: "Course Track Overview",
+                    subtitle:
+                        "UA Academic Curricula: Desarrollo Web Full Stack",
+                    modules: 8,
+                    completed: 5,
+                    assignee: "Valeria Oquendo",
+                    ac: "VO",
+                    color: "#9B7EDE",
+                    last: "APIs RESTful con Node.js",
+                    level: "Intermedio",
+                    v35: false,
+                    profileTrack: "student",
+                    stage: "implementacion_tecnica",
+                },
+                {
+                    id: "route4",
+                    name: "Learning Path Dashboard",
+                    subtitle:
+                        "UA Academic Curricula: Redes y Telecomunicaciones",
+                    modules: 6,
+                    completed: 0,
+                    assignee: "Tomás Bracamonte",
+                    ac: "TB",
+                    color: "#50C878",
+                    last: "Not started",
+                    level: "Intermedio",
+                    v35: false,
+                    profileTrack: "student",
+                    stage: "conceptos_clave",
+                },
+                {
+                    id: "route5",
+                    name: "Course Track Overview",
+                    subtitle: "UA Academic Curricula: Seguridad Informática",
+                    modules: 9,
+                    completed: 2,
+                    assignee: "Sofía Guerrero",
+                    ac: "SG",
+                    color: "#F5A623",
+                    last: "Criptografía Básica",
+                    level: "Avanzado",
+                    v35: false,
+                    profileTrack: "student",
+                    stage: "conceptos_clave",
+                },
+                {
+                    id: "route6",
+                    name: "Learning Path Dashboard",
+                    subtitle: "UA TechBoost Q2 2026",
+                    modules: 3,
+                    completed: 1,
+                    assignee: "Ana Torres",
+                    ac: "AT",
+                    color: "#FF6B6B",
+                    last: "Sprint Planning Workshop",
+                    level: "Básico",
+                    v35: false,
+                    profileTrack: "teacher",
+                    stage: "conceptos_clave",
+                },
+            ];
+
+            /* Etiquetas de etapa por perfil — */
+            var STAGE_LABELS = {
+                teacher: {
+                    conceptos_clave:
+                        "Conceptos Clave para Educadores/Instructores",
+                    implementacion_tecnica: "Implementación Técnica",
+                },
+                student: {
+                    conceptos_clave: "Conceptos Clave",
+                    implementacion_tecnica: "Implementación Técnica",
+                },
+            };
+            var TRACK_LABELS = {
+                teacher: "Track: Profesores/Instructores",
+                student: "Track: Estudiantes/Profesionales",
+            };
+
+            /* ── ICONOS SVG (hoisted — definidos una sola vez) ── */
+            var ICON_JAVA =
+                '<svg width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M12.3 23.6s-1.2.7.85.93c2.48.28 3.75.24 6.48-.27 0 0 .72.45 1.72.84-6.12 2.62-13.85-.15-9.05-1.5z" fill="#F89820"/><path d="M11.5 20.4s-1.34 1 .7 1.2c2.63.27 4.7.29 8.3-.4 0 0 .5.51 1.28.79-7.35 2.15-15.54.17-10.28-1.59z" fill="#F89820"/><path d="M17.6 14.5c1.5 1.72-.39 3.27-.39 3.27s3.8-1.96 2.06-4.42c-1.63-2.3-2.88-3.44 3.88-7.38 0 0-10.6 2.65-5.55 8.53z" fill="#F89820"/><path d="M25.1 26.1s.89.73-.98 1.3c-3.55 1.07-14.78 1.4-17.9.04-1.12-.49.98-1.16 1.64-1.3.69-.15 1.08-.12 1.08-.12-1.24-.87-8.02 1.72-3.44 2.46 12.48 2.02 22.76-.91 19.6-2.38z" fill="#F89820"/><path d="M12.9 17.1s-5.67 1.35-2.01 1.84c1.55.2 4.63.15 7.5-.08 2.35-.19 4.7-.6 4.7-.6s-.83.35-1.42.76c-5.76 1.51-16.88.81-13.68-.74 2.7-1.32 4.91-1.18 4.91-1.18z" fill="#F89820"/><path d="M22.3 21.9c5.86-3.04 3.15-5.97 1.26-5.57-.46.1-.67.19-.67.19s.17-.27.5-.38c3.73-1.31 6.6 3.87-1.21 5.93 0 0 .09-.08.12-.17z" fill="#F89820"/><path d="M19 5s3.24 3.24-3.07 8.22c-5.05 3.99-1.15 6.27 0 8.87-2.95-2.66-5.11-5.01-3.66-7.19C14.28 11.9 20.5 10.25 19 5z" fill="#F89820"/><path d="M13.5 29.6c5.63.36 14.27-.2 14.48-2.85 0 0-.39 1.01-4.65 1.8-4.81.89-10.74.79-14.26.22 0 0 .72.59 4.43.83z" fill="#F89820"/></svg>';
+            var ICON_PYTHON =
+                '<svg width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M15.9 2C9.1 2 9.5 4.9 9.5 4.9l.01 3.1h6.5v.93H6.4S2 8.4 2 15.3s3.85 6.65 3.85 6.65H8.1v-3.2s-.13-3.85 3.79-3.85h6.52s3.67.06 3.67-3.54V5.93S22.6 2 15.9 2zm-3.6 2.07c.66 0 1.19.53 1.19 1.19S12.96 6.45 12.3 6.45s-1.19-.53-1.19-1.19.53-1.19 1.19-1.19z" fill="#306998"/><path d="M16.1 30c6.8 0 6.4-2.9 6.4-2.9l-.01-3.1h-6.5v-.93h9.62S30 23.6 30 16.7s-3.85-6.65-3.85-6.65H23.9v3.2s.13 3.85-3.79 3.85h-6.52S9.92 17.04 9.92 20.64V26.07S9.4 30 16.1 30zm3.6-2.07c-.66 0-1.19-.53-1.19-1.19s.53-1.19 1.19-1.19 1.19.53 1.19 1.19-.53 1.19-1.19 1.19z" fill="#FFD43B"/></svg>';
+            var ICON_GH =
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.004 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>';
+            var ICON_PERSON =
+                '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--accent)" stroke-width="1.6"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>';
+            var ICON_CB =
+                '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1l1.5 4.5H14l-3.75 2.75 1.44 4.42L8 10 4.31 12.67l1.44-4.42L2 5.5h4.5z"/></svg>';
+            var ICON_IT =
+                '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6l-3 2 3 2M12 6l3 2-3 2M9 3l-2 10"/></svg>';
+
+            /* ── UTILIDADES ── */
+            function toast(msg) {
+                var el = document.getElementById("toast");
+                el.textContent = msg;
+                el.classList.add("show");
+                clearTimeout(toast._t);
+                toast._t = setTimeout(function () {
+                    el.classList.remove("show");
+                }, 2800);
+            }
+
+            function reRender() {
+                var v = state.currentView;
+                if (v === "members-view") renderMembers();
+                if (v === "solutions-view") renderSolutions();
+                if (v === "skills-view") renderSkills();
+            }
+
+            /* ── MAPEO API → prototipo ── */
+            var STAGE_ES = {
+                CONCEPTOS_CLAVE: "Conceptos Básicos",
+                IMPLEMENTACION_TECNICA: "Implementación Técnica",
+            };
+            function stageLabelEs(stage) {
+                return STAGE_ES[stage] || stage;
+            }
+            function roleLower(role) {
+                return String(role || "MEMBER").toLowerCase();
+            } // ADMIN→admin…
+
+            function initialsFrom(name) {
+                var parts = String(name || "")
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean);
+                if (parts.length === 0) return "??";
+                if (parts.length === 1)
+                    return parts[0].slice(0, 2).toUpperCase();
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+
+            /* Color determinista por id: el mismo miembro siempre recibe el mismo color. */
+            var AVATAR_COLORS = [
+                "#E9642C",
+                "#7CD4CC",
+                "#5B8DEF",
+                "#9B7EDE",
+                "#F5A623",
+                "#50C878",
+                "#FF6B6B",
+                "#4ECDC4",
+                "#A29BFE",
+                "#FD79A8",
+                "#74B9FF",
+                "#55EFC4",
+            ];
+            function colorFor(id) {
+                var h = 0,
+                    s = String(id || "");
+                for (var i = 0; i < s.length; i++)
+                    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+                return AVATAR_COLORS[h % AVATAR_COLORS.length];
+            }
+
+            function currentCommunity() {
+                var list = bootstrap.communities || [];
+                for (var i = 0; i < list.length; i++)
+                    if (list[i].id === state.communityId) return list[i];
+                return null;
+            }
+
+            /* ── CARGA DE MIEMBROS ── */
+            function loadMembers(communityId) {
+                var tbody = document.getElementById("members-tbody");
+                if (!tbody) return;
+                tbody.innerHTML =
+                    '<tr><td colspan="5" class="muted-sm" style="padding:18px">Cargando miembros…</td></tr>';
+
+                fetch("/api/communities/" + communityId + "/members", {
+                    credentials: "include",
+                    headers: { Accept: "application/json" },
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        var comm = data.community;
+                        members = data.members.map(function (m) {
+                            var display = m.displayName || m.email;
+                            return {
+                                id: m.id,
+                                name:
+                                    display +
+                                    (m.id === bootstrap.meId ? " (tú)" : ""),
+                                initials: initialsFrom(display),
+                                color: colorFor(m.id),
+                                role: roleLower(m.role),
+                                progress:
+                                    typeof m.progress === "number"
+                                        ? m.progress
+                                        : 0,
+                                ruta: stageLabelEs(comm.stage),
+                                isMe: m.id === bootstrap.meId,
+                            };
+                        });
+
+                        /* El rol del usuario actual EN ESTA comunidad decide la vista RBAC. */
+                        var mine = members.filter(function (m) {
+                            return m.isMe;
+                        })[0];
+                        state.role = mine ? mine.role : "member";
+
+                        /* Badges/título dependientes de datos reales. */
+                        var sbCount =
+                            document.getElementById("sb-members-count");
+                        if (sbCount) sbCount.textContent = data.memberCount;
+                        var titleSpan =
+                            document.querySelector(".topbar-title span");
+                        if (titleSpan) titleSpan.textContent = "/ " + comm.name;
+                        var roleBadge = document.getElementById("role-badge");
+                        if (roleBadge) {
+                            roleBadge.textContent = state.role;
+                            roleBadge.setAttribute("data-role", state.role);
+                        }
+
+                        renderMembers();
+                    })
+                    .catch(function (err) {
+                        members = [];
+                        renderMembers();
+                        var tb = document.getElementById("members-tbody");
+                        if (tb)
+                            tb.innerHTML =
+                                '<tr><td colspan="5" style="padding:18px;color:#b23b3b">No se pudieron cargar los miembros: ' +
+                                err.message +
+                                "</td></tr>";
+                        toast("⚠ " + err.message);
+                    });
+            }
+
+            function onCommunityChange(id) {
+                state.communityId = id;
+                loadMembers(id);
+            }
+
+            /* ── NAVEGACIÓN ── */
+            function switchView(id, el) {
+                document
+                    .querySelectorAll(".view-section")
+                    .forEach(function (s) {
+                        s.classList.remove("active");
+                    });
+                document.querySelectorAll(".view-tab").forEach(function (t) {
+                    t.classList.remove("active");
+                });
+                document.getElementById(id).classList.add("active");
+                el.classList.add("active");
+                state.currentView = id;
+                reRender();
+            }
+
+            function navTo(id, el) {
+                document.querySelectorAll(".sb-item").forEach(function (i) {
+                    i.classList.remove("active");
+                });
+                el.classList.add("active");
+                var tab = document.querySelector(
+                    '.view-tab[data-view="' + id + '"]',
+                );
+                if (tab) switchView(id, tab);
+            }
+
+            /* ── RBAC ── */
+            function cycleRole() {
+                var roles = ["admin", "manager", "member"];
+                state.role =
+                    roles[(roles.indexOf(state.role) + 1) % roles.length];
+                var badge = document.getElementById("role-badge");
+                badge.textContent = state.role;
+                badge.setAttribute("data-role", state.role);
+                toast("🔄 Rol cambiado a: " + state.role);
+                reRender();
+            }
+
+            /* ── RENDER MIEMBROS ── */
+            function renderMembers() {
+                var tbody = document.getElementById("members-tbody");
+                if (!tbody) return;
+                var theadRow = document.getElementById("members-thead-row");
+                var isManager = state.role === "manager";
+                var isMember = state.role === "member";
+
+                /* Banners RBAC */
+                document
+                    .getElementById("members-rbac-banner")
+                    .classList.toggle("hidden", !isManager);
+                document
+                    .getElementById("members-member-banner")
+                    .classList.toggle("hidden", !isMember);
+
+                tbody.innerHTML = "";
+
+                if (isMember) {
+                    /* ── VISTA MEMBER: solo su propia fila, solo columnas Miembro + Rol ── */
+                    theadRow.innerHTML = "<th>Miembro</th><th>Rol</th>";
+
+                    /* La fila propia se identifica por isMe (no se asume que sea la primera). */
+                    var me =
+                        members.filter(function (m) {
+                            return m.isMe;
+                        })[0] || members[0];
+                    if (!me) {
+                        return;
+                    }
+                    var row = document.createElement("tr");
+                    row.innerHTML =
+                        '<td><div class="member-cell">' +
+                        '<div class="m-avatar" style="background:' +
+                        me.color +
+                        '">' +
+                        me.initials +
+                        "</div>" +
+                        "<span>" +
+                        me.name +
+                        "</span>" +
+                        "</div></td>" +
+                        '<td><span class="role-pill role-member">' +
+                        me.role +
+                        "</span></td>";
+                    tbody.appendChild(row);
+                    return;
+                }
+
+                /* ── VISTA ADMIN / MANAGER: tabla completa ── */
+                theadRow.innerHTML =
+                    "<th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>" +
+                    '<th style="min-width:140px">Progreso</th><th>Acciones</th>';
+
+                members.forEach(function (m) {
+                    var isRestricted =
+                        isManager &&
+                        (m.role === "admin" || m.role === "manager");
+                    var roleClass =
+                        m.role === "admin"
+                            ? "role-admin"
+                            : m.role === "manager"
+                              ? "role-manager"
+                              : "role-member";
+
+                    var isImpl = m.ruta === "Implementación Técnica";
+                    var rutaSvg = isImpl
+                        ? '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M9 3l5 5-5 5"/></svg>'
+                        : '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>';
+                    var rutaBadge =
+                        '<span class="ruta-tag ' +
+                        (isImpl ? "ruta-impl" : "ruta-basic") +
+                        '">' +
+                        rutaSvg +
+                        m.ruta +
+                        "</span>";
+
+                    var actions;
+                    if (isRestricted) {
+                        actions =
+                            '<span class="muted-sm">🔒 Restringido</span>';
+                    } else if (state.role === "admin") {
+                        actions =
+                            '<button class="m-btn m-btn-edit" onclick="toast(\'✏ Editando: ' +
+                            m.name +
+                            "')\">" +
+                            '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>Editar</button> ' +
+                            '<button class="m-btn m-btn-delete" onclick="toast(\'🗑 Eliminado: ' +
+                            m.name +
+                            "')\">" +
+                            '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"/></svg>Eliminar</button>';
+                    } else {
+                        /* manager sobre filas no restringidas */
+                        actions =
+                            '<button class="action-btn" onclick="toast(\'✏ Editando: ' +
+                            m.name +
+                            "')\">✏ Editar</button>" +
+                            '<button class="action-btn" onclick="toast(\'⚙ Rol: ' +
+                            m.name +
+                            "')\">⚙ Rol</button>";
+                    }
+
+                    var row = document.createElement("tr");
+                    if (isRestricted) row.className = "row-disabled";
+                    row.innerHTML =
+                        '<td><div class="member-cell"><div class="m-avatar" style="background:' +
+                        m.color +
+                        '">' +
+                        m.initials +
+                        "</div><span>" +
+                        m.name +
+                        "</span></div></td>" +
+                        '<td><span class="role-pill ' +
+                        roleClass +
+                        '">' +
+                        m.role +
+                        "</span></td>" +
+                        "<td>" +
+                        rutaBadge +
+                        "</td>" +
+                        '<td><div class="prog-cell"><div class="gp-bar-wrap"><div class="gp-bar" style="width:' +
+                        m.progress +
+                        '%"></div></div><span class="prog-pct">' +
+                        m.progress +
+                        "%</span></div></td>" +
+                        "<td>" +
+                        actions +
+                        "</td>";
+                    tbody.appendChild(row);
+                });
+            }
+
+            /* ── RENDER RETOS ── */
+            function renderSolutions() {
+                var grid = document.getElementById("solutions-grid");
+                var counter = document.getElementById("sol-counter");
+                var rutaF = document.getElementById("filter-skill").value;
+                var sortF = document.getElementById("filter-sort").value;
+                var canApprove = state.role !== "member";
+
+                var filtered = solutions.filter(function (s) {
+                    return !rutaF || s.ruta === rutaF;
+                });
+                filtered.sort(function (a, b) {
+                    if (sortF === "rating") return b.rating - a.rating;
+                    if (sortF === "pending")
+                        return (b.pending ? 1 : 0) - (a.pending ? 1 : 0);
+                    return b.date.localeCompare(a.date);
+                });
+
+                counter.textContent =
+                    filtered.length +
+                    " reto" +
+                    (filtered.length !== 1 ? "s" : "");
+                grid.innerHTML = "";
+                var pending = 0;
+
+                filtered.forEach(function (s) {
+                    if (s.pending) pending++;
+
+                    var statusPill = s.pending
+                        ? '<span class="pill sol-status-pending"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--accent)"><path d="M9 1L4 9h4v6l6-8H9V1z"/></svg>Pendiente</span>'
+                        : '<span class="pill sol-status-approved"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#1a7a3a" stroke-width="2"><path d="M2 8l4 4 8-8"/></svg>Aprobada</span>';
+
+                    var isImpl = s.ruta === "Implementación Técnica";
+                    var rutaTag = isImpl
+                        ? '<span class="sol-ruta-tag sol-ruta-tag-impl">' +
+                          ICON_IT +
+                          "Implementación Técnica</span>"
+                        : '<span class="sol-ruta-tag sol-ruta-tag-basic">' +
+                          ICON_CB +
+                          "Conceptos Básicos</span>";
+
+                    var isJava = s.lang === "Java";
+                    var langTag =
+                        '<span class="sol-lang-tag ' +
+                        (isJava ? "java" : "python") +
+                        '">' +
+                        (isJava ? ICON_JAVA : ICON_PYTHON) +
+                        s.lang +
+                        "</span>";
+
+                    var full = Math.floor(s.rating),
+                        hasHalf = s.rating - full >= 0.3;
+                    var stars =
+                        '<span class="c-amber">★</span>'.repeat(full) +
+                        (hasHalf
+                            ? '<span class="c-amber" style="opacity:.5">★</span>'
+                            : "") +
+                        '<span style="color:var(--border)">★</span>'.repeat(
+                            5 - full - (hasHalf ? 1 : 0),
+                        );
+
+                    var actions =
+                        canApprove && s.pending
+                            ? '<div class="sol-actions-v2">' +
+                              '<button class="sol-action-btn sol-btn-approve" onclick="approveSolution(this,' +
+                              JSON.stringify(s.title) +
+                              ')">Aprobar</button>' +
+                              '<button class="sol-action-btn sol-btn-reject"  onclick="rejectSolution(this,' +
+                              JSON.stringify(s.title) +
+                              ')">Rechazar</button>' +
+                              "</div>"
+                            : "";
+
+                    var card = document.createElement("div");
+                    card.className = "sol-card";
+                    card.innerHTML =
+                        '<div class="sol-row-top"><div class="sol-title-v2">' +
+                        s.title +
+                        "</div>" +
+                        statusPill +
+                        "</div>" +
+                        '<div class="sol-row-meta"><div class="sol-author-v2"><div class="sol-author-icon">' +
+                        ICON_PERSON +
+                        "</div>" +
+                        s.author +
+                        '</div><div class="sol-date-v2">' +
+                        s.date +
+                        "</div></div>" +
+                        '<div class="sol-tag-row">' +
+                        rutaTag +
+                        "</div>" +
+                        '<div class="sol-row-lang">' +
+                        langTag +
+                        '<span class="sol-stars">' +
+                        stars +
+                        " <span>" +
+                        s.rating +
+                        '</span></span><button class="sol-github-btn" onclick="toast(\'🔗 Repo: ' +
+                        s.title +
+                        "')\">" +
+                        ICON_GH +
+                        "GitHub Repo</button></div>" +
+                        actions;
+                    grid.appendChild(card);
+                });
+
+                document.getElementById("sb-pending-count").textContent =
+                    pending;
+            }
+
+            function _mutSolution(btn, title, fn) {
+                btn.closest(".sol-card").style.opacity = "0.5";
+                var idx = solutions.findIndex(function (s) {
+                    return s.title === title;
+                });
+                if (idx !== -1) fn(idx);
+                setTimeout(renderSolutions, 300);
+            }
+            function approveSolution(btn, title) {
+                _mutSolution(btn, title, function (i) {
+                    solutions[i].pending = false;
+                    toast("✓ Reto aprobado: " + title);
+                });
+            }
+            function rejectSolution(btn, title) {
+                _mutSolution(btn, title, function (i) {
+                    solutions.splice(i, 1);
+                    toast("✗ Reto rechazado: " + title);
+                });
+            }
+
+            /* ── RENDER RUTAS v4 ── */
+            function renderSkills() {
+                var grid = document.getElementById("skills-grid");
+                var canEdit = state.role === "admin";
+                var stageF = document.getElementById("filter-stage").value;
+                var trackF = document.getElementById("filter-track").value;
+                document
+                    .getElementById("skills-admin-banner")
+                    .classList.toggle("hidden", canEdit);
+                document.getElementById("skills-current-role").textContent =
+                    state.role;
+                grid.innerHTML = "";
+
+                /* SVG reutilizables para los tres estados de ícono */
+                var SVG_CHECK =
+                    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8l4 4 8-8"/></svg>';
+                var SVG_CURR =
+                    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="6"/></svg>';
+                var SVG_LOCK =
+                    '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>';
+                var SVG_ARROW =
+                    '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M9 3l5 5-5 5"/></svg>';
+                var SVG_DOT =
+                    '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>';
+
+                var filtered = skillRoutes.filter(function (r) {
+                    return (
+                        (!stageF || r.stage === stageF) &&
+                        (!trackF || r.profileTrack === trackF)
+                    );
+                });
+
+                if (filtered.length === 0) {
+                    grid.innerHTML =
+                        '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text-secondary);font-size:12.5px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)">Ninguna ruta coincide con los filtros seleccionados</div>';
+                    return;
+                }
+
+                filtered.forEach(function (r) {
+                    var pct = Math.round((r.completed / r.modules) * 100);
+                    var card = document.createElement("div");
+                    card.className = "skill-card-v4";
+
+                    /* ── Construir fila de íconos ── */
+                    var icons = "";
+                    for (var i = 0; i < r.modules; i++) {
+                        if (i < r.completed) {
+                            icons +=
+                                '<div class="sk4-icon done">' +
+                                SVG_CHECK +
+                                "</div>";
+                        } else if (
+                            i === r.completed &&
+                            r.completed < r.modules
+                        ) {
+                            icons +=
+                                '<div class="sk4-icon current">' +
+                                SVG_CURR +
+                                "</div>";
+                        } else {
+                            icons +=
+                                '<div class="sk4-icon locked">' +
+                                SVG_LOCK +
+                                "</div>";
+                        }
+                    }
+
+                    /* ── Barra de progreso ── */
+                    var barHtml =
+                        pct > 0
+                            ? '<div class="sk4-bar" style="width:' +
+                              pct +
+                              '%">' +
+                              '<span class="sk4-bar-pct">' +
+                              pct +
+                              "%</span>" +
+                              "</div>"
+                            : "";
+
+                    /* ── Badge de etapa ── */
+                    var isImpl = r.stage === "implementacion_tecnica";
+                    var stageLabel = STAGE_LABELS[r.profileTrack][r.stage];
+                    var stageBadge =
+                        '<span class="ruta-tag ' +
+                        (isImpl ? "ruta-impl" : "ruta-basic") +
+                        '">' +
+                        (isImpl ? SVG_ARROW : SVG_DOT) +
+                        stageLabel +
+                        "</span>";
+
+                    /* ── Botón de promoción de etapa ── */
+                    var promoteBtn =
+                        canEdit && !isImpl
+                            ? '<button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="promoteRouteStage(\'' +
+                              r.id +
+                              "')\">→ Promover a Implementación Técnica</button>"
+                            : "";
+
+                    card.innerHTML =
+                        /* Encabezado: etiqueta tipo + título + etapa + track */
+                        '<div class="sk4-header">' +
+                        '<div class="sk4-type">' +
+                        r.name +
+                        "</div>" +
+                        '<div class="sk4-title">' +
+                        r.subtitle +
+                        "</div>" +
+                        '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">' +
+                        stageBadge +
+                        '<span class="muted-sm">' +
+                        TRACK_LABELS[r.profileTrack] +
+                        "</span>" +
+                        "</div>" +
+                        "</div>" +
+                        /* Fila de progreso: nombre | barra | Tema X/Y */
+                        '<div class="sk4-prog-row">' +
+                        '<div class="sk4-name">' +
+                        r.assignee +
+                        "</div>" +
+                        '<div class="sk4-bar-wrap">' +
+                        barHtml +
+                        "</div>" +
+                        '<div class="sk4-tema"><b>Tema:</b> ' +
+                        r.completed +
+                        "/" +
+                        r.modules +
+                        "</div>" +
+                        "</div>" +
+                        /* Línea divisoria */
+                        '<hr class="sk4-divider">' +
+                        /* Sección de desafíos */
+                        '<div class="sk4-challenges">' +
+                        '<div class="sk4-ch-header">' +
+                        '<div class="sk4-ch-title">Desafíos de Código</div>' +
+                        '<div class="sk4-ch-level">Nivel: ' +
+                        r.level +
+                        "</div>" +
+                        "</div>" +
+                        '<div class="sk4-icons">' +
+                        icons +
+                        "</div>" +
+                        promoteBtn +
+                        "</div>";
+
+                    grid.appendChild(card);
+                });
+            }
+
+            /* ── Promoción manual de etapa ── */
+            function promoteRouteStage(routeId) {
+                var route = skillRoutes.filter(function (r) {
+                    return r.id === routeId;
+                })[0];
+                if (!route || route.stage === "implementacion_tecnica") return;
+                route.stage = "implementacion_tecnica";
+                toast(
+                    '→ "' +
+                        route.subtitle +
+                        '" promovida a Implementación Técnica',
+                );
+                renderSkills();
+            }
+
+            /* ── INIT ── */
+            (function () {
+                renderSolutions();
+                renderSkills();
+
+                var list = bootstrap.communities || [];
+                if (list.length > 0) {
+                    /* Comunidad por defecto: la primera (propias van antes que membresías). */
+                    state.communityId = list[0].id;
+                    var sel = document.getElementById("community-select");
+                    if (sel) sel.value = state.communityId;
+                    loadMembers(state.communityId);
+                } else {
+                    var sbCount = document.getElementById("sb-members-count");
+                    if (sbCount) sbCount.textContent = "0";
+                }
+            })();
+        </script>
+    </body>
 </html>
