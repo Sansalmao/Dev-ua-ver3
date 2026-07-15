@@ -1,4 +1,23 @@
 ---
+// ============================================================================
+//  Admin Console — reubicado desde el prototipo v2.5 (T1.3 del informe).
+//
+//  DIFERENCIA IMPORTANTE CON EL PROTOTIPO:
+//  El prototipo trataba las "Solicitudes de Profesores" como propuestas de
+//  comunidad (communityName/topic/stage). El backend implementa otra cosa: se
+//  verifica a la PERSONA (User.teacherVerificationStatus). Una vez VERIFIED,
+//  el profesor crea comunidades libremente (requireVerifiedTeacher).
+//  Esta consola refleja el backend real, no el mock.
+//
+//  Se omiten del prototipo (no son de admin / fuera de alcance):
+//   • "Explorar" y "Mis Comunidades" → son vistas de profesor/estudiante y ya
+//     viven en /dashboard.
+//   • El selector de identidad (cycleIdentity): la identidad viene de la sesión.
+//   • Invitaciones: fuera de alcance por decisión de producto.
+//
+//  Los datos se leen por SSR con Prisma (la página ya es admin-only), así que
+//  no hace falta un GET /api/admin/users. Las mutaciones sí usan la API.
+// ============================================================================
 import "../styles/global.css";
 import { prisma } from "@lib/prisma.js";
 
@@ -79,8 +98,7 @@ const users = usersRaw.map((u) => ({
     email: u.email,
     profileType: u.profileType,
     // Solo tiene sentido para PROFESOR.
-    verification:
-        u.profileType === "PROFESOR" ? u.teacherVerificationStatus : null,
+    verification: u.profileType === "PROFESOR" ? u.teacherVerificationStatus : null,
     isAdmin: u.isAdmin,
     institution: u.institution,
     createdAt: u.createdAt.toISOString().slice(0, 10),
@@ -132,28 +150,14 @@ const bootstrap = {
                 </div>
                 <nav class="sb-nav">
                     <div class="sb-section">Plataforma</div>
-                    <div
-                        class="sb-item active"
-                        data-nav="requests-view"
-                        onclick="navTo('requests-view',this)"
-                    >
+                    <div class="sb-item active" data-nav="requests-view" onclick="navTo('requests-view',this)">
                         Solicitudes de Profesores
-                        <span class="sb-badge" id="sb-pending-badge"
-                            >{kpis.pending}</span
-                        >
+                        <span class="sb-badge" id="sb-pending-badge">{kpis.pending}</span>
                     </div>
-                    <div
-                        class="sb-item"
-                        data-nav="communities-view"
-                        onclick="navTo('communities-view',this)"
-                    >
+                    <div class="sb-item" data-nav="communities-view" onclick="navTo('communities-view',this)">
                         Comunidades de Práctica
                     </div>
-                    <div
-                        class="sb-item"
-                        data-nav="users-view"
-                        onclick="navTo('users-view',this)"
-                    >
+                    <div class="sb-item" data-nav="users-view" onclick="navTo('users-view',this)">
                         Usuarios de la Plataforma
                     </div>
                 </nav>
@@ -161,11 +165,7 @@ const bootstrap = {
                     <div class="sb-avatar">AD</div>
                     <div class="flex-1">
                         <div class="sb-name">{meLabel}</div>
-                        <span
-                            class="sb-role-badge"
-                            data-identity="platform_admin"
-                            >Admin de Plataforma</span
-                        >
+                        <span class="sb-role-badge" data-identity="platform_admin">Admin de Plataforma</span>
                     </div>
                 </div>
             </aside>
@@ -175,9 +175,7 @@ const bootstrap = {
                     <div class="topbar-title">
                         &gt;_ Platform Admin <span>/ UA WG LACNOG</span>
                     </div>
-                    <a class="btn btn-outline btn-sm" href="/dashboard"
-                        >Ir al Dashboard</a
-                    >
+                    <a class="btn btn-outline btn-sm" href="/dashboard">Ir al Dashboard</a>
                 </header>
 
                 <div id="content">
@@ -185,12 +183,8 @@ const bootstrap = {
                     <section id="requests-view" class="view-section active">
                         <div class="kpi-grid" id="pa-kpi-grid">
                             <div class="kpi-card">
-                                <div class="kpi-label">
-                                    Pendientes de verificar
-                                </div>
-                                <div class="kpi-value c-amber">
-                                    {kpis.pending}
-                                </div>
+                                <div class="kpi-label">Pendientes de verificar</div>
+                                <div class="kpi-value c-amber">{kpis.pending}</div>
                             </div>
                             <div class="kpi-card">
                                 <div class="kpi-label">Profesores</div>
@@ -206,18 +200,13 @@ const bootstrap = {
                             </div>
                             <div class="kpi-card">
                                 <div class="kpi-label">Graduadas</div>
-                                <div class="kpi-value c-amber">
-                                    {kpis.graduated}
-                                </div>
+                                <div class="kpi-value c-amber">{kpis.graduated}</div>
                             </div>
                         </div>
 
-                        <div class="pa-section-title">
-                            Profesores pendientes de verificación
-                        </div>
+                        <div class="pa-section-title">Profesores pendientes de verificación</div>
                         <p class="muted-sm" style="margin:-6px 0 14px">
-                            Al aprobar, el profesor queda <b>VERIFIED</b> y puede
-                            crear comunidades.
+                            Al aprobar, el profesor queda <b>VERIFIED</b> y puede crear comunidades.
                         </p>
                         <div id="requests-pending"></div>
                     </section>
@@ -226,48 +215,22 @@ const bootstrap = {
                     <section id="communities-view" class="view-section">
                         <div class="filters-bar">
                             <span class="filter-label">Etapa:</span>
-                            <select
-                                class="filter-select"
-                                id="f-stage"
-                                onchange="renderCommunities()"
-                            >
+                            <select class="filter-select" id="f-stage" onchange="renderCommunities()">
                                 <option value="">Todas</option>
-                                <option value="CONCEPTOS_CLAVE"
-                                    >Conceptos Clave</option
-                                >
-                                <option value="IMPLEMENTACION_TECNICA"
-                                    >Implementación Técnica</option
-                                >
+                                <option value="CONCEPTOS_CLAVE">Conceptos Clave</option>
+                                <option value="IMPLEMENTACION_TECNICA">Implementación Técnica</option>
                             </select>
                             <span class="filter-label">Perfil:</span>
-                            <select
-                                class="filter-select"
-                                id="f-track"
-                                onchange="renderCommunities()"
-                            >
+                            <select class="filter-select" id="f-track" onchange="renderCommunities()">
                                 <option value="">Todos</option>
-                                <option value="STUDENT"
-                                    >Estudiantes/Profesionales</option
-                                >
-                                <option value="TEACHER"
-                                    >Profesores/Instructores</option
-                                >
+                                <option value="STUDENT">Estudiantes/Profesionales</option>
+                                <option value="TEACHER">Profesores/Instructores</option>
                             </select>
-                            <label
-                                class="filter-label"
-                                style="display:flex;align-items:center;gap:6px;cursor:pointer"
-                            >
-                                <input
-                                    type="checkbox"
-                                    id="f-graduated"
-                                    onchange="renderCommunities()"
-                                />
+                            <label class="filter-label" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                                <input type="checkbox" id="f-graduated" onchange="renderCommunities()" />
                                 Mostrar graduadas
                             </label>
-                            <span
-                                id="comm-counter"
-                                class="muted-sm"
-                                style="margin-left:auto"></span>
+                            <span id="comm-counter" class="muted-sm" style="margin-left:auto"></span>
                         </div>
                         <div id="communities-list"></div>
                     </section>
@@ -276,26 +239,14 @@ const bootstrap = {
                     <section id="users-view" class="view-section">
                         <div class="filters-bar">
                             <span class="filter-label">Perfil:</span>
-                            <select
-                                class="filter-select"
-                                id="f-profile"
-                                onchange="renderUsers()"
-                            >
+                            <select class="filter-select" id="f-profile" onchange="renderUsers()">
                                 <option value="">Todos</option>
                                 <option value="PROFESOR">Profesores</option>
                                 <option value="ESTUDIANTE">Estudiantes</option>
                             </select>
-                            <input
-                                class="filter-select"
-                                id="f-search"
-                                placeholder="Buscar por nombre o email"
-                                oninput="renderUsers()"
-                                style="min-width:220px"
-                            />
-                            <span
-                                id="users-counter"
-                                class="muted-sm"
-                                style="margin-left:auto"></span>
+                            <input class="filter-select" id="f-search" placeholder="Buscar por nombre o email"
+                                   oninput="renderUsers()" style="min-width:220px" />
+                            <span id="users-counter" class="muted-sm" style="margin-left:auto"></span>
                         </div>
                         <div class="table-card">
                             <div class="overflow-x-auto">
@@ -321,837 +272,186 @@ const bootstrap = {
         <div id="toast"></div>
 
         <style is:global>
-            *,
-            *::before,
-            *::after {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-            button,
-            select,
-            input {
-                font-family: inherit;
-            }
 
-            :root {
-                --amber: #e9642c;
-                --amber-light: #fef0e8;
-                --amber-mid: #f5a067;
-                --teal: #7cd4cc;
-                --teal-light: #e8f8f7;
-                --teal-dark: #2a9d96;
-                --bg: #f8f9fa;
-                --surface: #ffffff;
-                --text: #343a40;
-                --muted: #6c757d;
-                --border: #e9ecef;
-                --shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-                --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
-                --radius: 12px;
-                --radius-xs: 6px;
-                --sidebar-w: 240px;
-                --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-            }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button, select, input { font-family: inherit; }
 
-            html,
-            body {
-                height: 100%;
-                font-family: var(--font);
-                font-size: 13px;
-                color: var(--text);
-                background: var(--bg);
-                overflow: hidden;
-            }
+:root {
+  --amber:       #E9642C;
+  --amber-light: #FEF0E8;
+  --amber-mid:   #F5A067;
+  --teal:        #7CD4CC;
+  --teal-light:  #E8F8F7;
+  --teal-dark:   #2a9d96;
+  --bg:          #F8F9FA;
+  --surface:     #FFFFFF;
+  --text:        #343A40;
+  --muted:       #6C757D;
+  --border:      #E9ECEF;
+  --shadow:      0 2px 8px rgba(0,0,0,.07);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+  --radius:      12px;
+  --radius-xs:   6px;
+  --sidebar-w:   240px;
+  --font:        'Segoe UI', system-ui, -apple-system, sans-serif;
+}
 
-            #app {
-                display: flex;
-                height: 100vh;
-                overflow: hidden;
-            }
-            #main {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                min-width: 0;
-            }
+html, body { height: 100%; font-family: var(--font); font-size: 13px; color: var(--text); background: var(--bg); overflow: hidden; }
 
-            /* ── SIDEBAR ── */
-            #sidebar {
-                width: var(--sidebar-w);
-                min-width: var(--sidebar-w);
-                background: var(--surface);
-                border-right: 1px solid var(--border);
-                display: flex;
-                flex-direction: column;
-                height: 100vh;
-                overflow: hidden;
-            }
-            .sb-logo {
-                padding: 18px 16px 14px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                border-bottom: 1px solid var(--border);
-                flex-shrink: 0;
-            }
-            .sb-logo-mark {
-                width: 32px;
-                height: 32px;
-                background: var(--amber);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #fff;
-                font-weight: 800;
-                font-size: 13px;
-                flex-shrink: 0;
-                box-shadow: 0 2px 8px rgba(233, 100, 44, 0.3);
-            }
-            .sb-logo-text {
-                font-size: 14px;
-                font-weight: 800;
-                color: var(--amber);
-                letter-spacing: -0.3px;
-            }
-            .sb-logo-sub {
-                font-size: 10px;
-                color: var(--muted);
-                margin-top: 1px;
-            }
-            .sb-section {
-                padding: 14px 16px 4px;
-                font-size: 10px;
-                font-weight: 700;
-                color: var(--muted);
-                letter-spacing: 0.7px;
-                text-transform: uppercase;
-            }
-            .sb-nav {
-                flex: 1;
-                overflow-y: auto;
-                padding: 6px 0;
-            }
-            .sb-item {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 8px 14px;
-                cursor: pointer;
-                border-radius: var(--radius-xs);
-                margin: 1px 8px;
-                transition: all 0.15s;
-                color: var(--muted);
-                font-size: 12.5px;
-            }
-            .sb-item:hover {
-                background: var(--bg);
-                color: var(--text);
-            }
-            .sb-item.active {
-                background: var(--amber-light);
-                color: var(--amber);
-                font-weight: 700;
-            }
-            .sb-badge {
-                margin-left: auto;
-                background: var(--amber);
-                color: #fff;
-                border-radius: 10px;
-                padding: 2px 7px;
-                font-size: 10px;
-                font-weight: 700;
-            }
-            .sb-profile {
-                padding: 12px 14px;
-                border-top: 1px solid var(--border);
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-shrink: 0;
-            }
-            .sb-avatar {
-                width: 34px;
-                height: 34px;
-                border-radius: 50%;
-                background: linear-gradient(
-                    135deg,
-                    var(--amber),
-                    var(--amber-mid)
-                );
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #fff;
-                font-weight: 800;
-                font-size: 12px;
-                flex-shrink: 0;
-            }
-            .sb-name {
-                font-size: 12.5px;
-                font-weight: 700;
-                color: var(--text);
-            }
-            .sb-role-badge {
-                font-size: 10px;
-                cursor: pointer;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-weight: 600;
-                display: inline-block;
-            }
-            .sb-role-badge[data-identity="platform_admin"] {
-                background: var(--amber-light);
-                color: var(--amber);
-                border: 1px solid var(--amber);
-            }
-            .sb-role-badge[data-identity="teacher_a"],
-            .sb-role-badge[data-identity="teacher_b"] {
-                background: var(--teal-light);
-                color: var(--teal-dark);
-                border: 1px solid var(--teal);
-            }
-            .sb-role-badge[data-identity="student"] {
-                background: var(--bg);
-                color: var(--muted);
-                border: 1px solid var(--border);
-            }
-            .flex-1 {
-                flex: 1;
-                min-width: 0;
-            }
-            .hidden {
-                display: none !important;
-            }
+#app  { display: flex; height: 100vh; overflow: hidden; }
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-            /* ── TOPBAR ── */
-            .topbar {
-                padding: 12px 20px;
-                background: var(--surface);
-                border-bottom: 1px solid var(--border);
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                flex-shrink: 0;
-            }
-            .topbar-title {
-                font-size: 15px;
-                font-weight: 800;
-                color: var(--text);
-            }
-            .topbar-sub {
-                font-size: 11.5px;
-                color: var(--muted);
-                margin-top: 1px;
-            }
+/* ── SIDEBAR ── */
+#sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.sb-logo { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sb-logo-mark { width: 32px; height: 32px; background: var(--amber); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 13px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(233,100,44,.3); }
+.sb-logo-text { font-size: 14px; font-weight: 800; color: var(--amber); letter-spacing: -.3px; }
+.sb-logo-sub  { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.sb-section   { padding: 14px 16px 4px; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .7px; text-transform: uppercase; }
+.sb-nav { flex: 1; overflow-y: auto; padding: 6px 0; }
+.sb-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px; cursor: pointer; border-radius: var(--radius-xs); margin: 1px 8px; transition: all .15s; color: var(--muted); font-size: 12.5px; }
+.sb-item:hover  { background: var(--bg); color: var(--text); }
+.sb-item.active { background: var(--amber-light); color: var(--amber); font-weight: 700; }
+.sb-badge { margin-left: auto; background: var(--amber); color: #fff; border-radius: 10px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
+.sb-profile { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.sb-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--amber), var(--amber-mid)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; flex-shrink: 0; }
+.sb-name { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.sb-role-badge { font-size: 10px; cursor: pointer; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+.sb-role-badge[data-identity="platform_admin"] { background: var(--amber-light); color: var(--amber); border: 1px solid var(--amber); }
+.sb-role-badge[data-identity="teacher_a"],
+.sb-role-badge[data-identity="teacher_b"]      { background: var(--teal-light); color: var(--teal-dark); border: 1px solid var(--teal); }
+.sb-role-badge[data-identity="student"]        { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+.flex-1 { flex: 1; min-width: 0; }
+.hidden { display: none !important; }
 
-            /* ── BUTTONS ── */
-            .btn {
-                border: none;
-                cursor: pointer;
-                border-radius: var(--radius-xs);
-                padding: 7px 14px;
-                font-size: 12px;
-                font-weight: 700;
-                transition: all 0.15s;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-            }
-            .btn-primary {
-                background: var(--amber);
-                color: #fff;
-            }
-            .btn-primary:hover {
-                background: #d45a25;
-            }
-            .btn-outline {
-                background: transparent;
-                color: var(--text);
-                border: 1px solid var(--border);
-            }
-            .btn-outline:hover {
-                border-color: var(--amber);
-                color: var(--amber);
-            }
-            .btn:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-            .btn:disabled:hover {
-                border-color: var(--border);
-                color: var(--text);
-            }
-            .btn-sm {
-                padding: 5px 12px;
-                font-size: 11.5px;
-            }
+/* ── TOPBAR ── */
+.topbar { padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.topbar-title { font-size: 15px; font-weight: 800; color: var(--text); }
+.topbar-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
 
-            /* ── CONTENT ── */
-            #content {
-                flex: 1;
-                overflow-y: auto;
-                padding: 20px;
-            }
-            .view-section {
-                display: none;
-            }
-            .view-section.active {
-                display: block;
-            }
+/* ── BUTTONS ── */
+.btn { border: none; cursor: pointer; border-radius: var(--radius-xs); padding: 7px 14px; font-size: 12px; font-weight: 700; transition: all .15s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-primary { background: var(--amber); color: #fff; }
+.btn-primary:hover { background: #d45a25; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--amber); color: var(--amber); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:disabled:hover { border-color: var(--border); color: var(--text); }
+.btn-sm { padding: 5px 12px; font-size: 11.5px; }
 
-            /* ── KPI ── */
-            .kpi-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 14px;
-                margin-bottom: 20px;
-            }
-            @media (max-width: 1150px) {
-                .kpi-grid {
-                    grid-template-columns: repeat(3, 1fr);
-                }
-            }
-            @media (max-width: 700px) {
-                .kpi-grid {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-            }
-            .kpi-card {
-                background: var(--surface);
-                border-radius: var(--radius);
-                padding: 16px;
-                border: 1.5px solid var(--border);
-                box-shadow: var(--shadow);
-            }
-            .kpi-label {
-                font-size: 10px;
-                color: var(--muted);
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 6px;
-            }
-            .kpi-value {
-                font-size: 24px;
-                font-weight: 800;
-                color: var(--text);
-            }
-            .kpi-value.c-amber {
-                color: var(--amber);
-            }
+/* ── CONTENT ── */
+#content { flex: 1; overflow-y: auto; padding: 20px; }
+.view-section { display: none; }
+.view-section.active { display: block; }
 
-            /* ── SHARED ── */
-            .muted-sm {
-                font-size: 11.5px;
-                color: var(--muted);
-            }
-            .section-title {
-                font-size: 14px;
-                font-weight: 800;
-                color: var(--text);
-                margin-bottom: 12px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .m-avatar {
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 800;
-                font-size: 11px;
-                color: #fff;
-                flex-shrink: 0;
-            }
-            .member-cell {
-                display: flex;
-                align-items: center;
-                gap: 9px;
-            }
-            .pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                border-radius: 20px;
-                padding: 4px 12px;
-                font-size: 11.5px;
-                font-weight: 700;
-                white-space: nowrap;
-                border: 1.5px solid;
-            }
-            .pa-status-pending {
-                background: var(--amber-light);
-                color: var(--amber);
-                border-color: var(--amber-mid);
-            }
-            .pa-status-approved {
-                background: #e8fde8;
-                color: #1a7a3a;
-                border-color: #c6efd8;
-            }
-            .pa-status-rejected {
-                background: #fde8e8;
-                color: #c0392b;
-                border-color: #f5a0a0;
-            }
-            .ruta-tag {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                border: 1px solid;
-                border-radius: 20px;
-                padding: 3px 10px;
-                font-size: 11px;
-                font-weight: 700;
-                white-space: nowrap;
-            }
-            .ruta-impl {
-                background: var(--amber-light);
-                color: var(--amber);
-                border-color: var(--amber-mid);
-            }
-            .ruta-basic {
-                background: var(--teal-light);
-                color: var(--teal-dark);
-                border-color: var(--teal);
-            }
-            .role-pill {
-                padding: 2px 9px;
-                border-radius: 20px;
-                font-size: 10.5px;
-                font-weight: 700;
-            }
-            .role-admin {
-                background: var(--amber-light);
-                color: var(--amber);
-            }
-            .role-member {
-                background: var(--bg);
-                color: var(--muted);
-                border: 1px solid var(--border);
-            }
-            .info-banner {
-                background: var(--amber-light);
-                border: 1px solid var(--amber);
-                border-radius: var(--radius-xs);
-                padding: 10px 14px;
-                margin-bottom: 14px;
-                font-size: 12px;
-                color: var(--amber);
-                font-weight: 700;
-            }
-            .pa-empty {
-                padding: 30px;
-                text-align: center;
-                color: var(--muted);
-                font-size: 12.5px;
-                background: var(--surface);
-                border: 1px dashed var(--border);
-                border-radius: var(--radius);
-            }
+/* ── KPI ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+@media (max-width: 1150px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+.kpi-card { background: var(--surface); border-radius: var(--radius); padding: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); }
+.kpi-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.kpi-value { font-size: 24px; font-weight: 800; color: var(--text); }
+.kpi-value.c-amber { color: var(--amber); }
 
-            /* ── REQUEST CARDS ── */
-            .pa-request-card {
-                background: var(--surface);
-                border-radius: var(--radius);
-                border: 1.5px solid var(--border);
-                box-shadow: var(--shadow);
-                padding: 16px 18px;
-                margin-bottom: 12px;
-            }
-            .pa-request-top {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 12px;
-            }
-            .pa-teacher-id {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .pa-teacher-name {
-                font-size: 13.5px;
-                font-weight: 800;
-                color: var(--text);
-            }
-            .pa-request-body {
-                padding: 10px 0;
-                border-top: 1px solid var(--border);
-                border-bottom: 1px solid var(--border);
-                margin-bottom: 12px;
-            }
-            .pa-request-title {
-                font-size: 14px;
-                font-weight: 800;
-                color: var(--text);
-                margin-bottom: 3px;
-            }
-            .pa-request-actions {
-                display: flex;
-                gap: 8px;
-                justify-content: flex-end;
-            }
-            .pa-history-row {
-                display: grid;
-                grid-template-columns: 1.6fr 1.6fr 1fr 1fr;
-                align-items: center;
-                gap: 10px;
-                padding: 10px 18px;
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-xs);
-                margin-bottom: 8px;
-                font-size: 12.5px;
-            }
+/* ── SHARED ── */
+.muted-sm { font-size: 11.5px; color: var(--muted); }
+.section-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.m-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; flex-shrink: 0; }
+.member-cell { display: flex; align-items: center; gap: 9px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; font-size: 11.5px; font-weight: 700; white-space: nowrap; border: 1.5px solid; }
+.pa-status-pending  { background: var(--amber-light); color: var(--amber);  border-color: var(--amber-mid); }
+.pa-status-approved { background: #E8FDE8; color: #1a7a3a; border-color: #C6EFD8; }
+.pa-status-rejected { background: #FDE8E8; color: #C0392B; border-color: #F5A0A0; }
+.ruta-tag   { display: inline-flex; align-items: center; gap: 5px; border: 1px solid; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.ruta-impl  { background: var(--amber-light); color: var(--amber);    border-color: var(--amber-mid); }
+.ruta-basic { background: var(--teal-light);  color: var(--teal-dark); border-color: var(--teal);     }
+.role-pill   { padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; }
+.role-admin   { background: var(--amber-light); color: var(--amber); }
+.role-member  { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+.info-banner { background: var(--amber-light); border: 1px solid var(--amber); border-radius: var(--radius-xs); padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--amber); font-weight: 700; }
+.pa-empty { padding: 30px; text-align: center; color: var(--muted); font-size: 12.5px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); }
 
-            /* ── COMMUNITY CARDS ── */
-            .pa-community-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
-            }
-            @media (max-width: 900px) {
-                .pa-community-grid {
-                    grid-template-columns: 1fr;
-                }
-            }
-            .pa-community-card {
-                background: var(--surface);
-                border-radius: 16px;
-                border: 1.5px solid var(--border);
-                box-shadow: var(--shadow);
-                padding: 18px 20px;
-                margin-bottom: 16px;
-            }
-            .pa-community-top {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                gap: 10px;
-                margin-bottom: 6px;
-            }
-            .pa-community-name {
-                font-size: 15px;
-                font-weight: 800;
-                color: var(--text);
-            }
-            .pa-community-owner {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .pa-stack-avatar {
-                width: 26px;
-                height: 26px;
-                font-size: 10px;
-                border: 2px solid var(--surface);
-                margin-left: -8px;
-            }
-            .pa-stack-avatar:first-child {
-                margin-left: 0;
-            }
+/* ── REQUEST CARDS ── */
+.pa-request-card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 12px; }
+.pa-request-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.pa-teacher-id { display: flex; align-items: center; gap: 10px; }
+.pa-teacher-name { font-size: 13.5px; font-weight: 800; color: var(--text); }
+.pa-request-body { padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.pa-request-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+.pa-request-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.pa-history-row { display: grid; grid-template-columns: 1.6fr 1.6fr 1fr 1fr; align-items: center; gap: 10px; padding: 10px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 8px; font-size: 12.5px; }
 
-            /* ── INVITE PANEL ── */
-            .pa-invite-panel {
-                margin-top: 12px;
-            }
-            .pa-invite-list {
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-                max-height: 220px;
-                overflow-y: auto;
-                margin-bottom: 10px;
-                padding: 10px;
-                background: var(--bg);
-                border-radius: var(--radius-xs);
-                border: 1px solid var(--border);
-            }
-            .pa-invite-row {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                cursor: pointer;
-                font-size: 12.5px;
-            }
-            .pa-invite-row input {
-                cursor: pointer;
-            }
+/* ── COMMUNITY CARDS ── */
+.pa-community-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 900px) { .pa-community-grid { grid-template-columns: 1fr; } }
+.pa-community-card { background: var(--surface); border-radius: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
+.pa-community-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.pa-community-name { font-size: 15px; font-weight: 800; color: var(--text); }
+.pa-community-owner { display: flex; align-items: center; gap: 10px; }
+.pa-stack-avatar { width: 26px; height: 26px; font-size: 10px; border: 2px solid var(--surface); margin-left: -8px; }
+.pa-stack-avatar:first-child { margin-left: 0; }
 
-            /* ── NEW REQUEST FORM ── */
-            .pa-new-request-form {
-                background: var(--surface);
-                border: 1.5px solid var(--amber);
-                border-radius: var(--radius);
-                padding: 16px 18px;
-                margin-bottom: 16px;
-            }
-            .pa-text-input {
-                width: 100%;
-                padding: 7px 10px;
-                border-radius: var(--radius-xs);
-                border: 1px solid var(--border);
-                font-size: 12.5px;
-                outline: none;
-                margin-bottom: 10px;
-            }
-            .pa-text-input:focus {
-                border-color: var(--amber);
-            }
-            .pa-field-label {
-                font-size: 11.5px;
-                color: var(--muted);
-                font-weight: 600;
-                margin-bottom: 5px;
-            }
+/* ── INVITE PANEL ── */
+.pa-invite-panel { margin-top: 12px; }
+.pa-invite-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: var(--radius-xs); border: 1px solid var(--border); }
+.pa-invite-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; }
+.pa-invite-row input { cursor: pointer; }
 
-            /* ── PENDING CARD (teacher view) ── */
-            .pa-pending-card {
-                background: var(--surface);
-                border: 1.5px dashed var(--amber-mid);
-                border-radius: var(--radius);
-                padding: 16px 18px;
-                margin-bottom: 16px;
-            }
+/* ── NEW REQUEST FORM ── */
+.pa-new-request-form { background: var(--surface); border: 1.5px solid var(--amber); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
+.pa-text-input { width: 100%; padding: 7px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12.5px; outline: none; margin-bottom: 10px; }
+.pa-text-input:focus { border-color: var(--amber); }
+.pa-field-label { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
 
-            /* ── TABLE (Usuarios) ── */
-            .table-card {
-                background: var(--surface);
-                border-radius: var(--radius);
-                border: 1.5px solid var(--border);
-                box-shadow: var(--shadow);
-                overflow: hidden;
-            }
-            .data-table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            .data-table thead tr {
-                background: var(--bg);
-            }
-            .data-table th {
-                padding: 9px 16px;
-                font-size: 10.5px;
-                font-weight: 700;
-                color: var(--muted);
-                text-align: left;
-                border-bottom: 1px solid var(--border);
-                letter-spacing: 0.3px;
-                text-transform: uppercase;
-            }
-            .data-table td {
-                padding: 10px 16px;
-                font-size: 12.5px;
-                border-bottom: 1px solid var(--border);
-            }
-            .data-table tbody tr:last-child td {
-                border-bottom: none;
-            }
-            .data-table tbody tr:hover td {
-                background: var(--bg);
-            }
+/* ── PENDING CARD (teacher view) ── */
+.pa-pending-card { background: var(--surface); border: 1.5px dashed var(--amber-mid); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
 
-            /* ── TOAST ── */
-            #toast {
-                position: fixed;
-                bottom: 22px;
-                right: 22px;
-                background: #23272b;
-                color: #fff;
-                padding: 11px 18px;
-                border-radius: var(--radius-xs);
-                font-size: 12.5px;
-                font-weight: 600;
-                opacity: 0;
-                transform: translateY(8px);
-                transition: all 0.3s;
-                pointer-events: none;
-                z-index: 9999;
-                max-width: 340px;
-            }
-            #toast.show {
-                opacity: 1;
-                transform: none;
-            }
+/* ── TABLE (Usuarios) ── */
+.table-card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead tr { background: var(--bg); }
+.data-table th { padding: 9px 16px; font-size: 10.5px; font-weight: 700; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); letter-spacing: .3px; text-transform: uppercase; }
+.data-table td { padding: 10px 16px; font-size: 12.5px; border-bottom: 1px solid var(--border); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover td { background: var(--bg); }
 
-            /* ── v2.5: TRACK / STAGE (informe v1.5) ── */
-            .track-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                border-radius: 20px;
-                padding: 3px 10px;
-                font-size: 10.5px;
-                font-weight: 700;
-                white-space: nowrap;
-                border: 1.5px solid;
-            }
-            .track-pill.track-teacher {
-                background: #f0ebfb;
-                color: #6c4fbe;
-                border-color: #c9b8ef;
-            }
-            .track-pill.track-student {
-                background: var(--teal-light);
-                color: var(--teal-dark);
-                border-color: var(--teal);
-            }
-            .mini-chip-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 4px;
-            }
-            .pa-graduated-tag {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                border: 1px solid #c6efd8;
-                background: #e8fde8;
-                color: #1a7a3a;
-                border-radius: 20px;
-                padding: 3px 10px;
-                font-size: 11px;
-                font-weight: 700;
-                white-space: nowrap;
-            }
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 22px; right: 22px; background: #23272b; color: #fff; padding: 11px 18px; border-radius: var(--radius-xs); font-size: 12.5px; font-weight: 600; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; z-index: 9999; max-width: 340px; }
+#toast.show { opacity: 1; transform: none; }
 
-            /* ── v2.5: FILTER BAR (Comunidades admin) ── */
-            .pa-filter-bar {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                align-items: center;
-                margin-bottom: 16px;
-                background: var(--surface);
-                border: 1.5px solid var(--border);
-                border-radius: var(--radius);
-                padding: 10px 12px;
-            }
-            .pa-filter-bar input[type="text"] {
-                padding: 6px 10px;
-                border-radius: var(--radius-xs);
-                border: 1px solid var(--border);
-                font-size: 12px;
-                outline: none;
-                background: var(--bg);
-                min-width: 180px;
-            }
-            .pa-filter-bar select {
-                padding: 6px 10px;
-                border-radius: var(--radius-xs);
-                border: 1px solid var(--border);
-                font-size: 12px;
-                outline: none;
-                background: var(--bg);
-            }
-            .pa-filter-bar input[type="text"]:focus,
-            .pa-filter-bar select:focus {
-                border-color: var(--amber);
-            }
-            .pa-filter-check {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                font-size: 12px;
-                color: var(--muted);
-                cursor: pointer;
-                white-space: nowrap;
-            }
-            .pa-filter-check input {
-                cursor: pointer;
-            }
-            .pa-filter-count {
-                font-size: 11.5px;
-                color: var(--muted);
-                margin-left: auto;
-            }
+/* ── v2.5: TRACK / STAGE (informe v1.5) ── */
+.track-pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 3px 10px; font-size: 10.5px; font-weight: 700; white-space: nowrap; border: 1.5px solid; }
+.track-pill.track-teacher { background: #F0EBFB; color: #6C4FBE; border-color: #C9B8EF; }
+.track-pill.track-student { background: var(--teal-light); color: var(--teal-dark); border-color: var(--teal); }
+.mini-chip-group { display: flex; flex-wrap: wrap; gap: 4px; }
+.pa-graduated-tag { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #C6EFD8; background: #E8FDE8; color: #1a7a3a; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
-            /* ── v2.5: TABS (Mis Comunidades por perfil) ── */
-            .pa-tabs {
-                display: flex;
-                gap: 4px;
-                margin-bottom: 16px;
-                border-bottom: 1.5px solid var(--border);
-            }
-            .pa-tab {
-                padding: 8px 16px;
-                font-size: 12.5px;
-                font-weight: 700;
-                color: var(--muted);
-                cursor: pointer;
-                border-bottom: 2.5px solid transparent;
-                margin-bottom: -1.5px;
-                transition: all 0.15s;
-            }
-            .pa-tab:hover {
-                color: var(--text);
-            }
-            .pa-tab.active {
-                color: var(--amber);
-                border-bottom-color: var(--amber);
-            }
+/* ── v2.5: FILTER BAR (Comunidades admin) ── */
+.pa-filter-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.pa-filter-bar input[type="text"] { padding: 6px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12px; outline: none; background: var(--bg); min-width: 180px; }
+.pa-filter-bar select { padding: 6px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12px; outline: none; background: var(--bg); }
+.pa-filter-bar input[type="text"]:focus, .pa-filter-bar select:focus { border-color: var(--amber); }
+.pa-filter-check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.pa-filter-check input { cursor: pointer; }
+.pa-filter-count { font-size: 11.5px; color: var(--muted); margin-left: auto; }
 
-            /* ── v2.5: RECHAZO CON MOTIVO (inline) ── */
-            .pa-reject-box {
-                margin-top: 10px;
-                padding: 10px;
-                background: var(--bg);
-                border: 1px dashed var(--border);
-                border-radius: var(--radius-xs);
-            }
-            .pa-reject-box textarea {
-                width: 100%;
-                min-height: 54px;
-                padding: 7px 10px;
-                border-radius: var(--radius-xs);
-                border: 1px solid var(--border);
-                font-size: 12px;
-                outline: none;
-                resize: vertical;
-                margin-bottom: 8px;
-                font-family: inherit;
-            }
-            .pa-reject-box textarea:focus {
-                border-color: var(--amber);
-            }
-            .pa-reason-note {
-                font-size: 11px;
-                color: var(--muted);
-                font-style: italic;
-                margin-top: 4px;
-            }
+/* ── v2.5: TABS (Mis Comunidades por perfil) ── */
+.pa-tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1.5px solid var(--border); }
+.pa-tab { padding: 8px 16px; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: all .15s; }
+.pa-tab:hover { color: var(--text); }
+.pa-tab.active { color: var(--amber); border-bottom-color: var(--amber); }
 
-            /* ── v2.5: EXPLORAR / SOLICITUD DE UNIÓN (estudiante) ── */
-            .pa-join-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                padding: 8px 10px;
-                background: var(--amber-light);
-                border: 1px solid var(--amber-mid);
-                border-radius: var(--radius-xs);
-                margin-bottom: 6px;
-                font-size: 12px;
-            }
+/* ── v2.5: RECHAZO CON MOTIVO (inline) ── */
+.pa-reject-box { margin-top: 10px; padding: 10px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius-xs); }
+.pa-reject-box textarea { width: 100%; min-height: 54px; padding: 7px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12px; outline: none; resize: vertical; margin-bottom: 8px; font-family: inherit; }
+.pa-reject-box textarea:focus { border-color: var(--amber); }
+.pa-reason-note { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 4px; }
 
-            /* ── v2.5: NOTA DE SOLO LECTURA (formulario solicitud) ── */
-            .pa-readonly-note {
-                font-size: 11.5px;
-                color: var(--muted);
-                background: var(--bg);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-xs);
-                padding: 8px 10px;
-                margin-bottom: 10px;
-            }
+/* ── v2.5: EXPLORAR / SOLICITUD DE UNIÓN (estudiante) ── */
+.pa-join-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: var(--amber-light); border: 1px solid var(--amber-mid); border-radius: var(--radius-xs); margin-bottom: 6px; font-size: 12px; }
+
+/* ── v2.5: NOTA DE SOLO LECTURA (formulario solicitud) ── */
+.pa-readonly-note { font-size: 11.5px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 8px 10px; margin-bottom: 10px; }
 
             /* Añadidos para la consola real (no venían en el prototipo). */
             .pa-section-title {
@@ -1184,10 +484,9 @@ const bootstrap = {
                 gap: 12px;
             }
             @media (max-width: 900px) {
-                .kpi-grid {
-                    grid-template-columns: repeat(2, 1fr);
-                }
+                .kpi-grid { grid-template-columns: repeat(2, 1fr); }
             }
+
         </style>
 
         <script define:vars={{ bootstrap }}>
@@ -1207,18 +506,15 @@ const bootstrap = {
             };
 
             function esc(s) {
-                return String(s == null ? "" : s).replace(
-                    /[&<>"']/g,
-                    function (c) {
-                        return {
-                            "&": "&amp;",
-                            "<": "&lt;",
-                            ">": "&gt;",
-                            '"': "&quot;",
-                            "'": "&#39;",
-                        }[c];
-                    },
-                );
+                return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+                    return {
+                        "&": "&amp;",
+                        "<": "&lt;",
+                        ">": "&gt;",
+                        '"': "&quot;",
+                        "'": "&#39;",
+                    }[c];
+                });
             }
 
             function toast(msg) {
@@ -1232,30 +528,16 @@ const bootstrap = {
             }
 
             function initialsFrom(name) {
-                var p = String(name || "")
-                    .trim()
-                    .split(/\s+/)
-                    .filter(Boolean);
+                var p = String(name || "").trim().split(/\s+/).filter(Boolean);
                 if (!p.length) return "??";
                 if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
                 return (p[0][0] + p[p.length - 1][0]).toUpperCase();
             }
 
-            var COLORS = [
-                "#E9642C",
-                "#7CD4CC",
-                "#5B8DEF",
-                "#9B7EDE",
-                "#F5A623",
-                "#50C878",
-                "#FF6B6B",
-                "#4ECDC4",
-            ];
+            var COLORS = ["#E9642C","#7CD4CC","#5B8DEF","#9B7EDE","#F5A623","#50C878","#FF6B6B","#4ECDC4"];
             function colorFor(id) {
-                var h = 0,
-                    s = String(id || "");
-                for (var i = 0; i < s.length; i++)
-                    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+                var h = 0, s = String(id || "");
+                for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
                 return COLORS[h % COLORS.length];
             }
 
@@ -1264,11 +546,9 @@ const bootstrap = {
                     i.classList.remove("active");
                 });
                 el.classList.add("active");
-                document
-                    .querySelectorAll(".view-section")
-                    .forEach(function (s) {
-                        s.classList.remove("active");
-                    });
+                document.querySelectorAll(".view-section").forEach(function (s) {
+                    s.classList.remove("active");
+                });
                 document.getElementById(id).classList.add("active");
                 if (id === "communities-view") renderCommunities();
                 if (id === "users-view") renderUsers();
@@ -1297,40 +577,28 @@ const bootstrap = {
                     card.innerHTML =
                         '<div class="pa-request-top">' +
                         '<div class="pa-teacher-id">' +
-                        '<div class="m-avatar" style="background:' +
-                        colorFor(t.id) +
-                        '">' +
-                        initialsFrom(t.name) +
-                        "</div>" +
-                        '<div><div class="pa-teacher-name">' +
-                        esc(t.name) +
-                        "</div>" +
-                        '<div class="muted-sm">' +
-                        esc(t.email) +
-                        "</div></div>" +
+                        '<div class="m-avatar" style="background:' + colorFor(t.id) + '">' +
+                        initialsFrom(t.name) + "</div>" +
+                        '<div><div class="pa-teacher-name">' + esc(t.name) + "</div>" +
+                        '<div class="muted-sm">' + esc(t.email) + "</div></div>" +
                         "</div>" +
                         '<span class="pill pa-status-pending">Pendiente</span>' +
                         "</div>" +
                         '<div class="pa-request-body">' +
                         '<div class="muted-sm">' +
-                        (meta.length
-                            ? meta.join(" · ")
-                            : "Sin institución declarada") +
+                        (meta.length ? meta.join(" · ") : "Sin institución declarada") +
                         "</div>" +
                         (t.wantsCommunity
                             ? '<div style="margin-top:8px"><span class="pill pa-status-pending">Desea crear una comunidad de práctica</span></div>'
                             : "") +
                         '<div class="muted-sm" style="margin-top:8px">Registrado: ' +
-                        esc(t.requestedAt) +
-                        "</div>" +
+                        esc(t.requestedAt) + "</div>" +
                         "</div>" +
                         '<div class="pa-request-actions">' +
                         '<button class="btn btn-primary btn-sm" onclick=\'verifyTeacher(this,' +
-                        JSON.stringify(t.id) +
-                        ',"APPROVE")\'>Aprobar</button> ' +
+                        JSON.stringify(t.id) + ",\"APPROVE\")'>Aprobar</button> " +
                         '<button class="btn btn-outline btn-sm" onclick=\'verifyTeacher(this,' +
-                        JSON.stringify(t.id) +
-                        ',"REJECT")\'>Rechazar</button>' +
+                        JSON.stringify(t.id) + ",\"REJECT\")'>Rechazar</button>" +
                         "</div>";
                     wrap.appendChild(card);
                 });
@@ -1394,20 +662,16 @@ const bootstrap = {
 
                 var rows = communities.filter(function (c) {
                     if (fs && c.stage !== fs) return false;
-                    if (ft && String(c.profileTrack).toUpperCase() !== ft)
-                        return false;
+                    if (ft && String(c.profileTrack).toUpperCase() !== ft) return false;
                     if (!fg && c.graduated) return false;
                     return true;
                 });
 
                 document.getElementById("comm-counter").textContent =
-                    rows.length +
-                    " comunidad" +
-                    (rows.length === 1 ? "" : "es");
+                    rows.length + " comunidad" + (rows.length === 1 ? "" : "es");
 
                 if (rows.length === 0) {
-                    list.innerHTML =
-                        '<div class="pa-empty">Ninguna comunidad coincide con los filtros</div>';
+                    list.innerHTML = '<div class="pa-empty">Ninguna comunidad coincide con los filtros</div>';
                     return;
                 }
 
@@ -1420,36 +684,19 @@ const bootstrap = {
                             var isImpl = c.stage === "IMPLEMENTACION_TECNICA";
                             return (
                                 "<tr>" +
-                                "<td><b>" +
-                                esc(c.name) +
-                                "</b>" +
+                                "<td><b>" + esc(c.name) + "</b>" +
                                 (c.graduated
                                     ? ' <span class="pill pa-status-approved">Graduada</span>'
                                     : "") +
-                                '<div class="muted-sm">' +
-                                esc(c.topic) +
-                                "</div></td>" +
-                                "<td>" +
-                                esc(c.teacher) +
-                                "</td>" +
+                                '<div class="muted-sm">' + esc(c.topic) + "</div></td>" +
+                                "<td>" + esc(c.teacher) + "</td>" +
                                 '<td><span class="muted-sm">' +
-                                esc(
-                                    TRACK_ES[
-                                        String(c.profileTrack).toUpperCase()
-                                    ] || c.profileTrack,
-                                ) +
+                                esc(TRACK_ES[String(c.profileTrack).toUpperCase()] || c.profileTrack) +
                                 "</span></td>" +
-                                '<td><span class="ruta-tag ' +
-                                (isImpl ? "ruta-impl" : "ruta-basic") +
-                                '">' +
-                                esc(STAGE_ES[c.stage] || c.stage) +
-                                "</span></td>" +
-                                "<td>" +
-                                c.members +
-                                "</td>" +
-                                "<td>" +
-                                c.challenges +
-                                "</td>" +
+                                '<td><span class="ruta-tag ' + (isImpl ? "ruta-impl" : "ruta-basic") + '">' +
+                                esc(STAGE_ES[c.stage] || c.stage) + "</span></td>" +
+                                "<td>" + c.members + "</td>" +
+                                "<td>" + c.challenges + "</td>" +
                                 "</tr>"
                             );
                         })
@@ -1461,10 +708,7 @@ const bootstrap = {
             function renderUsers() {
                 var tbody = document.getElementById("users-tbody");
                 var fp = document.getElementById("f-profile").value;
-                var q = document
-                    .getElementById("f-search")
-                    .value.trim()
-                    .toLowerCase();
+                var q = document.getElementById("f-search").value.trim().toLowerCase();
 
                 var rows = users.filter(function (u) {
                     if (fp && u.profileType !== fp) return false;
@@ -1482,50 +726,41 @@ const bootstrap = {
                     .map(function (u) {
                         var verifPill = "—";
                         if (u.verification === "VERIFIED")
-                            verifPill =
-                                '<span class="pill pa-status-approved">Verificado</span>';
+                            verifPill = '<span class="pill pa-status-approved">Verificado</span>';
                         else if (u.verification === "PENDING")
-                            verifPill =
-                                '<span class="pill pa-status-pending">Pendiente</span>';
+                            verifPill = '<span class="pill pa-status-pending">Pendiente</span>';
                         else if (u.verification === "REJECTED")
-                            verifPill =
-                                '<span class="pill pa-status-rejected">Rechazado</span>';
+                            verifPill = '<span class="pill pa-status-rejected">Rechazado</span>';
 
                         return (
                             "<tr>" +
                             '<td><div class="member-cell">' +
-                            '<div class="m-avatar" style="background:' +
-                            colorFor(u.id) +
-                            '">' +
-                            initialsFrom(u.name) +
-                            "</div>" +
-                            "<div><div><b>" +
-                            esc(u.name) +
-                            "</b>" +
-                            (u.isAdmin
-                                ? ' <span class="pill pa-status-pending">admin</span>'
-                                : "") +
-                            '</div><div class="muted-sm">' +
-                            esc(u.email) +
-                            "</div></div>" +
+                            '<div class="m-avatar" style="background:' + colorFor(u.id) + '">' +
+                            initialsFrom(u.name) + "</div>" +
+                            "<div><div><b>" + esc(u.name) + "</b>" +
+                            (u.isAdmin ? ' <span class="pill pa-status-pending">admin</span>' : "") +
+                            '</div><div class="muted-sm">' + esc(u.email) + "</div></div>" +
                             "</div></td>" +
-                            "<td>" +
-                            esc(u.profileType) +
-                            "</td>" +
-                            "<td>" +
-                            verifPill +
-                            "</td>" +
-                            "<td>" +
-                            esc(u.institution || "—") +
-                            "</td>" +
-                            '<td class="muted-sm">' +
-                            esc(u.createdAt) +
-                            "</td>" +
+                            "<td>" + esc(u.profileType) + "</td>" +
+                            "<td>" + verifPill + "</td>" +
+                            "<td>" + esc(u.institution || "—") + "</td>" +
+                            '<td class="muted-sm">' + esc(u.createdAt) + "</td>" +
                             "</tr>"
                         );
                     })
                     .join("");
             }
+
+            /* ── EXPONER HANDLERS EN window ─────────────────────────────────
+               `define:vars` envuelve el script en un IIFE: sin esto, los
+               onclick/onchange del markup no encuentran las funciones. */
+            Object.assign(window, {
+                navTo: navTo,
+                verifyTeacher: verifyTeacher,
+                renderCommunities: renderCommunities,
+                renderUsers: renderUsers,
+                toast: toast,
+            });
 
             /* ── INIT ── */
             renderRequests();

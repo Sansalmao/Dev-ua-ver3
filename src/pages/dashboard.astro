@@ -30,6 +30,9 @@ for (const c of [
 // Payload mínimo que necesita el cliente. `meId` sirve para marcar "(tú)".
 
 // ── RUTAS (vista "Rutas de Aprendizaje") ────────────────────────────────────
+// Mapeo: una "ruta" ES una comunidad. Los "módulos" son sus retos, y
+// "completados" son los retos donde ESTE usuario ya tiene una entrega APPROVED
+// (es decir, el progreso propio en esa ruta). El "asignado" es el profesor dueño.
 const full = await prisma.community.findMany({
     where: { id: { in: communities.map((c) => c.id) } },
     select: {
@@ -59,11 +62,13 @@ const routes = await Promise.all(
         });
         return {
             id: c.id,
+            // El prototipo usa `name` como etiqueta de tipo y `subtitle` como título.
             name: c.topic,
             subtitle: c.name,
             modules: c._count.challenges,
             completed,
             assignee: c.teacher?.displayName || c.teacher?.email || "—",
+            // El filtro del prototipo trabaja en minúsculas.
             stage: String(c.stage).toLowerCase(),
             profileTrack:
                 String(c.profileTrack).toUpperCase() === "TEACHER"
@@ -2457,11 +2462,10 @@ const feed = feedItems
                             };
                         });
 
-                        /* El rol del usuario actual EN ESTA comunidad decide la vista RBAC. */
-                        var mine = members.filter(function (m) {
-                            return m.isMe;
-                        })[0];
-                        state.role = mine ? mine.role : "member";
+                        /* El rol lo dicta el SERVIDOR (data.viewerRole), no el
+                           cliente: el endpoint ya filtró qué miembros devuelve
+                           según ese rol. Deducirlo acá sería solo cosmético. */
+                        state.role = roleLower(data.viewerRole);
 
                         /* Badges/título dependientes de datos reales. */
                         var sbCount =
@@ -2584,7 +2588,9 @@ const feed = feedItems
                 );
                 if (tab) switchView(id, tab);
             }
-            /* ── RBAC ── */
+            /* ── RBAC ──
+               El rol ya NO se cambia desde el cliente: lo fija loadMembers()
+               con el rol real del usuario en la comunidad. */
 
             /* ── RENDER MIEMBROS ── */
             function renderMembers() {
@@ -2608,7 +2614,7 @@ const feed = feedItems
                     /* ── VISTA MEMBER: solo su propia fila, solo columnas Miembro + Rol ── */
                     theadRow.innerHTML = "<th>Miembro</th><th>Rol</th>";
 
-                    /* La fila propia se identifica por isMe */
+                    /* La fila propia se identifica por isMe (no se asume que sea la primera). */
                     var me =
                         members.filter(function (m) {
                             return m.isMe;
@@ -2635,7 +2641,7 @@ const feed = feedItems
                     return;
                 }
 
-                /* ── VISTA ADMIN / MANAGER ── */
+                /* ── VISTA ADMIN / MANAGER: tabla completa ── */
                 theadRow.innerHTML =
                     "<th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>" +
                     '<th style="min-width:140px">Progreso</th><th>Acciones</th>';
@@ -2759,6 +2765,8 @@ const feed = feedItems
                           ICON_CB +
                           "Conceptos Básicos</span>";
 
+                    /* language puede venir null o ser distinto de Java/Python
+                       (p. ej. sql): en ese caso, etiqueta sin ícono. */
                     var langTag = "";
                     if (s.lang) {
                         var lk = s.lang.toLowerCase();
@@ -2837,7 +2845,9 @@ const feed = feedItems
                     pending;
             }
 
-            /* ── Aprobar / rechazar una entrega ────────────────── */
+            /* ── Aprobar / rechazar una entrega (API real) ──────────────────
+               El servidor valida que quien revisa sea el profesor dueño de la
+               comunidad; el cliente solo refleja el resultado. */
             function _patchSubmission(btn, id, action, okMsg) {
                 var card = btn.closest(".sol-card");
                 if (card) card.style.opacity = "0.5";
@@ -2887,9 +2897,11 @@ const feed = feedItems
                 _patchSubmission(btn, id, "REJECT", "✗ Reto rechazado");
             }
 
-            /* ── RENDER RUTAS ── */
+            /* ── RENDER RUTAS v4 ── */
             function renderSkills() {
                 var grid = document.getElementById("skills-grid");
+                /* El permiso de editar/promover ya no depende de state.role:
+                   depende de ser el profesor DUEÑO de cada comunidad (r.owned). */
                 var stageF = document.getElementById("filter-stage").value;
                 var trackF = document.getElementById("filter-track").value;
                 /* Banner informativo: se oculta siempre (el permiso es por comunidad). */
@@ -2980,6 +2992,8 @@ const feed = feedItems
                         "</span>";
 
                     /* ── Botón de promoción de etapa ── */
+                    /* Promover solo si esta comunidad es TUYA (el servidor exige
+                       ser el profesor dueño) y no está graduada. */
                     var promoteBtn =
                         r.owned && !isImpl && !r.graduated
                             ? '<button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="promoteRouteStage(\'' +
@@ -3017,7 +3031,9 @@ const feed = feedItems
                         r.modules +
                         "</div>" +
                         "</div>" +
+                        /* Línea divisoria */
                         '<hr class="sk4-divider">' +
+                        /* Sección de desafíos */
                         '<div class="sk4-challenges">' +
                         '<div class="sk4-ch-header">' +
                         '<div class="sk4-ch-title">Desafíos de Código</div>' +
@@ -3037,7 +3053,9 @@ const feed = feedItems
                 });
             }
 
-            /* ── Promoción de etapa ────────────────────────────── */
+            /* ── Promoción de etapa (API real) ──────────────────────────────
+               Solo el profesor dueño y verificado puede promover; el servidor
+               además exige un mínimo de retos completados. */
             function promoteRouteStage(routeId) {
                 var route = skillRoutes.filter(function (r) {
                     return r.id === routeId;
@@ -3071,6 +3089,23 @@ const feed = feedItems
                         toast("⚠ " + err.message);
                     });
             }
+
+            /* ── EXPONER HANDLERS EN window ─────────────────────────────────
+               IMPRESCINDIBLE: `define:vars` envuelve TODO este script en un
+               IIFE, así que las funciones NO quedan en el ámbito global. Sin
+               esto, cada onclick="switchView(...)" del markup falla con
+               "switchView is not defined" y las pestañas no responden. */
+            Object.assign(window, {
+                switchView: switchView,
+                navTo: navTo,
+                onCommunityChange: onCommunityChange,
+                renderSkills: renderSkills,
+                renderSolutions: renderSolutions,
+                promoteRouteStage: promoteRouteStage,
+                approveSolution: approveSolution,
+                rejectSolution: rejectSolution,
+                toast: toast,
+            });
 
             /* ── INIT ── */
             (function () {

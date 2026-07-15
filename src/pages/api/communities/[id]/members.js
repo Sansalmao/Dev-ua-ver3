@@ -48,22 +48,40 @@ export async function GET({ params, locals }) {
 
     const communityRef = { id: community.id, stage: community.stage };
 
-    const ownerProgress = await getMemberProgress(community.teacher.id, communityRef);
-    const members = [
-      {
+    // ── RBAC (server-side) ───────────────────────────────────────────────────
+    // El rol del solicitante EN ESTA comunidad se resuelve contra la base, nunca
+    // con lo que manda el cliente. El dueño es ADMIN de forma derivada.
+    //
+    // Reglas:
+    //   • ADMIN / MANAGER → ven el listado completo (con ruta y progreso).
+    //   • MEMBER          → solo su propia fila.
+    //
+    // Antes esto se filtraba SOLO en el navegador: la API devolvía los datos de
+    // todos los miembros a cualquiera con la consola abierta.
+    const isOwner = community.teacher.id === user.userId;
+    const myJoin = approved.find((jr) => jr.requester.id === user.userId);
+    const viewerRole = isOwner ? "ADMIN" : (myJoin?.role ?? "MEMBER");
+    const canSeeAll = viewerRole === "ADMIN" || viewerRole === "MANAGER";
+
+    // El total sí es visible para todos (es un agregado, no datos de nadie).
+    const memberCount = approved.length + 1;
+
+    const ownerEntry = async () => {
+      const p = await getMemberProgress(community.teacher.id, communityRef);
+      return {
         id: community.teacher.id,
         email: community.teacher.email,
         displayName: community.teacher.displayName,
         role: "ADMIN",
         isOwner: true,
         joinedAt: null,
-        progress: ownerProgress.percent,
-      },
-    ];
+        progress: p.percent,
+      };
+    };
 
-    for (const jr of approved) {
+    const memberEntry = async (jr) => {
       const p = await getMemberProgress(jr.requester.id, communityRef);
-      members.push({
+      return {
         id: jr.requester.id,
         email: jr.requester.email,
         displayName: jr.requester.displayName,
@@ -71,7 +89,21 @@ export async function GET({ params, locals }) {
         isOwner: false,
         joinedAt: jr.reviewedAt ?? jr.createdAt,
         progress: p.percent,
-      });
+      };
+    };
+
+    let members;
+    if (canSeeAll) {
+      members = [await ownerEntry()];
+      for (const jr of approved) members.push(await memberEntry(jr));
+    } else {
+      // MEMBER: solo su propia fila. Si por algún motivo no aparece (caso raro),
+      // se devuelve una lista vacía, nunca la de los demás.
+      members = isOwner
+        ? [await ownerEntry()]
+        : myJoin
+          ? [await memberEntry(myJoin)]
+          : [];
     }
 
     return new Response(
@@ -82,8 +114,10 @@ export async function GET({ params, locals }) {
           profileTrack: community.profileTrack,
           stage: community.stage,
         },
+        // El cliente ya no tiene que deducir su rol (ni puede falsearlo).
+        viewerRole,
         members,
-        memberCount: members.length,
+        memberCount,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
