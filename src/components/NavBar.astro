@@ -74,14 +74,16 @@
 <script>
     import { getSession, logout } from "../lib/api-client";
 
-    function escapeHtml(str) {
-        return String(str).replace(/[&<>"']/g, (c) => ({
+    function escapeHtml(str: string) {
+        const MAP: Record<string, string> = {
             "&": "&amp;",
             "<": "&lt;",
             ">": "&gt;",
             '"': "&quot;",
             "'": "&#39;",
-        })[c]);
+        };
+        // `?? c` evita el string|undefined que TS marcaba en el replace.
+        return String(str).replace(/[&<>"']/g, (c) => MAP[c] ?? c);
     }
 
     async function renderAuthState() {

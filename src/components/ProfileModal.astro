@@ -576,7 +576,11 @@
 
 <script>
     import { RUTAS, BASICA_POR_ROL, ICONS, resolverRuta } from "../lib/rutas";
-    import { getSession } from "../lib/api-client";
+    import {
+        getSession,
+        getTopicProgress,
+        saveTopicProgress,
+    } from "../lib/api-client";
 
     // ── STORAGE ──────────────────────────────────────────────────────────────────
 
@@ -611,12 +615,32 @@
         guardar();
     }
 
+    // ¿Hay sesión? Lo resuelve el bloque de sincronización de más abajo.
+    // Mientras sea false, todo funciona como invitado (solo localStorage).
+    let haySesion = false;
+
     function setTema(id: string, cambios: Record<string, unknown>) {
         store.temas[id] = {
             ...(store.temas[id] ?? { visitado: false, completado: false }),
             ...cambios,
         };
         guardar();
+
+        // Usuario registrado → además persistir en la cuenta. Se sigue
+        // escribiendo localStorage primero para que la UI no dependa de la red;
+        // si el PUT falla, el progreso local no se pierde.
+        if (haySesion) {
+            const est = store.temas[id] as {
+                visitado: boolean;
+                completado: boolean;
+            };
+            saveTopicProgress(id, {
+                visitado: Boolean(est.visitado),
+                completado: Boolean(est.completado),
+            }).catch(() => {
+                /* Silencioso: el progreso local ya quedó guardado. */
+            });
+        }
     }
 
     // ── GUARD: solo ejecutar en index.astro ──────────────────────────────────────
@@ -641,8 +665,6 @@
     const footS2 = document.getElementById("foot-s2") as HTMLElement;
     const progFill = document.getElementById("modal-prog-fill") as HTMLElement;
     let rolActual: string | null = null;
-    // Rol derivado de la cuenta (PROFESOR→educator, ESTUDIANTE→learner) cuando
-    // hay sesión. Un usuario logueado NO elige rol libremente: viene de su cuenta.
     let accountRol: string | null = null;
 
     // ── TOAST ────────────────────────────────────────────────────────────────────
@@ -738,8 +760,10 @@
     // Si hay sesión, el rol lo fija la cuenta (profileType), no la elección libre
     // del modal. Invitado sin sesión → comportamiento actual (elige libremente).
     getSession()
-        .then((user) => {
-            if (!user) return;
+        .then(async (user) => {
+            if (!user) return; // Invitado: sigue todo en localStorage.
+            haySesion = true;
+
             accountRol =
                 user.profileType === "PROFESOR" ? "educator" : "learner";
             if (store.rol !== accountRol) setStore({ rol: accountRol });
@@ -752,8 +776,84 @@
                 rolActual = accountRol;
                 irAPaso2(accountRol);
             }
+
+            await sincronizarProgreso();
         })
         .catch(() => {});
+
+    // Si el usuario se registra/ingresa sin recargar (el AuthModal emite este
+    // evento), subir el progreso que hizo como invitado.
+    document.addEventListener("auth:changed", () => {
+        getSession()
+            .then(async (u) => {
+                if (!u) return;
+                haySesion = true;
+                await sincronizarProgreso();
+            })
+            .catch(() => {});
+    });
+
+    /**
+     * Fusiona el progreso de la CUENTA con el del NAVEGADOR.
+     *
+     * La fusión es por unión (si está completado en cualquiera de los dos, queda
+     * completado). Eso resuelve dos casos de una:
+     *   • Invitado que avanzó y luego se registra → su progreso local sube a la
+     *     cuenta en vez de perderse.
+     *   • Usuario que entra desde otro dispositivo → baja lo que ya tenía.
+     */
+    async function sincronizarProgreso() {
+        let remoto: Record<string, { visitado: boolean; completado: boolean }> = {};
+        try {
+            const res = await getTopicProgress();
+            remoto = res?.progress ?? {};
+        } catch {
+            return; // Sin red o error: se sigue con el estado local.
+        }
+
+        const local = store.temas as Record<
+            string,
+            { visitado?: boolean; completado?: boolean }
+        >;
+        const ids = new Set([...Object.keys(local), ...Object.keys(remoto)]);
+        const subirAlServidor: string[] = [];
+
+        for (const id of ids) {
+            const l = local[id] ?? { visitado: false, completado: false };
+            const r = remoto[id] ?? { visitado: false, completado: false };
+
+            const fusionado = {
+                visitado: Boolean(l.visitado || r.visitado),
+                completado: Boolean(l.completado || r.completado),
+            };
+            local[id] = fusionado;
+
+            // Si el local aporta algo que el servidor no tiene, hay que subirlo.
+            if (
+                fusionado.visitado !== Boolean(r.visitado) ||
+                fusionado.completado !== Boolean(r.completado)
+            ) {
+                subirAlServidor.push(id);
+            }
+        }
+
+        guardar();
+
+        // Subir solo lo que falta (no todo el mapa).
+        await Promise.allSettled(
+            subirAlServidor.map((id) =>
+                saveTopicProgress(id, {
+                    visitado: Boolean(local[id].visitado),
+                    completado: Boolean(local[id].completado),
+                }),
+            ),
+        );
+
+        // Repintar la grilla si ya está a la vista, para reflejar lo que bajó.
+        if (store.rol && store.ruta && viewGrid!.classList.contains("visible")) {
+            mostrarGrid(resolverRuta(store.rol, store.ruta), true, true);
+        }
+    }
 
     // ── GRID ─────────────────────────────────────────────────────────────────────
 

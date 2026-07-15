@@ -14,7 +14,7 @@ const meRecord = await prisma.user.findUnique({
     select: { displayName: true, email: true },
 });
 const meName = meRecord?.displayName?.trim() || meRecord?.email || "Usuario";
-function computeInitials(name) {
+function computeInitials(name: string) {
     const base = name.includes("@") ? name.split("@")[0] : name;
     const words = base.trim().split(/[\s._-]+/).filter(Boolean);
     const letters =
@@ -370,6 +370,29 @@ const feed = feedItems
                             >3</span
                         >
                     </div>
+
+                    {
+                        /* Solo para administradores: espejo del "Ir al Dashboard"
+                           que existe en /admin. isAdmin viene del middleware
+                           (sesión), nunca del cliente. */
+                        user.isAdmin && (
+                            <>
+                                <div class="sb-section">Plataforma</div>
+                                <a class="sb-item sb-link" href="/admin">
+                                    <svg
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                    >
+                                        <path d="M8 1l6 3v4c0 3.5-2.5 6.3-6 7-3.5-.7-6-3.5-6-7V4l6-3z" />
+                                        <path d="M6 8l1.5 1.5L10.5 6.5" />
+                                    </svg>
+                                    <span>Consola Admin</span>
+                                </a>
+                            </>
+                        )
+                    }
                 </nav>
                 <div class="sb-profile">
                     <div class="sb-avatar">{meInitials}</div>
@@ -950,6 +973,15 @@ const feed = feedItems
                 height: 16px;
                 flex-shrink: 0;
             }
+            /* Enlace del sidebar (mismo look que .sb-item, que es un div). */
+            .sb-link {
+                text-decoration: none;
+            }
+            .sb-link:hover {
+                background: var(--bg);
+                color: var(--text);
+            }
+
             .sb-badge {
                 margin-left: auto;
                 background: var(--accent);
@@ -3037,13 +3069,29 @@ const feed = feedItems
                         stageLabel +
                         "</span>";
 
-                    /* ── Botón de promoción de etapa ── */
+                    /* ── Acciones del dueño ──────────────────────────────────
+                       Ambas exigen ser el profesor DUEÑO y verificado: el
+                       servidor lo valida igual, esto solo evita ofrecer un
+                       botón que daría 403.
+                         • Promover: CONCEPTOS_CLAVE → IMPLEMENTACION_TECNICA
+                         • Graduar:  solo desde IMPLEMENTACION_TECNICA          */
                     var promoteBtn =
                         r.owned && !isImpl && !r.graduated
                             ? '<button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="promoteRouteStage(\'' +
                               r.id +
                               "')\">→ Promover a Implementación Técnica</button>"
                             : "";
+
+                    var graduateBtn =
+                        r.owned && isImpl && !r.graduated
+                            ? '<button class="btn btn-primary btn-sm" style="margin-top:8px;width:100%" onclick="graduateRoute(\'' +
+                              r.id +
+                              "')\">🎓 Graduar comunidad</button>"
+                            : "";
+
+                    var graduatedNote = r.graduated
+                        ? '<div class="muted-sm" style="margin-top:10px;text-align:center">🎓 Comunidad graduada</div>'
+                        : "";
 
                     card.innerHTML =
                         /* Encabezado: etiqueta tipo + título + etapa + track */
@@ -3091,6 +3139,8 @@ const feed = feedItems
                         icons +
                         "</div>" +
                         promoteBtn +
+                        graduateBtn +
+                        graduatedNote +
                         "</div>";
 
                     grid.appendChild(card);
@@ -3140,10 +3190,56 @@ const feed = feedItems
                 renderSkills: renderSkills,
                 renderSolutions: renderSolutions,
                 promoteRouteStage: promoteRouteStage,
+                graduateRoute: graduateRoute,
                 approveSolution: approveSolution,
                 rejectSolution: rejectSolution,
                 toast: toast,
             });
+
+            /* ── Graduar comunidad (API real) ───────────────────────────────
+               El servidor exige: profesor dueño + verificado + la comunidad en
+               IMPLEMENTACION_TECNICA. */
+            function graduateRoute(routeId) {
+                var route = skillRoutes.filter(function (r) {
+                    return r.id === routeId;
+                })[0];
+                if (!route || route.graduated) return;
+
+                if (
+                    !window.confirm(
+                        'Vas a graduar "' +
+                            route.subtitle +
+                            '". Esta acción no se puede deshacer. ¿Continuar?',
+                    )
+                ) {
+                    return;
+                }
+
+                fetch("/api/communities/" + routeId + "/graduate", {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: { Accept: "application/json" },
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function () {
+                        route.graduated = true;
+                        toast('🎓 "' + route.subtitle + '" fue graduada');
+                        renderSkills();
+                    })
+                    .catch(function (err) {
+                        toast("⚠ " + err.message);
+                    });
+            }
 
             /* ── INIT ── */
             (function () {

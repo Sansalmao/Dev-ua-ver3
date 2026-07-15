@@ -6,746 +6,1011 @@ const user = Astro.locals.user;
 if (!user) return Astro.redirect("/");
 if (!user.isAdmin) return Astro.redirect("/dashboard");
 
-// ── Profesores pendientes de verificación (D1) ──────────────────────────────
-const pendingTeachers = await prisma.user.findMany({
+const fmtDate = (d: Date) =>
+    `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+
+function initials(name: string) {
+    const p = String(name || "").trim().split(/\s+/).filter(Boolean);
+    if (!p.length) return "??";
+    if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
+    return (p[0][0] + p[p.length - 1][0]).toUpperCase();
+}
+
+// ── Profesores pendientes de verificación ───────────────────────────────────
+const pendingRaw = await prisma.user.findMany({
     where: { profileType: "PROFESOR", teacherVerificationStatus: "PENDING" },
     select: {
-        id: true,
-        email: true,
-        displayName: true,
-        country: true,
-        institution: true,
-        wantsCommunity: true,
-        createdAt: true,
+        id: true, email: true, displayName: true, country: true,
+        institution: true, wantsCommunity: true, createdAt: true,
     },
     orderBy: { createdAt: "asc" },
 });
 
-// ── Comunidades de la plataforma ────────────────────────────────────────────
-const communitiesRaw = await prisma.community.findMany({
+// ── Historial (ya resueltos) ────────────────────────────────────────────────
+const historyRaw = await prisma.user.findMany({
+    where: {
+        profileType: "PROFESOR",
+        teacherVerificationStatus: { in: ["VERIFIED", "REJECTED"] },
+    },
     select: {
-        id: true,
-        name: true,
-        topic: true,
-        profileTrack: true,
-        stage: true,
-        graduated: true,
-        createdAt: true,
+        id: true, email: true, displayName: true, institution: true,
+        teacherVerificationStatus: true, updatedAt: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 10,
+});
+
+// ── Comunidades ─────────────────────────────────────────────────────────────
+const commRaw = await prisma.community.findMany({
+    select: {
+        id: true, name: true, topic: true, profileTrack: true, stage: true,
+        graduated: true, createdAt: true,
         teacher: { select: { displayName: true, email: true } },
         _count: { select: { challenges: true } },
     },
     orderBy: { createdAt: "desc" },
 });
 
-// Miembros aprobados por comunidad (una sola consulta agrupada).
+const commIds = commRaw.map((c) => c.id);
+
+// Miembros aprobados por comunidad.
 const memberCounts = await prisma.joinRequest.groupBy({
     by: ["communityId"],
-    where: { status: "APPROVED" },
+    where: { status: "APPROVED", communityId: { in: commIds } },
     _count: { _all: true },
 });
-const countByCommunity = new Map(
-    memberCounts.map((m) => [m.communityId, m._count._all]),
-);
+const membersBy = new Map(memberCounts.map((m) => [m.communityId, m._count._all]));
 
-const communities = communitiesRaw.map((c) => ({
-    id: c.id,
-    name: c.name,
-    topic: c.topic,
-    profileTrack: c.profileTrack,
-    stage: c.stage,
-    graduated: c.graduated,
-    teacher: c.teacher?.displayName || c.teacher?.email || "—",
-    challenges: c._count.challenges,
-    members: countByCommunity.get(c.id) ?? 0,
-}));
+// Retos con al menos una entrega aprobada (= "completados" de la comunidad).
+const doneRows = await prisma.challenge.findMany({
+    where: { communityId: { in: commIds }, submissions: { some: { status: "APPROVED" } } },
+    select: { communityId: true },
+});
+const doneBy = new Map<string, number>();
+for (const r of doneRows) doneBy.set(r.communityId, (doneBy.get(r.communityId) ?? 0) + 1);
 
-// ── Usuarios de la plataforma ───────────────────────────────────────────────
+const communities = commRaw.map((c) => {
+    const total = c._count.challenges;
+    const done = doneBy.get(c.id) ?? 0;
+    const teacherName = c.teacher?.displayName || c.teacher?.email || "—";
+    return {
+        id: c.id,
+        name: c.name,
+        topic: c.topic,
+        teacher: teacherName,
+        teacherInitials: initials(teacherName),
+        stage: c.stage,
+        stageKey: String(c.stage).toLowerCase(),
+        graduated: c.graduated,
+        members: membersBy.get(c.id) ?? 0,
+        total,
+        done,
+        pct: total ? Math.round((done / total) * 100) : 0,
+    };
+});
+
+// ── Usuarios ────────────────────────────────────────────────────────────────
 const usersRaw = await prisma.user.findMany({
     select: {
-        id: true,
-        email: true,
-        displayName: true,
-        profileType: true,
-        teacherVerificationStatus: true,
-        isAdmin: true,
-        institution: true,
+        id: true, email: true, displayName: true, profileType: true,
+        teacherVerificationStatus: true, isAdmin: true, institution: true,
         createdAt: true,
     },
     orderBy: { createdAt: "desc" },
 });
-const users = usersRaw.map((u) => ({
-    id: u.id,
-    name: u.displayName || u.email,
-    email: u.email,
-    profileType: u.profileType,
-    // Solo tiene sentido para PROFESOR.
-    verification: u.profileType === "PROFESOR" ? u.teacherVerificationStatus : null,
-    isAdmin: u.isAdmin,
-    institution: u.institution,
-    createdAt: u.createdAt.toISOString().slice(0, 10),
-}));
+const users = usersRaw.map((u) => {
+    const name = u.displayName || u.email;
+    return {
+        id: u.id,
+        name,
+        initials: initials(name),
+        email: u.email,
+        profileType: u.profileType,
+        verification: u.profileType === "PROFESOR" ? u.teacherVerificationStatus : null,
+        isAdmin: u.isAdmin,
+        institution: u.institution,
+        createdAt: fmtDate(u.createdAt),
+    };
+});
 
-// locals.user solo trae { userId, profileType, isAdmin }: el email sale de la BD.
 const me = usersRaw.find((u) => u.id === user.userId);
 const meLabel = me?.displayName || me?.email || "Admin";
 
+const pendingTeachers = pendingRaw.map((t) => {
+    const name = t.displayName || t.email;
+    return {
+        id: t.id,
+        name,
+        initials: initials(name),
+        email: t.email,
+        institution: t.institution,
+        country: t.country,
+        wantsCommunity: t.wantsCommunity,
+        date: fmtDate(t.createdAt),
+    };
+});
+
+const history = historyRaw.map((t) => {
+    const name = t.displayName || t.email;
+    return {
+        id: t.id,
+        name,
+        initials: initials(name),
+        email: t.email,
+        institution: t.institution,
+        status: t.teacherVerificationStatus,
+        date: fmtDate(t.updatedAt),
+    };
+});
+
 const kpis = {
     pending: pendingTeachers.length,
-    communities: communities.length,
-    graduated: communities.filter((c) => c.graduated).length,
+    teachersActive: users.filter((u) => u.verification === "VERIFIED").length,
+    communitiesActive: communities.filter((c) => !c.graduated).length,
     students: users.filter((u) => u.profileType === "ESTUDIANTE").length,
-    teachers: users.filter((u) => u.profileType === "PROFESOR").length,
+    graduated: communities.filter((c) => c.graduated).length,
 };
 
-const bootstrap = {
-    pendingTeachers: pendingTeachers.map((t) => ({
-        id: t.id,
-        name: t.displayName || t.email,
-        email: t.email,
-        country: t.country,
-        institution: t.institution,
-        wantsCommunity: t.wantsCommunity,
-        requestedAt: t.createdAt.toISOString().slice(0, 10),
-    })),
-    communities,
-    users,
-    kpis,
-};
+const today = fmtDate(new Date());
 ---
 
 <html lang="es">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>&gt;_ ua wg lacnog — Platform Admin Console</title>
-    </head>
-    <body>
-        <div id="app">
-            <aside id="sidebar">
-                <div class="sb-logo">
-                    <div class="sb-logo-mark">&gt;_</div>
-                    <div>
-                        <div class="sb-logo-text">ua wg lacnog</div>
-                        <div class="sb-logo-sub">Platform Admin Console</div>
-                    </div>
-                </div>
-                <nav class="sb-nav">
-                    <div class="sb-section">Plataforma</div>
-                    <div class="sb-item active" data-nav="requests-view" onclick="navTo('requests-view',this)">
-                        Solicitudes de Profesores
-                        <span class="sb-badge" id="sb-pending-badge">{kpis.pending}</span>
-                    </div>
-                    <div class="sb-item" data-nav="communities-view" onclick="navTo('communities-view',this)">
-                        Comunidades de Práctica
-                    </div>
-                    <div class="sb-item" data-nav="users-view" onclick="navTo('users-view',this)">
-                        Usuarios de la Plataforma
-                    </div>
-                </nav>
-                <div class="sb-profile">
-                    <div class="sb-avatar">AD</div>
-                    <div class="flex-1">
-                        <div class="sb-name">{meLabel}</div>
-                        <span class="sb-role-badge" data-identity="platform_admin">Admin de Plataforma</span>
-                    </div>
-                </div>
-            </aside>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&gt;_ ua wg lacnog — Platform Admin Console</title>
+</head>
+<body>
+<div id="app">
 
-            <div id="main">
-                <header class="topbar">
-                    <div class="topbar-title">
-                        &gt;_ Platform Admin <span>/ UA WG LACNOG</span>
-                    </div>
-                    <a class="btn btn-outline btn-sm" href="/dashboard">Ir al Dashboard</a>
-                </header>
-
-                <div id="content">
-                    <!-- ══ SOLICITUDES DE PROFESORES (D1) ══ -->
-                    <section id="requests-view" class="view-section active">
-                        <div class="kpi-grid" id="pa-kpi-grid">
-                            <div class="kpi-card">
-                                <div class="kpi-label">Pendientes de verificar</div>
-                                <div class="kpi-value c-amber">{kpis.pending}</div>
-                            </div>
-                            <div class="kpi-card">
-                                <div class="kpi-label">Profesores</div>
-                                <div class="kpi-value">{kpis.teachers}</div>
-                            </div>
-                            <div class="kpi-card">
-                                <div class="kpi-label">Estudiantes</div>
-                                <div class="kpi-value">{kpis.students}</div>
-                            </div>
-                            <div class="kpi-card">
-                                <div class="kpi-label">Comunidades</div>
-                                <div class="kpi-value">{kpis.communities}</div>
-                            </div>
-                            <div class="kpi-card">
-                                <div class="kpi-label">Graduadas</div>
-                                <div class="kpi-value c-amber">{kpis.graduated}</div>
-                            </div>
-                        </div>
-
-                        <div class="pa-section-title">Profesores pendientes de verificación</div>
-                        <p class="muted-sm" style="margin:-6px 0 14px">
-                            Al aprobar, el profesor queda <b>VERIFIED</b> y puede crear comunidades.
-                        </p>
-                        <div id="requests-pending"></div>
-                    </section>
-
-                    <!-- ══ COMUNIDADES ══ -->
-                    <section id="communities-view" class="view-section">
-                        <div class="filters-bar">
-                            <span class="filter-label">Etapa:</span>
-                            <select class="filter-select" id="f-stage" onchange="renderCommunities()">
-                                <option value="">Todas</option>
-                                <option value="CONCEPTOS_CLAVE">Conceptos Clave</option>
-                                <option value="IMPLEMENTACION_TECNICA">Implementación Técnica</option>
-                            </select>
-                            <span class="filter-label">Perfil:</span>
-                            <select class="filter-select" id="f-track" onchange="renderCommunities()">
-                                <option value="">Todos</option>
-                                <option value="STUDENT">Estudiantes/Profesionales</option>
-                                <option value="TEACHER">Profesores/Instructores</option>
-                            </select>
-                            <label class="filter-label" style="display:flex;align-items:center;gap:6px;cursor:pointer">
-                                <input type="checkbox" id="f-graduated" onchange="renderCommunities()" />
-                                Mostrar graduadas
-                            </label>
-                            <span id="comm-counter" class="muted-sm" style="margin-left:auto"></span>
-                        </div>
-                        <div id="communities-list"></div>
-                    </section>
-
-                    <!-- ══ USUARIOS ══ -->
-                    <section id="users-view" class="view-section">
-                        <div class="filters-bar">
-                            <span class="filter-label">Perfil:</span>
-                            <select class="filter-select" id="f-profile" onchange="renderUsers()">
-                                <option value="">Todos</option>
-                                <option value="PROFESOR">Profesores</option>
-                                <option value="ESTUDIANTE">Estudiantes</option>
-                            </select>
-                            <input class="filter-select" id="f-search" placeholder="Buscar por nombre o email"
-                                   oninput="renderUsers()" style="min-width:220px" />
-                            <span id="users-counter" class="muted-sm" style="margin-left:auto"></span>
-                        </div>
-                        <div class="table-card">
-                            <div class="overflow-x-auto">
-                                <table class="members-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Usuario</th>
-                                            <th>Perfil</th>
-                                            <th>Verificación</th>
-                                            <th>Institución</th>
-                                            <th>Alta</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="users-tbody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
-                </div>
+    <!-- ── SIDEBAR ── -->
+    <aside id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-box">
+                <div class="name">ua wg lacnog</div>
+                <div class="sub">Platform Admin Console</div>
             </div>
         </div>
 
-        <div id="toast"></div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Panel</div>
 
-        <style is:global>
+            <button class="nav-link active" data-view="requests" onclick="switchView('requests')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Solicitudes
+                {kpis.pending > 0 && <span class="pending-badge" id="sidebar-badge">{kpis.pending}</span>}
+            </button>
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-button, select, input { font-family: inherit; }
+            <button class="nav-link" data-view="communities" onclick="switchView('communities')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                Comunidades
+            </button>
 
-:root {
-  --amber:       #E9642C;
-  --amber-light: #FEF0E8;
-  --amber-mid:   #F5A067;
-  --teal:        #7CD4CC;
-  --teal-light:  #E8F8F7;
-  --teal-dark:   #2a9d96;
-  --bg:          #F8F9FA;
-  --surface:     #FFFFFF;
-  --text:        #343A40;
-  --muted:       #6C757D;
-  --border:      #E9ECEF;
-  --shadow:      0 2px 8px rgba(0,0,0,.07);
-  --shadow-md:   0 4px 16px rgba(0,0,0,.10);
-  --radius:      12px;
-  --radius-xs:   6px;
-  --sidebar-w:   240px;
-  --font:        'Segoe UI', system-ui, -apple-system, sans-serif;
+            <button class="nav-link" data-view="users" onclick="switchView('users')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Directorio
+            </button>
+
+            <div class="nav-section-label" style="margin-top:1rem">Plataforma</div>
+            <a class="nav-link" href="/dashboard">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Ir al Dashboard
+            </a>
+        </nav>
+
+        <div class="sidebar-profile">
+            <div class="profile-inner">
+                <div class="avatar av-md av-amber">{meLabel.slice(0, 2).toUpperCase()}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:.8125rem;font-weight:700;color:var(--gray-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{meLabel}</div>
+                    <span class="badge badge-amber" style="margin-top:.125rem">admin</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <div id="main">
+        <div id="topbar">
+            <div class="topbar-title">
+                <span class="topbar-prompt">&gt;_</span>
+                <span class="topbar-section">Platform Admin Console</span>
+                <span class="topbar-slash">/</span>
+                <span class="topbar-view" id="topbar-view">Solicitudes</span>
+            </div>
+            <div class="topbar-right">
+                <div class="status-dot"><div class="dot"></div>Datos en vivo</div>
+                <div class="divider-v"></div>
+                <span id="topbar-date">{today}</span>
+            </div>
+        </div>
+
+        <div id="content">
+
+            <!-- ═══ VIEW 1: SOLICITUDES ═══ -->
+            <div id="view-requests" class="view active">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:var(--amber-light)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="kpi-value" style="color:var(--amber)">{kpis.pending}</div>
+                        <div class="kpi-label">Solicitudes Pendientes</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:var(--teal-light)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="#2a9d96" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div class="kpi-value" style="color:var(--teal-dark)">{kpis.teachersActive}</div>
+                        <div class="kpi-label">Profesores Verificados</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:var(--gray-100)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--gray-600)" stroke-width="2"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        </div>
+                        <div class="kpi-value" style="color:var(--gray-800)">{kpis.communitiesActive}</div>
+                        <div class="kpi-label">Comunidades Activas</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:var(--gray-100)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--gray-600)" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+                        </div>
+                        <div class="kpi-value" style="color:var(--gray-800)">{kpis.students}</div>
+                        <div class="kpi-label">Estudiantes Registrados</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:var(--amber-light)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--amber)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <div class="kpi-value" style="color:var(--amber)">{kpis.graduated}</div>
+                        <div class="kpi-label">Comunidades Graduadas</div>
+                    </div>
+                </div>
+
+                <section style="margin-bottom:2rem">
+                    <div class="section-header">
+                        <div class="section-title">
+                            Profesores por verificar
+                            <span class="count-chip" id="pending-chip" style="background:#FEF2F2;color:#DC2626;border:1px solid #FCA5A5">{kpis.pending} pendiente{kpis.pending === 1 ? "" : "s"}</span>
+                        </div>
+                        <span style="font-size:.6875rem;color:var(--gray-400)">Al aprobar, el profesor podrá crear comunidades</span>
+                    </div>
+                    <div class="request-list" id="pending-list">
+                        {pendingTeachers.length === 0 ? (
+                            <div class="empty-state">No hay profesores pendientes de verificación</div>
+                        ) : pendingTeachers.map((t) => (
+                            <div class="request-card" id={`req-${t.id}`} data-req={t.id}>
+                                <div class="req-avatar-info">
+                                    <div class="avatar av-md av-amber">{t.initials}</div>
+                                    <div>
+                                        <div class="req-name">{t.name}</div>
+                                        <div class="req-email">{t.email}</div>
+                                    </div>
+                                </div>
+                                <div class="req-tema-wrap">
+                                    <div class="req-tema-label">Institución</div>
+                                    <div class="req-tema">{t.institution || "No declarada"}</div>
+                                </div>
+                                <div class="req-right">
+                                    {t.wantsCommunity && <span class="badge badge-amber">Desea crear comunidad</span>}
+                                    {t.country && <span class="badge badge-gray">{t.country}</span>}
+                                    <span class="req-date">{t.date}</span>
+                                </div>
+                                <div class="req-actions">
+                                    <button class="btn btn-danger" onclick={`handleRequest('${t.id}','REJECT')`}>Rechazar</button>
+                                    <button class="btn btn-primary" onclick={`handleRequest('${t.id}','APPROVE')`}>Aprobar</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-header">
+                        <div class="section-title">
+                            Historial de Verificaciones
+                            <span class="count-chip" id="history-chip" style="background:var(--gray-100);color:var(--gray-500);border:1px solid var(--gray-200)">{history.length} registro{history.length === 1 ? "" : "s"}</span>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Profesor</th><th>Institución</th><th>Fecha</th><th>Estado</th></tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                {history.length === 0 ? (
+                                    <tr><td colspan="4" style="color:var(--gray-400);padding:1.5rem;text-align:center">Sin verificaciones todavía</td></tr>
+                                ) : history.map((h) => (
+                                    <tr>
+                                        <td>
+                                            <div style="display:flex;align-items:center;gap:.625rem">
+                                                <div class="avatar av-sm av-teal">{h.initials}</div>
+                                                <div>
+                                                    <div style="font-weight:600">{h.name}</div>
+                                                    <div style="font-size:.6875rem;color:var(--gray-400)">{h.email}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color:var(--gray-600)">{h.institution || "—"}</td>
+                                        <td style="color:var(--gray-500)">{h.date}</td>
+                                        <td>
+                                            {h.status === "VERIFIED"
+                                                ? <span class="badge badge-success">Aprobada</span>
+                                                : <span class="badge badge-error">Rechazada</span>}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ═══ VIEW 2: COMUNIDADES ═══ -->
+            <div id="view-communities" class="view">
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input class="search-input" id="search-comm" type="text" placeholder="Buscar por nombre o facilitador…" oninput="filterCommunities()"/>
+                    </div>
+                    <div class="select-wrap">
+                        <select class="stage-select" id="filter-stage" onchange="filterCommunities()">
+                            <option value="all">Todas las etapas</option>
+                            <option value="conceptos_clave">Conceptos Clave</option>
+                            <option value="implementacion_tecnica">Implementación Técnica</option>
+                            <option value="graduada">Graduadas</option>
+                        </select>
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <label class="toggle-wrap">
+                        <div class="toggle">
+                            <input type="checkbox" id="show-graduated" onchange="filterCommunities()"/>
+                            <div class="toggle-track"></div>
+                            <div class="toggle-thumb"></div>
+                        </div>
+                        Mostrar graduadas
+                    </label>
+                    <div class="toolbar-stats">
+                        <strong id="active-count">{kpis.communitiesActive}</strong> activas &nbsp;·&nbsp; <strong id="grad-count">{kpis.graduated}</strong> graduada(s)
+                    </div>
+                </div>
+
+                <div class="comm-grid" id="communities-grid">
+                    {communities.length === 0 ? (
+                        <div class="empty-state" style="grid-column:1/-1">Todavía no hay comunidades en la plataforma</div>
+                    ) : communities.map((c) => (
+                        <div
+                            class="comm-card"
+                            id={`card-${c.id}`}
+                            data-community-id={c.id}
+                            data-titulo={c.name.toLowerCase()}
+                            data-facilitador={c.teacher.toLowerCase()}
+                            data-etapa={c.graduated ? "graduada" : c.stageKey}
+                            data-graduated={c.graduated ? "1" : "0"}
+                        >
+                            <div class="stage-bar" data-stage-bar style={`background:${c.graduated ? "var(--amber-mid)" : c.stageKey === "implementacion_tecnica" ? "#7CD4CC" : "var(--amber)"}`}></div>
+                            <div class="comm-body">
+                                <div class="comm-header">
+                                    <div class="comm-title">{c.name}</div>
+                                    {c.graduated
+                                        ? <span class="badge badge-success" data-stage-badge>Graduada</span>
+                                        : c.stageKey === "implementacion_tecnica"
+                                            ? <span class="badge badge-teal" data-stage-badge>Implementación Técnica</span>
+                                            : <span class="badge badge-amber" data-stage-badge>Conceptos Clave</span>}
+                                </div>
+                                <div class="comm-desc">{c.topic}</div>
+                                <div class="comm-facilitator">
+                                    <div class="avatar av-sm av-teal">{c.teacherInitials}</div>
+                                    <div class="fac-meta">
+                                        <span class="fac-label">Facilitador</span>
+                                        <span class="fac-name">{c.teacher}</span>
+                                    </div>
+                                </div>
+                                <div class="progress-section">
+                                    <div class="progress-row">
+                                        <span class="progress-label">Retos completados</span>
+                                        <span class="progress-val">{c.done}/{c.total}</span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill" style={`width:${c.pct}%;background:${c.stageKey === "implementacion_tecnica" ? "#7CD4CC" : "var(--amber)"}`}></div>
+                                    </div>
+                                    <div class="progress-meta">
+                                        <span>{c.pct}% completado</span>
+                                        <span>{c.members} miembro{c.members === 1 ? "" : "s"}</span>
+                                    </div>
+                                </div>
+                                <div class="comm-footer" data-action-area>
+                                    <span class="muted-note">Solo el profesor dueño puede promover o graduar</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <!-- ═══ VIEW 3: DIRECTORIO ═══ -->
+            <div id="view-users" class="view">
+                <div class="summary-grid" style="margin-bottom:1.5rem">
+                    <div class="summary-card">
+                        <div class="summary-icon" style="background:var(--gray-100)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--gray-600)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                        </div>
+                        <div><div class="summary-val" style="color:var(--gray-800)">{users.length}</div><div class="summary-label">Usuarios totales</div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon" style="background:var(--teal-light)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="#2a9d96" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div><div class="summary-val" style="color:var(--teal-dark)">{users.filter((u) => u.profileType === "PROFESOR").length}</div><div class="summary-label">Profesores</div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon" style="background:var(--gray-100)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--gray-600)" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+                        </div>
+                        <div><div class="summary-val" style="color:var(--gray-800)">{kpis.students}</div><div class="summary-label">Estudiantes</div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon" style="background:var(--amber-light)">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="var(--amber)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div><div class="summary-val" style="color:var(--amber)">{kpis.teachersActive}</div><div class="summary-label">Profesores verificados</div></div>
+                    </div>
+                </div>
+
+                <div class="toolbar" style="margin-bottom:1rem">
+                    <div class="search-wrap">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input class="search-input" id="search-user" type="text" placeholder="Buscar por nombre o email…" oninput="filterUsers()"/>
+                    </div>
+                    <div class="select-wrap">
+                        <select class="stage-select" id="filter-profile" onchange="filterUsers()">
+                            <option value="all">Todos los perfiles</option>
+                            <option value="PROFESOR">Profesores</option>
+                            <option value="ESTUDIANTE">Estudiantes</option>
+                        </select>
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="toolbar-stats"><strong id="users-count">{users.length}</strong> registros</div>
+                </div>
+
+                <div class="table-wrap">
+                    <div class="table-heading">
+                        <h3>Todos los usuarios</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Usuario</th><th>Rol / Tipo</th><th>Estado</th><th>Institución</th><th>Alta</th></tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            {users.map((u) => (
+                                <tr data-user-row data-name={`${u.name} ${u.email}`.toLowerCase()} data-profile={u.profileType}>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:.625rem">
+                                            <div class={`avatar av-sm ${u.profileType === "PROFESOR" ? "av-teal" : "av-gray"}`}>{u.initials}</div>
+                                            <div>
+                                                <div style="font-weight:600">
+                                                    {u.name}
+                                                    {u.isAdmin && <span class="badge badge-amber" style="margin-left:.375rem">admin</span>}
+                                                </div>
+                                                <div style="font-size:.6875rem;color:var(--gray-400)">{u.email}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {u.profileType === "PROFESOR"
+                                            ? <span class="badge badge-teal">Profesor / Instructor</span>
+                                            : <span class="badge badge-gray">Estudiante / Profesional</span>}
+                                    </td>
+                                    <td>
+                                        {u.verification === "VERIFIED" ? <span class="badge badge-success">Verificado</span>
+                                            : u.verification === "PENDING" ? <span class="badge badge-amber">Pendiente</span>
+                                            : u.verification === "REJECTED" ? <span class="badge badge-error">Rechazado</span>
+                                            : <span style="color:var(--gray-400)">—</span>}
+                                    </td>
+                                    <td style="color:var(--gray-600)">{u.institution || "—"}</td>
+                                    <td style="color:var(--gray-500)">{u.createdAt}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<style is:global>
+
+/* ── RESET & BASE ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-size:14px;color:#343A40;background:#F9FAFB;-webkit-font-smoothing:antialiased}
+
+/* ── TOKENS ───────────────────────────────────────────── */
+/* ── Puente de tokens ─────────────────────────────────── */
+:root{
+  --amber: var(--accent);
+  --amber-light: var(--accent-bg-soft);
+  --amber-mid: var(--accent-border-soft);
+
+  --teal:#7CD4CC; --teal-light:#E8F8F7; --teal-dark:#2a9d96;
+
+  --gray-50: var(--bg);
+  --gray-100: var(--accent-soft);
+  --gray-200: var(--border);
+  --gray-300: var(--accent-border-light);
+  --gray-400: var(--text-muted);
+  --gray-500: var(--text-secondary);
+  --gray-600: var(--text-secondary);
+  --gray-700: var(--text);
+  --gray-800: var(--text);
+  --white: var(--card-bg);
+
+  --radius:0.75rem; --radius-sm:0.5rem;
+  --shadow-sm: var(--shadow-soft);
+  --shadow-md: var(--shadow-soft);
 }
 
-html, body { height: 100%; font-family: var(--font); font-size: 13px; color: var(--text); background: var(--bg); overflow: hidden; }
+/* ── LAYOUT SHELL ─────────────────────────────────────── */
+#app{display:flex;height:100vh;overflow:hidden}
 
-#app  { display: flex; height: 100vh; overflow: hidden; }
-#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+/* ── SIDEBAR ──────────────────────────────────────────── */
+#sidebar{
+  width:256px;flex-shrink:0;display:flex;flex-direction:column;
+  height:100%;background:var(--white);border-right:1px solid var(--gray-200);
+}
+.sidebar-logo{
+  padding:1rem;border-bottom:1px solid var(--gray-200);
+}
+.logo-box{
+  border-radius:var(--radius);padding:.875rem 1rem;
+  background:linear-gradient(135deg,#E9642C,#c84d1e);
+}
+.logo-box .name{color:#fff;font-size:.9375rem;font-weight:900;letter-spacing:-.02em;line-height:1}
+.logo-box .sub{color:rgba(255,255,255,.65);font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-top:.25rem}
 
-/* ── SIDEBAR ── */
-#sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-.sb-logo { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.sb-logo-mark { width: 32px; height: 32px; background: var(--amber); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 13px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(233,100,44,.3); }
-.sb-logo-text { font-size: 14px; font-weight: 800; color: var(--amber); letter-spacing: -.3px; }
-.sb-logo-sub  { font-size: 10px; color: var(--muted); margin-top: 1px; }
-.sb-section   { padding: 14px 16px 4px; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .7px; text-transform: uppercase; }
-.sb-nav { flex: 1; overflow-y: auto; padding: 6px 0; }
-.sb-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px; cursor: pointer; border-radius: var(--radius-xs); margin: 1px 8px; transition: all .15s; color: var(--muted); font-size: 12.5px; }
-.sb-item:hover  { background: var(--bg); color: var(--text); }
-.sb-item.active { background: var(--amber-light); color: var(--amber); font-weight: 700; }
-.sb-badge { margin-left: auto; background: var(--amber); color: #fff; border-radius: 10px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
-.sb-profile { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.sb-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--amber), var(--amber-mid)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; flex-shrink: 0; }
-.sb-name { font-size: 12.5px; font-weight: 700; color: var(--text); }
-.sb-role-badge { font-size: 10px; cursor: pointer; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
-.sb-role-badge[data-identity="platform_admin"] { background: var(--amber-light); color: var(--amber); border: 1px solid var(--amber); }
-.sb-role-badge[data-identity="teacher_a"],
-.sb-role-badge[data-identity="teacher_b"]      { background: var(--teal-light); color: var(--teal-dark); border: 1px solid var(--teal); }
-.sb-role-badge[data-identity="student"]        { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-.flex-1 { flex: 1; min-width: 0; }
-.hidden { display: none !important; }
+.sidebar-nav{flex:1;padding:.75rem;display:flex;flex-direction:column;gap:.125rem;overflow-y:auto}
+.nav-section-label{padding:.5rem .5rem .25rem;font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-400)}
 
-/* ── TOPBAR ── */
-.topbar { padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-.topbar-title { font-size: 15px; font-weight: 800; color: var(--text); }
-.topbar-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.nav-link{
+  display:flex;align-items:center;gap:.625rem;padding:.5rem .875rem;
+  border-radius:var(--radius-sm);font-size:.8125rem;font-weight:500;color:var(--gray-600);
+  text-decoration:none;cursor:pointer;border:none;background:none;width:100%;text-align:left;
+  transition:background-color .15s,color .15s;
+}
+.nav-link:hover{background:var(--gray-50);color:var(--amber)}
+.nav-link.active{background:var(--amber-light);color:var(--amber);font-weight:700}
+.nav-link svg{width:16px;height:16px;flex-shrink:0}
 
-/* ── BUTTONS ── */
-.btn { border: none; cursor: pointer; border-radius: var(--radius-xs); padding: 7px 14px; font-size: 12px; font-weight: 700; transition: all .15s; display: inline-flex; align-items: center; gap: 5px; }
-.btn-primary { background: var(--amber); color: #fff; }
-.btn-primary:hover { background: #d45a25; }
-.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-.btn-outline:hover { border-color: var(--amber); color: var(--amber); }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn:disabled:hover { border-color: var(--border); color: var(--text); }
-.btn-sm { padding: 5px 12px; font-size: 11.5px; }
+.pending-badge{
+  min-width:18px;height:18px;padding:0 4px;border-radius:9999px;
+  background:#EF4444;color:#fff;font-size:.6rem;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;margin-left:auto;
+}
+.pending-badge.hidden{display:none}
 
-/* ── CONTENT ── */
-#content { flex: 1; overflow-y: auto; padding: 20px; }
-.view-section { display: none; }
-.view-section.active { display: block; }
+.sidebar-profile{
+  padding:.75rem;border-top:1px solid var(--gray-200);
+}
+.profile-inner{
+  display:flex;align-items:center;gap:.75rem;padding:.625rem;
+  border-radius:var(--radius);cursor:pointer;transition:background .15s;
+}
+.profile-inner:hover{background:var(--gray-50)}
+.avatar{
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:9999px;font-weight:700;color:#fff;flex-shrink:0;
+  font-size:.6875rem;
+}
+.av-sm{width:28px;height:28px;font-size:.625rem}
+.av-md{width:36px;height:36px;font-size:.75rem}
+.av-lg{width:44px;height:44px;font-size:.875rem}
+.av-amber{background:linear-gradient(135deg,#F5A067,#E9642C)}
+.av-teal{background:linear-gradient(135deg,#7CD4CC,#2a9d96)}
+.av-gray{background:linear-gradient(135deg,#D1D5DB,#9CA3AF)}
 
-/* ── KPI ── */
-.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
-@media (max-width: 1150px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 700px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-.kpi-card { background: var(--surface); border-radius: var(--radius); padding: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); }
-.kpi-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-.kpi-value { font-size: 24px; font-weight: 800; color: var(--text); }
-.kpi-value.c-amber { color: var(--amber); }
+/* ── MAIN COLUMN ──────────────────────────────────────── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 
-/* ── SHARED ── */
-.muted-sm { font-size: 11.5px; color: var(--muted); }
-.section-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.m-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; flex-shrink: 0; }
-.member-cell { display: flex; align-items: center; gap: 9px; }
-.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; font-size: 11.5px; font-weight: 700; white-space: nowrap; border: 1.5px solid; }
-.pa-status-pending  { background: var(--amber-light); color: var(--amber);  border-color: var(--amber-mid); }
-.pa-status-approved { background: #E8FDE8; color: #1a7a3a; border-color: #C6EFD8; }
-.pa-status-rejected { background: #FDE8E8; color: #C0392B; border-color: #F5A0A0; }
-.ruta-tag   { display: inline-flex; align-items: center; gap: 5px; border: 1px solid; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.ruta-impl  { background: var(--amber-light); color: var(--amber);    border-color: var(--amber-mid); }
-.ruta-basic { background: var(--teal-light);  color: var(--teal-dark); border-color: var(--teal);     }
-.role-pill   { padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; }
-.role-admin   { background: var(--amber-light); color: var(--amber); }
-.role-member  { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-.info-banner { background: var(--amber-light); border: 1px solid var(--amber); border-radius: var(--radius-xs); padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--amber); font-weight: 700; }
-.pa-empty { padding: 30px; text-align: center; color: var(--muted); font-size: 12.5px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); }
+/* ── TOPBAR ───────────────────────────────────────────── */
+#topbar{
+  height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;background:var(--white);border-bottom:1px solid var(--gray-200);
+}
+.topbar-title{display:flex;align-items:center;gap:.375rem;font-size:.8125rem}
+.topbar-prompt{color:var(--amber);font-family:monospace;font-weight:700;font-size:.875rem;user-select:none}
+.topbar-section{color:var(--gray-400);font-weight:500}
+.topbar-slash{color:var(--gray-300)}
+.topbar-view{color:var(--gray-800);font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:.75rem}
+.status-dot{display:flex;align-items:center;gap:.375rem;font-size:.6875rem;color:var(--gray-400)}
+.dot{width:8px;height:8px;background:#34D399;border-radius:9999px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.divider-v{width:1px;height:20px;background:var(--gray-200)}
+#topbar-date{font-size:.6875rem;color:var(--gray-400)}
 
-/* ── REQUEST CARDS ── */
-.pa-request-card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 12px; }
-.pa-request-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.pa-teacher-id { display: flex; align-items: center; gap: 10px; }
-.pa-teacher-name { font-size: 13.5px; font-weight: 800; color: var(--text); }
-.pa-request-body { padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 12px; }
-.pa-request-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
-.pa-request-actions { display: flex; gap: 8px; justify-content: flex-end; }
-.pa-history-row { display: grid; grid-template-columns: 1.6fr 1.6fr 1fr 1fr; align-items: center; gap: 10px; padding: 10px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xs); margin-bottom: 8px; font-size: 12.5px; }
+/* ── CONTENT AREA ──────────────────────────────────────── */
+#content{flex:1;overflow-y:auto;padding:1.5rem}
 
-/* ── COMMUNITY CARDS ── */
-.pa-community-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-@media (max-width: 900px) { .pa-community-grid { grid-template-columns: 1fr; } }
-.pa-community-card { background: var(--surface); border-radius: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
-.pa-community-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
-.pa-community-name { font-size: 15px; font-weight: 800; color: var(--text); }
-.pa-community-owner { display: flex; align-items: center; gap: 10px; }
-.pa-stack-avatar { width: 26px; height: 26px; font-size: 10px; border: 2px solid var(--surface); margin-left: -8px; }
-.pa-stack-avatar:first-child { margin-left: 0; }
+/* ── VIEWS ─────────────────────────────────────────────── */
+.view{display:none}
+.view.active{display:block}
 
-/* ── INVITE PANEL ── */
-.pa-invite-panel { margin-top: 12px; }
-.pa-invite-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: var(--bg); border-radius: var(--radius-xs); border: 1px solid var(--border); }
-.pa-invite-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; }
-.pa-invite-row input { cursor: pointer; }
+/* ── KPI CARDS ─────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.75rem}
+.kpi-card{
+  background:var(--white);border:1px solid var(--gray-200);
+  border-radius:var(--radius);padding:1.25rem;
+  box-shadow:var(--shadow-sm);transition:box-shadow .2s;
+}
+.kpi-card:hover{box-shadow:var(--shadow-md)}
+.kpi-icon{display:inline-flex;align-items:center;justify-content:center;padding:.5rem;border-radius:.5rem;margin-bottom:.75rem}
+.kpi-icon svg{width:20px;height:20px}
+.kpi-value{font-size:1.625rem;font-weight:900;line-height:1;margin-bottom:.25rem}
+.kpi-label{font-size:.6875rem;font-weight:500;color:var(--gray-500);line-height:1.3}
 
-/* ── NEW REQUEST FORM ── */
-.pa-new-request-form { background: var(--surface); border: 1.5px solid var(--amber); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
-.pa-text-input { width: 100%; padding: 7px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12.5px; outline: none; margin-bottom: 10px; }
-.pa-text-input:focus { border-color: var(--amber); }
-.pa-field-label { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
+/* ── SECTION HEADERS ───────────────────────────────────── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-title{display:flex;align-items:center;gap:.5rem;font-size:.9375rem;font-weight:700;color:var(--gray-800)}
+.count-chip{
+  display:inline-flex;align-items:center;padding:.125rem .5rem;
+  border-radius:9999px;font-size:.6875rem;font-weight:700;
+}
 
-/* ── PENDING CARD (teacher view) ── */
-.pa-pending-card { background: var(--surface); border: 1.5px dashed var(--amber-mid); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
+/* ── REQUEST CARDS ─────────────────────────────────────── */
+.request-list{display:flex;flex-direction:column;gap:.75rem}
+.request-card{
+  background:var(--white);border:1px solid var(--gray-200);
+  border-radius:var(--radius);padding:.875rem 1.25rem;
+  box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:.875rem;
+  transition:opacity .3s,transform .3s;
+}
+.req-avatar-info{display:flex;align-items:center;gap:.75rem;min-width:160px}
+.req-name{font-size:.8125rem;font-weight:600;color:var(--gray-800)}
+.req-email{font-size:.6875rem;color:var(--gray-400);margin-top:.125rem}
+.req-tema-wrap{flex:1;min-width:0;padding:0 1rem}
+.req-tema-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);font-weight:600;margin-bottom:.125rem}
+.req-tema{font-size:.8125rem;font-weight:500;color:var(--gray-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.req-right{display:flex;flex-direction:column;align-items:flex-end;gap:.375rem;flex-shrink:0}
+.req-date{font-size:.6875rem;color:var(--gray-400)}
+.req-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0;margin-left:.5rem}
 
-/* ── TABLE (Usuarios) ── */
-.table-card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead tr { background: var(--bg); }
-.data-table th { padding: 9px 16px; font-size: 10.5px; font-weight: 700; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); letter-spacing: .3px; text-transform: uppercase; }
-.data-table td { padding: 10px 16px; font-size: 12.5px; border-bottom: 1px solid var(--border); }
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover td { background: var(--bg); }
+/* ── BUTTONS ───────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.375rem;
+  border-radius:var(--radius-sm);font-size:.75rem;font-weight:600;cursor:pointer;
+  transition:background-color .15s,opacity .15s;border:none;padding:.375rem .875rem;
+}
+.btn-primary{background:var(--amber);color:#fff}
+.btn-primary:hover{background:#d15523}
+.btn-danger{background:transparent;color:#DC2626;border:1.5px solid #FCA5A5}
+.btn-danger:hover{background:#FEF2F2}
+.btn-teal{background:var(--teal-light);color:var(--teal-dark);border:1.5px solid var(--teal)}
+.btn-teal:hover{background:#d0f0ee}
+.btn-promote{background:var(--amber-light);color:var(--amber);border:1.5px solid var(--amber-mid)}
+.btn-promote:hover{background:#fde2d0}
+.btn-full{width:100%;justify-content:center}
 
-/* ── TOAST ── */
-#toast { position: fixed; bottom: 22px; right: 22px; background: #23272b; color: #fff; padding: 11px 18px; border-radius: var(--radius-xs); font-size: 12.5px; font-weight: 600; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; z-index: 9999; max-width: 340px; }
-#toast.show { opacity: 1; transform: none; }
+/* ── EMPTY STATE ────────────────────────────────────────── */
+.empty-state{display:none;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;text-align:center}
+.empty-state.visible{display:flex}
+.empty-icon{width:48px;height:48px;border-radius:9999px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem}
+.empty-icon svg{width:24px;height:24px}
+.empty-title{font-size:.875rem;font-weight:600;color:var(--gray-600)}
+.empty-sub{font-size:.75rem;color:var(--gray-400);margin-top:.25rem}
 
-/* ── v2.5: TRACK / STAGE (informe v1.5) ── */
-.track-pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 3px 10px; font-size: 10.5px; font-weight: 700; white-space: nowrap; border: 1.5px solid; }
-.track-pill.track-teacher { background: #F0EBFB; color: #6C4FBE; border-color: #C9B8EF; }
-.track-pill.track-student { background: var(--teal-light); color: var(--teal-dark); border-color: var(--teal); }
-.mini-chip-group { display: flex; flex-wrap: wrap; gap: 4px; }
-.pa-graduated-tag { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #C6EFD8; background: #E8FDE8; color: #1a7a3a; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+/* ── TABLE ──────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200)}
+.table-heading{padding:1rem 1.25rem;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+.table-heading h3{font-size:.875rem;font-weight:700;color:var(--gray-800)}
+.table-heading span{font-size:.75rem;color:var(--gray-400)}
+table{width:100%;text-align:left;border-collapse:collapse}
+thead th{
+  padding:.75rem 1rem;font-size:.625rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--gray-500);background:var(--gray-50);
+  border-bottom:1px solid var(--gray-200);
+}
+tbody tr{transition:background .1s}
+tbody tr:hover td{background:#FAFAFA}
+tbody tr:last-child td{border-bottom:none}
+tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bottom:1px solid var(--gray-100);vertical-align:middle}
 
-/* ── v2.5: FILTER BAR (Comunidades admin) ── */
-.pa-filter-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
-.pa-filter-bar input[type="text"] { padding: 6px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12px; outline: none; background: var(--bg); min-width: 180px; }
-.pa-filter-bar select { padding: 6px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12px; outline: none; background: var(--bg); }
-.pa-filter-bar input[type="text"]:focus, .pa-filter-bar select:focus { border-color: var(--amber); }
-.pa-filter-check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; }
-.pa-filter-check input { cursor: pointer; }
-.pa-filter-count { font-size: 11.5px; color: var(--muted); margin-left: auto; }
+/* ── BADGES ─────────────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;padding:.125rem .5rem;
+  border-radius:9999px;font-size:.625rem;font-weight:700;white-space:nowrap;
+}
+.badge-amber{background:var(--amber-light);color:var(--amber);border:1px solid var(--amber-mid)}
+.badge-teal{background:var(--teal-light);color:var(--teal-dark);border:1px solid var(--teal)}
+.badge-gray{background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-300)}
+.badge-success{background:#F0FDF4;color:#16A34A;border:1px solid #86EFAC}
+.badge-error{background:#FEF2F2;color:#DC2626;border:1px solid #FCA5A5}
 
-/* ── v2.5: TABS (Mis Comunidades por perfil) ── */
-.pa-tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1.5px solid var(--border); }
-.pa-tab { padding: 8px 16px; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: all .15s; }
-.pa-tab:hover { color: var(--text); }
-.pa-tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+/* ── COMMUNITY CARDS ─────────────────────────────────────── */
+.comm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem}
+.comm-card{
+  background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s;
+}
+.comm-card:hover{box-shadow:var(--shadow-md)}
+.comm-card.hidden{display:none}
+.stage-bar{height:4px;width:100%}
+.comm-body{padding:1.25rem}
+.comm-header{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.625rem}
+.comm-title{font-size:.875rem;font-weight:700;color:var(--gray-800);line-height:1.35}
+.comm-desc{font-size:.6875rem;color:var(--gray-500);line-height:1.55;margin-bottom:1rem}
+.comm-facilitator{display:flex;align-items:center;gap:.625rem;margin-bottom:1rem}
+.fac-meta{display:flex;flex-direction:column}
+.fac-label{font-size:.5625rem;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);font-weight:700}
+.fac-name{font-size:.75rem;font-weight:600;color:var(--gray-700);margin-top:.1rem}
+.progress-section{margin-bottom:1rem}
+.progress-row{display:flex;justify-content:space-between;margin-bottom:.375rem}
+.progress-label{font-size:.5625rem;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);font-weight:700}
+.progress-val{font-size:.6875rem;font-weight:700;color:var(--gray-700)}
+.progress-track{height:6px;background:var(--gray-200);border-radius:9999px;overflow:hidden}
+.progress-fill{height:100%;border-radius:9999px;transition:width .4s}
+.progress-meta{display:flex;justify-content:space-between;margin-top:.25rem}
+.progress-meta span{font-size:.6rem;color:var(--gray-400)}
+.comm-footer{padding-top:.875rem;border-top:1px solid var(--gray-100)}
 
-/* ── v2.5: RECHAZO CON MOTIVO (inline) ── */
-.pa-reject-box { margin-top: 10px; padding: 10px; background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius-xs); }
-.pa-reject-box textarea { width: 100%; min-height: 54px; padding: 7px 10px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 12px; outline: none; resize: vertical; margin-bottom: 8px; font-family: inherit; }
-.pa-reject-box textarea:focus { border-color: var(--amber); }
-.pa-reason-note { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 4px; }
+/* ── TOOLBAR ─────────────────────────────────────────────── */
+.toolbar{
+  background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);
+  padding:1rem;margin-bottom:1.5rem;display:flex;flex-wrap:wrap;align-items:center;gap:.875rem;
+}
+.search-wrap{position:relative;flex:1;min-width:160px}
+.search-wrap svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--gray-400)}
+.search-input,.stage-select{
+  padding:.5rem .875rem .5rem 2.25rem;font-size:.8125rem;border:1px solid var(--gray-200);
+  border-radius:var(--radius-sm);background:var(--gray-50);color:var(--gray-700);
+  outline:none;transition:border-color .15s,box-shadow .15s;width:100%;
+}
+.stage-select{padding-left:.75rem;appearance:none;cursor:pointer;min-width:160px;width:auto}
+.search-input:focus,.stage-select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,100,44,.12)}
+.select-wrap{position:relative}
+.select-wrap svg{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);pointer-events:none;width:12px;height:12px;color:var(--gray-400)}
+.toggle-wrap{display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none;font-size:.8125rem;color:var(--gray-600);font-weight:500}
+.toggle{position:relative;width:36px;height:20px}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--gray-200);border-radius:9999px;transition:background .2s}
+.toggle input:checked + .toggle-track{background:var(--amber)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:9999px;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(16px)}
+.toolbar-stats{margin-left:auto;display:flex;align-items:center;gap:.5rem;font-size:.6875rem;color:var(--gray-400);background:var(--gray-50);border:1px solid var(--gray-200);border-radius:.5rem;padding:.375rem .75rem}
+.toolbar-stats strong{color:var(--gray-700);font-weight:700}
 
-/* ── v2.5: EXPLORAR / SOLICITUD DE UNIÓN (estudiante) ── */
-.pa-join-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; background: var(--amber-light); border: 1px solid var(--amber-mid); border-radius: var(--radius-xs); margin-bottom: 6px; font-size: 12px; }
+/* ── USER SUMMARY ────────────────────────────────────────── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.summary-card{
+  background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);
+  padding:1.25rem;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:1rem;
+  transition:box-shadow .2s;
+}
+.summary-card:hover{box-shadow:var(--shadow-md)}
+.summary-icon{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:.625rem;flex-shrink:0}
+.summary-icon svg{width:20px;height:20px}
+.summary-val{font-size:1.5rem;font-weight:900;line-height:1}
+.summary-label{font-size:.6875rem;font-weight:500;color:var(--gray-500);margin-top:.25rem}
 
-/* ── v2.5: NOTA DE SOLO LECTURA (formulario solicitud) ── */
-.pa-readonly-note { font-size: 11.5px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 8px 10px; margin-bottom: 10px; }
+/* ── PROGRESS TAGS (users) ───────────────────────────────── */
+.tags{display:flex;flex-wrap:wrap;gap:.25rem}
+.status-active{display:flex;align-items:center;gap:.375rem;font-size:.75rem;font-weight:500;color:var(--gray-600)}
+.status-dot-green{width:6px;height:6px;background:#34D399;border-radius:9999px}
 
-            /* Añadidos para la consola real (no venían en el prototipo). */
-            .pa-section-title {
-                font-size: 14px;
-                font-weight: 800;
-                color: var(--text);
-                margin: 18px 0 10px;
-            }
-            .pa-request-actions {
-                display: flex;
-                gap: 8px;
-                justify-content: flex-end;
-                padding-top: 10px;
-                border-top: 1px solid var(--border);
-                margin-top: 10px;
-            }
-            .pa-status-approved {
-                background: #e8fde8;
-                color: #1a7a3a;
-                border: 1.5px solid #c6efd8;
-            }
-            .pa-status-rejected {
-                background: #fde8e8;
-                color: #c0392b;
-                border: 1.5px solid #f5a0a0;
-            }
-            .kpi-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 12px;
-            }
-            @media (max-width: 900px) {
-                .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            }
+/* ── TOAST ───────────────────────────────────────────────── */
+#toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{
+  display:flex;align-items:center;gap:.625rem;padding:.75rem 1rem;border-radius:.75rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);font-size:.8125rem;font-weight:600;color:#fff;
+  transform:translateY(12px);opacity:0;transition:transform .3s ease,opacity .3s ease;
+  pointer-events:none;min-width:220px;max-width:320px;
+}
+.toast.visible{transform:translateY(0);opacity:1}
+.toast-success{background:#059669}
+.toast-error{background:#DC2626}
+.toast-info{background:#1F2937}
+.toast-icon{font-size:1rem;line-height:1}
 
-        </style>
 
-        <script define:vars={{ bootstrap }}>
-            "use strict";
+/* ── Añadidos (no venían en el prototipo) ─────────────────────────────── */
+.empty-state{
+  background:var(--white); border:1px dashed var(--gray-200);
+  border-radius:var(--radius); padding:2rem; text-align:center;
+  color:var(--gray-500); font-size:.8125rem;
+}
+.badge-gray{ background:var(--gray-100); color:var(--gray-600); border:1px solid var(--gray-200); }
+.muted-note{ font-size:.6875rem; color:var(--gray-400); }
+.request-card[data-busy="1"]{ opacity:.5; pointer-events:none; }
 
-            var pendingTeachers = bootstrap.pendingTeachers || [];
-            var communities = bootstrap.communities || [];
-            var users = bootstrap.users || [];
+</style>
 
-            var STAGE_ES = {
-                CONCEPTOS_CLAVE: "Conceptos Clave",
-                IMPLEMENTACION_TECNICA: "Implementación Técnica",
-            };
-            var TRACK_ES = {
-                TEACHER: "Profesores/Instructores",
-                STUDENT: "Estudiantes/Profesionales",
-            };
+<script define:vars={{ pendingCount: kpis.pending }}>
+    "use strict";
 
-            function esc(s) {
-                return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-                    return {
-                        "&": "&amp;",
-                        "<": "&lt;",
-                        ">": "&gt;",
-                        '"': "&quot;",
-                        "'": "&#39;",
-                    }[c];
-                });
-            }
+    var VIEW_LABELS = {
+        requests: "Solicitudes",
+        communities: "Comunidades",
+        users: "Directorio",
+    };
 
-            function toast(msg) {
-                var el = document.getElementById("toast");
-                el.textContent = msg;
-                el.classList.add("show");
-                clearTimeout(toast._t);
-                toast._t = setTimeout(function () {
-                    el.classList.remove("show");
-                }, 2800);
-            }
+    /* ── Navegación ── */
+    function switchView(view) {
+        document.querySelectorAll(".view").forEach(function (v) {
+            v.classList.remove("active");
+        });
+        var el = document.getElementById("view-" + view);
+        if (el) el.classList.add("active");
 
-            function initialsFrom(name) {
-                var p = String(name || "").trim().split(/\s+/).filter(Boolean);
-                if (!p.length) return "??";
-                if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
-                return (p[0][0] + p[p.length - 1][0]).toUpperCase();
-            }
+        document.querySelectorAll(".nav-link[data-view]").forEach(function (b) {
+            b.classList.toggle("active", b.dataset.view === view);
+        });
 
-            var COLORS = ["#E9642C","#7CD4CC","#5B8DEF","#9B7EDE","#F5A623","#50C878","#FF6B6B","#4ECDC4"];
-            function colorFor(id) {
-                var h = 0, s = String(id || "");
-                for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-                return COLORS[h % COLORS.length];
-            }
+        var tv = document.getElementById("topbar-view");
+        if (tv) tv.textContent = VIEW_LABELS[view] || view;
+    }
 
-            function navTo(id, el) {
-                document.querySelectorAll(".sb-item").forEach(function (i) {
-                    i.classList.remove("active");
-                });
-                el.classList.add("active");
-                document.querySelectorAll(".view-section").forEach(function (s) {
-                    s.classList.remove("active");
-                });
-                document.getElementById(id).classList.add("active");
-                if (id === "communities-view") renderCommunities();
-                if (id === "users-view") renderUsers();
-            }
+    /* ── Toast ── */
+    function toast(msg, type) {
+        var cont = document.getElementById("toast-container");
+        if (!cont) return;
+        var icons = { success: "✓", error: "✕", info: "ℹ" };
+        var el = document.createElement("div");
+        el.className = "toast toast-" + (type || "info");
+        el.innerHTML =
+            '<span class="toast-icon">' +
+            (icons[type] || icons.info) +
+            "</span>" +
+            "<span>" +
+            msg +
+            "</span>";
+        cont.appendChild(el);
+        setTimeout(function () {
+            el.classList.add("out");
+            setTimeout(function () {
+                el.remove();
+            }, 300);
+        }, 2600);
+    }
 
-            /* ── SOLICITUDES DE PROFESORES (D1) ── */
-            function renderRequests() {
-                var wrap = document.getElementById("requests-pending");
-                wrap.innerHTML = "";
-                document.getElementById("sb-pending-badge").textContent =
-                    pendingTeachers.length;
+    /* ── Verificar profesor (API real) ──────────────────────────────────────
+       El servidor exige requireAdmin: acá solo se refleja el resultado. */
+    var pending = pendingCount;
 
-                if (pendingTeachers.length === 0) {
-                    wrap.innerHTML =
-                        '<div class="pa-empty">No hay profesores pendientes de verificación</div>';
-                    return;
-                }
+    function handleRequest(id, action) {
+        var card = document.getElementById("req-" + id);
+        if (!card) return;
+        card.setAttribute("data-busy", "1");
 
-                pendingTeachers.forEach(function (t) {
-                    var meta = [];
-                    if (t.institution) meta.push(esc(t.institution));
-                    if (t.country) meta.push(esc(t.country));
-
-                    var card = document.createElement("div");
-                    card.className = "pa-request-card";
-                    card.innerHTML =
-                        '<div class="pa-request-top">' +
-                        '<div class="pa-teacher-id">' +
-                        '<div class="m-avatar" style="background:' + colorFor(t.id) + '">' +
-                        initialsFrom(t.name) + "</div>" +
-                        '<div><div class="pa-teacher-name">' + esc(t.name) + "</div>" +
-                        '<div class="muted-sm">' + esc(t.email) + "</div></div>" +
-                        "</div>" +
-                        '<span class="pill pa-status-pending">Pendiente</span>' +
-                        "</div>" +
-                        '<div class="pa-request-body">' +
-                        '<div class="muted-sm">' +
-                        (meta.length ? meta.join(" · ") : "Sin institución declarada") +
-                        "</div>" +
-                        (t.wantsCommunity
-                            ? '<div style="margin-top:8px"><span class="pill pa-status-pending">Desea crear una comunidad de práctica</span></div>'
-                            : "") +
-                        '<div class="muted-sm" style="margin-top:8px">Registrado: ' +
-                        esc(t.requestedAt) + "</div>" +
-                        "</div>" +
-                        '<div class="pa-request-actions">' +
-                        '<button class="btn btn-primary btn-sm" onclick=\'verifyTeacher(this,' +
-                        JSON.stringify(t.id) + ",\"APPROVE\")'>Aprobar</button> " +
-                        '<button class="btn btn-outline btn-sm" onclick=\'verifyTeacher(this,' +
-                        JSON.stringify(t.id) + ",\"REJECT\")'>Rechazar</button>" +
-                        "</div>";
-                    wrap.appendChild(card);
-                });
-            }
-
-            /* Aprobar/rechazar contra la API real. El servidor exige requireAdmin. */
-            function verifyTeacher(btn, id, action) {
-                var card = btn.closest(".pa-request-card");
-                if (card) card.style.opacity = "0.5";
-                card.querySelectorAll("button").forEach(function (b) {
-                    b.disabled = true;
-                });
-
-                fetch("/api/admin/teachers/" + id + "/verify", {
-                    method: "PATCH",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    body: JSON.stringify({ action: action }),
-                })
-                    .then(function (res) {
-                        return res.text().then(function (raw) {
-                            var data = raw ? JSON.parse(raw) : null;
-                            if (!res.ok)
-                                throw new Error(
-                                    (data && (data.error || data.message)) ||
-                                        "HTTP " + res.status,
-                                );
-                            return data;
-                        });
-                    })
-                    .then(function () {
-                        /* Sale de la lista de pendientes, sin recargar la página. */
-                        pendingTeachers = pendingTeachers.filter(function (t) {
-                            return t.id !== id;
-                        });
-                        toast(
-                            action === "APPROVE"
-                                ? "✓ Profesor verificado"
-                                : "✗ Profesor rechazado",
+        fetch("/api/admin/teachers/" + id + "/verify", {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({ action: action }),
+        })
+            .then(function (res) {
+                return res.text().then(function (raw) {
+                    var data = raw ? JSON.parse(raw) : null;
+                    if (!res.ok)
+                        throw new Error(
+                            (data && (data.error || data.message)) ||
+                                "HTTP " + res.status,
                         );
-                        renderRequests();
-                    })
-                    .catch(function (err) {
-                        if (card) card.style.opacity = "";
-                        card.querySelectorAll("button").forEach(function (b) {
-                            b.disabled = false;
-                        });
-                        toast("⚠ " + err.message);
-                    });
-            }
-
-            /* ── COMUNIDADES ── */
-            function renderCommunities() {
-                var list = document.getElementById("communities-list");
-                var fs = document.getElementById("f-stage").value;
-                var ft = document.getElementById("f-track").value;
-                var fg = document.getElementById("f-graduated").checked;
-
-                var rows = communities.filter(function (c) {
-                    if (fs && c.stage !== fs) return false;
-                    if (ft && String(c.profileTrack).toUpperCase() !== ft) return false;
-                    if (!fg && c.graduated) return false;
-                    return true;
+                    return data;
                 });
-
-                document.getElementById("comm-counter").textContent =
-                    rows.length + " comunidad" + (rows.length === 1 ? "" : "es");
-
-                if (rows.length === 0) {
-                    list.innerHTML = '<div class="pa-empty">Ninguna comunidad coincide con los filtros</div>';
-                    return;
-                }
-
-                list.innerHTML =
-                    '<div class="table-card"><div class="overflow-x-auto"><table class="members-table">' +
-                    "<thead><tr><th>Comunidad</th><th>Profesor</th><th>Perfil</th><th>Etapa</th><th>Miembros</th><th>Retos</th></tr></thead>" +
-                    "<tbody>" +
-                    rows
-                        .map(function (c) {
-                            var isImpl = c.stage === "IMPLEMENTACION_TECNICA";
-                            return (
-                                "<tr>" +
-                                "<td><b>" + esc(c.name) + "</b>" +
-                                (c.graduated
-                                    ? ' <span class="pill pa-status-approved">Graduada</span>'
-                                    : "") +
-                                '<div class="muted-sm">' + esc(c.topic) + "</div></td>" +
-                                "<td>" + esc(c.teacher) + "</td>" +
-                                '<td><span class="muted-sm">' +
-                                esc(TRACK_ES[String(c.profileTrack).toUpperCase()] || c.profileTrack) +
-                                "</span></td>" +
-                                '<td><span class="ruta-tag ' + (isImpl ? "ruta-impl" : "ruta-basic") + '">' +
-                                esc(STAGE_ES[c.stage] || c.stage) + "</span></td>" +
-                                "<td>" + c.members + "</td>" +
-                                "<td>" + c.challenges + "</td>" +
-                                "</tr>"
-                            );
-                        })
-                        .join("") +
-                    "</tbody></table></div></div>";
-            }
-
-            /* ── USUARIOS ── */
-            function renderUsers() {
-                var tbody = document.getElementById("users-tbody");
-                var fp = document.getElementById("f-profile").value;
-                var q = document.getElementById("f-search").value.trim().toLowerCase();
-
-                var rows = users.filter(function (u) {
-                    if (fp && u.profileType !== fp) return false;
-                    if (q) {
-                        var hay = (u.name + " " + u.email).toLowerCase();
-                        if (hay.indexOf(q) === -1) return false;
-                    }
-                    return true;
-                });
-
-                document.getElementById("users-counter").textContent =
-                    rows.length + " usuario" + (rows.length === 1 ? "" : "s");
-
-                tbody.innerHTML = rows
-                    .map(function (u) {
-                        var verifPill = "—";
-                        if (u.verification === "VERIFIED")
-                            verifPill = '<span class="pill pa-status-approved">Verificado</span>';
-                        else if (u.verification === "PENDING")
-                            verifPill = '<span class="pill pa-status-pending">Pendiente</span>';
-                        else if (u.verification === "REJECTED")
-                            verifPill = '<span class="pill pa-status-rejected">Rechazado</span>';
-
-                        return (
-                            "<tr>" +
-                            '<td><div class="member-cell">' +
-                            '<div class="m-avatar" style="background:' + colorFor(u.id) + '">' +
-                            initialsFrom(u.name) + "</div>" +
-                            "<div><div><b>" + esc(u.name) + "</b>" +
-                            (u.isAdmin ? ' <span class="pill pa-status-pending">admin</span>' : "") +
-                            '</div><div class="muted-sm">' + esc(u.email) + "</div></div>" +
-                            "</div></td>" +
-                            "<td>" + esc(u.profileType) + "</td>" +
-                            "<td>" + verifPill + "</td>" +
-                            "<td>" + esc(u.institution || "—") + "</td>" +
-                            '<td class="muted-sm">' + esc(u.createdAt) + "</td>" +
-                            "</tr>"
-                        );
-                    })
-                    .join("");
-            }
-
-            /* ── EXPONER HANDLERS EN window ───────────────────────────────── */
-            Object.assign(window, {
-                navTo: navTo,
-                verifyTeacher: verifyTeacher,
-                renderCommunities: renderCommunities,
-                renderUsers: renderUsers,
-                toast: toast,
+            })
+            .then(function () {
+                card.style.transition = "opacity .25s, transform .25s";
+                card.style.opacity = "0";
+                card.style.transform = "translateX(12px)";
+                setTimeout(function () {
+                    card.remove();
+                    pending = Math.max(0, pending - 1);
+                    updatePendingUI();
+                }, 250);
+                toast(
+                    action === "APPROVE"
+                        ? "Profesor verificado: ya puede crear comunidades"
+                        : "Solicitud rechazada",
+                    action === "APPROVE" ? "success" : "info",
+                );
+            })
+            .catch(function (err) {
+                card.removeAttribute("data-busy");
+                toast(err.message, "error");
             });
+    }
 
-            /* ── INIT ── */
-            renderRequests();
-        </script>
-        <script>
-            import "../lib/enhance-selects";
-        </script>
-    </body>
+    function updatePendingUI() {
+        var badge = document.getElementById("sidebar-badge");
+        if (badge) {
+            badge.textContent = pending;
+            badge.style.display = pending === 0 ? "none" : "";
+        }
+        var chip = document.getElementById("pending-chip");
+        if (chip)
+            chip.textContent = pending + " pendiente" + (pending === 1 ? "" : "s");
+        var kpi = document.querySelector("#view-requests .kpi-value");
+        if (kpi) kpi.textContent = pending;
+
+        if (pending === 0) {
+            var list = document.getElementById("pending-list");
+            if (list && !list.querySelector(".request-card")) {
+                list.innerHTML =
+                    '<div class="empty-state">No hay profesores pendientes de verificación</div>';
+            }
+        }
+    }
+
+    /* ── Filtro de comunidades (cliente) ── */
+    function filterCommunities() {
+        var q = (document.getElementById("search-comm").value || "")
+            .trim()
+            .toLowerCase();
+        var stage = document.getElementById("filter-stage").value;
+        var showGrad = document.getElementById("show-graduated").checked;
+
+        var active = 0;
+        var grad = 0;
+
+        document.querySelectorAll(".comm-card").forEach(function (card) {
+            var titulo = card.dataset.titulo || "";
+            var fac = card.dataset.facilitador || "";
+            var etapa = card.dataset.etapa || "";
+            var isGrad = card.dataset.graduated === "1";
+
+            var okQ = !q || titulo.indexOf(q) !== -1 || fac.indexOf(q) !== -1;
+            var okStage = stage === "all" || etapa === stage;
+            // La casilla solo aplica cuando NO se filtró explícitamente por graduadas.
+            var okGrad = showGrad || stage === "graduada" || !isGrad;
+
+            var visible = okQ && okStage && okGrad;
+            card.style.display = visible ? "" : "none";
+            if (visible) {
+                if (isGrad) grad++;
+                else active++;
+            }
+        });
+
+        document.getElementById("active-count").textContent = active;
+        document.getElementById("grad-count").textContent = grad;
+    }
+
+    /* ── Filtro del directorio (cliente) ── */
+    function filterUsers() {
+        var q = (document.getElementById("search-user").value || "")
+            .trim()
+            .toLowerCase();
+        var prof = document.getElementById("filter-profile").value;
+        var n = 0;
+
+        document.querySelectorAll("[data-user-row]").forEach(function (row) {
+            var okQ = !q || (row.dataset.name || "").indexOf(q) !== -1;
+            var okP = prof === "all" || row.dataset.profile === prof;
+            var visible = okQ && okP;
+            row.style.display = visible ? "" : "none";
+            if (visible) n++;
+        });
+
+        document.getElementById("users-count").textContent = n;
+    }
+
+    /* ── EXPONER EN window ──────────────────────────────────────────────────
+       `define:vars` envuelve TODO el script en un IIFE: sin esto, los
+       onclick/onchange del markup fallan con "... is not defined". */
+    Object.assign(window, {
+        switchView: switchView,
+        handleRequest: handleRequest,
+        filterCommunities: filterCommunities,
+        filterUsers: filterUsers,
+        toast: toast,
+    });
+
+    updatePendingUI();
+</script>
+</body>
 </html>
