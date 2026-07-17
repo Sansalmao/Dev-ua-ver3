@@ -1,0 +1,71 @@
+---
+moduleId: "mod3"
+challengeId: "c2"
+moduleTitle: "Module 3 – Unicode in Data Structures and Algorithms"
+moduleDesc: "Comprehensive introduction to leveraging the power of Unicode in data structures and algorithms, including sorting, searching, and collation techniques."
+exerciseNum: "Exercise 2"
+exerciseTitle: "Develop a Java program that reads a list of employee names (containing duplicates and names from multiple scripts), detects duplicates using primary-strength collation, and then sorts the unique names according to a user‑specified locale."
+exerciseItems:
+  - "Start with an array of names that includes duplicates (e.g., two entries for 'Søren')."
+  - "Normalize each name to NFD and compare using a `Collator` with `PRIMARY` strength to identify duplicates."
+  - "Collect unique names (keeping the original representation of the first occurrence)."
+  - "Ask the user for a language tag (e.g., 'da-DK' for Danish, 'ar-EG' for Arabic)."
+  - "Sort the unique names using a `Collator` for that locale."
+  - "Print the sorted list."
+solutionLang: "java"
+solutionCode: |
+  import java.text.Collator;
+  import java.text.Normalizer;
+  import java.util.ArrayList;
+  import java.util.Arrays;
+  import java.util.List;
+  import java.util.Locale;
+  import java.util.Scanner;
+
+  public class Mod3_Exercise2 {
+      public static void main(String[] args) {
+          String[] names = {
+              "José", "Håkon", "Renée", "Zoë", "Tom", "Søren",
+              "يوسف", "أحمد", "大谷", "Søren"
+          };
+
+          // Remove duplicates using primary-strength collation
+          Collator collator = Collator.getInstance(Locale.getDefault());
+          collator.setStrength(Collator.PRIMARY);
+
+          List<String> uniqueNames = new ArrayList<>();
+          for (String name : names) {
+              boolean isDuplicate = false;
+              String normName = Normalizer.normalize(name, Normalizer.Form.NFD);
+              for (String existing : uniqueNames) {
+                  String normExisting = Normalizer.normalize(existing, Normalizer.Form.NFD);
+                  if (collator.compare(normName, normExisting) == 0) {
+                      isDuplicate = true;
+                      break;
+                  }
+              }
+              if (!isDuplicate) {
+                  uniqueNames.add(name);
+              }
+          }
+
+          // Get user's locale for sorting
+          System.out.print("Please enter your specified locale (e.g., 'da-DK'): ");
+          Scanner scanner = new Scanner(System.in);
+          String localeTag = scanner.nextLine();
+          scanner.close();
+
+          Locale userLocale = Locale.forLanguageTag(localeTag);
+          Collator sortCollator = Collator.getInstance(userLocale);
+
+          String[] sortedNames = uniqueNames.toArray(new String[0]);
+          Arrays.sort(sortedNames, sortCollator);
+
+          System.out.println("Sorted names according to " + userLocale.getDisplayName() + ":");
+          for (String name : sortedNames) {
+              System.out.println("\t• " + name);
+          }
+      }
+  }
+draft: false
+---

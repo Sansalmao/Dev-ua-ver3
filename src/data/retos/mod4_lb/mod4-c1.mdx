@@ -1,0 +1,21 @@
+---
+moduleId: "mod4"
+challengeId: "c1"
+moduleTitle: "Module 4 – Unicode in Database Systems"
+moduleDesc: "Concise introduction to essential concepts and considerations when working with Unicode character data in database systems."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Using MySQL statements, create a `books` table with proper Unicode character set and collation support. The table should have columns: `id`, `title` (Unicode), `author` (Unicode), `genre`."
+exerciseItems:
+  - "Define an `INT PRIMARY KEY AUTO_INCREMENT` column named `id`."
+  - "Define `title`, `author`, and `genre` as `VARCHAR` columns."
+  - "Use `CHARACTER SET utf8mb4` and `COLLATE utf8mb4_unicode_ci` for the text columns to support full Unicode (including emojis and supplementary characters)."
+solutionLang: "sql"
+solutionCode: |
+  CREATE TABLE books (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+      author VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+      genre VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+  );
+draft: false
+---

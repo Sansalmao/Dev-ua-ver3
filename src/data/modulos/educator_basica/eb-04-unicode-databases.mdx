@@ -1,0 +1,515 @@
+---
+title: "Guide 4 - Unicode in Database Systems"
+description: "A concise introduction to the essential concepts and considerations for working with Unicode character data in database systems."
+difficulty: "Básico"
+duration: "120 min"
+objective: "Provide learners with the knowledge to store, index, sort, normalize, and query Unicode data in database systems using SQL."
+progress: 0
+pubDate: 2026-03-27
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+      - title: "Note on String Literals"
+        panelId: "note-about-the-utilization-of-unicode-string-literals"
+  - title: "Storing Unicode Data"
+    items:
+      - title: "Database & Table Configuration"
+        panelId: "storing-unicode-data"
+      - title: "Creating & Manipulating Tables"
+        panelId: "creating-and-manipulating-tables"
+      - title: "Column Indexing"
+        panelId: "column-indexing-for-unicode-character-data"
+  - title: "Challenges & Best Practices"
+    items:
+      - title: "Common Challenges"
+        panelId: "some-of-the-common-challenges-faced-when-working-with-unicode-in-database-systems"
+      - title: "Best Practices for Character Encoding"
+        panelId: "best-practices-for-choosing-the-appropriate-character-encoding"
+  - title: "Sorting & Normalization"
+    items:
+      - title: "Sorting Unicode Data"
+        panelId: "sorting-unicode-data-in-database-systems"
+      - title: "Normalization of Unicode Strings"
+        panelId: "normalization-of-unicode-strings-in-database-systems"
+  - title: "Integrity & Queries"
+    items:
+      - title: "Integrity Constraints"
+        panelId: "integrity-constraints-based-on-columns-with-unicode-characters"
+      - title: "SQL Queries & Regular Expressions"
+        panelId: "sql-queries--regular-expression-with-unicode-characters-in-database-systems"
+  - title: "References"
+    items:
+      - title: "Reference & Author"
+        panelId: "references--author"
+---
+
+## Objectives
+
+This module is designed to provide learners with a concise introduction to the essential concepts and considerations for working with Unicode character data in database systems.
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Explore the various ways in which databases support Unicode characters, including Unicode-compatible data types, collations, and indexing;
+- Understand how to define columns that store Unicode data correctly using appropriate data types and collations;
+- Learn how to insert Unicode data into database tables, ensuring the proper handling of Unicode string literals and parameterized queries;
+- Explore techniques for querying and searching Unicode data in databases, including pattern matching with regular expressions and case insensitivity; and
+- Understand how collation and normalization settings affect data integrity in databases with Unicode characters, and learn best practices for ensuring data consistency and accuracy.
+
+---
+
+## Note About the Utilization of Unicode String Literals
+
+- The Unicode string literals utilized in the SQL statement examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
+- Throughout the module, Unicode string literals derived from various scripts have been used in the SQL statement examples, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts.
+- The module provides the meanings of Unicode string literals used in the example codes in English, along with their transliterations, to aid learners in accurately pronouncing them.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples SQL statements.
+
+---
+
+## Storing Unicode Data
+
+To store Unicode data in databases (create, insert and update records):
+
+- Ensure that your database schema, table definitions, and data manipulation operations support Unicode characters.
+- Perform Database and Table Configuration.
+
+<span class="hl">Database and Table Configuration</span>
+
+<span class="hl">Character Encoding:</span> UTF-8 or UTF-16.
+
+<span class="hl">Example:</span> Database wide character encoding configuration or setting — MySQL, MS-SQL, PostgreSQL, Oracle:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="mysql" data-target="db1"><span class="lang-icon lang-icon--sql"></span>MySQL</button>
+    <button class="lang-btn" data-lang="mssql" data-target="db1"><span class="lang-icon lang-icon--sql"></span>MS-SQL</button>
+    <button class="lang-btn" data-lang="postgresql" data-target="db1"><span class="lang-icon lang-icon--sql"></span>PostgreSQL</button>
+    <button class="lang-btn" data-lang="oracle" data-target="db1"><span class="lang-icon lang-icon--sql"></span>Oracle</button>
+  </div>
+  <div class="lang-block active" data-lang="mysql" data-group="db1">
+
+```sql
+ALTER DATABASE [database_name] CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
+
+  </div>
+  <div class="lang-block" data-lang="mssql" data-group="db1">
+
+```sql
+ALTER DATABASE database_name COLLATE Latin1_General_100_CI_AS_SC_UTF8;
+```
+
+  </div>
+  <div class="lang-block" data-lang="postgresql" data-group="db1">
+
+```sql
+ALTER DATABASE database_name SET default_encoding = 'UTF8';
+```
+
+  </div>
+  <div class="lang-block" data-lang="oracle" data-group="db1">
+
+```sql
+CREATE DATABASE database_name CHARACTER SET AL32UTF8;
+```
+
+  </div>
+</div>
+
+<span class="hl">Column Definition and Collation Setting for Columns with Unicode Data.</span>
+
+- <span class="hl">Column Definition</span>
+  - Store Unicode data using appropriate data types that support Unicode characters.
+  - Common Unicode-compatible data types include:
+    - NVARCHAR, NTEXT, or NCHAR (for fixed-length strings).
+    - For some database systems VARCHAR or TEXT data types accept Unicode data.
+
+- <span class="hl">Collation Setting</span>
+  - Select a collation for the Unicode columns that matches the language and sorting requirements of your data.
+  - Choose a collation that supports the specific language, case sensitivity, and accent sensitivity requirements of your application.
+  - The collation determines how Unicode characters are sorted and compared.
+
+---
+
+## Creating and Manipulating Tables
+
+<span class="hl">Define Unicode Columns:</span>
+
+- When creating tables, explicitly define the columns that will store Unicode data using Unicode-compatible data types.
+- MySQL uses the UTF-8 character set by default, which supports Unicode encoding.
+
+<div class="info-card">
+
+- <span class="hl">Example 1:</span> Default Character Set with VARCHAR Datatype:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="sql" data-target="tbl1"><span class="lang-icon lang-icon--sql"></span>SQL</button>
+  </div>
+  <div class="lang-block active" data-lang="sql" data-group="tbl1">
+
+```sql
+CREATE TABLE Customers (
+    CustomerID   INT PRIMARY KEY,
+    CustomerName VARCHAR(100),
+    EmailAddress VARCHAR(100),
+    JobTitle     VARCHAR(100)
+);
+```
+
+  </div>
+</div>
+
+</div>
+
+<span class="hl">Define Unicode Columns:</span>
+
+<div class="info-card">
+
+- <span class="hl">Example 2:</span> VARCHAR Datatype with Character Set Specified:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="sql" data-target="tbl2"><span class="lang-icon lang-icon--sql"></span>SQL</button>
+  </div>
+  <div class="lang-block active" data-lang="sql" data-group="tbl2">
+
+```sql
+CREATE TABLE Customers (
+    CustomerID   INT PRIMARY KEY,
+    CustomerName VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    EmailAddress VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    JobTitle     VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+);
+```
+
+  </div>
+</div>
+
+</div>
+
+<span class="hl">Inserting Unicode Data:</span>
+
+<div class="info-card">
+
+- <span class="hl">Example 3:</span> Inserting Records with Unicode Strings Values into the Customers Table:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="sql" data-target="ins1"><span class="lang-icon lang-icon--sql"></span>SQL</button>
+  </div>
+  <div class="lang-block active" data-lang="sql" data-group="ins1">
+
+```sql
+INSERT INTO Customers (CustomerID, CustomerName, EmailAddress, JobTitle)
+VALUES
+    (1, 'John Smith',         'john.smith@example.com',            'Software Engineer'),
+    (2, 'أحمد خان',           'ahmed.khan@example.com',            'مهندس برمجيات'),
+    (3, 'ሃይማኖት አበበ',         'haymanot.barss@example.com',       'ሶፍትዌር ኢንጅነር'),
+    (4, 'මධ්‍යම ජයවර්ධන',   'madhyama.jayawardhana@example.com',
+        'වෙනත් ව්‍යාපාරිකයේ කාර්යාලයකි'),
+    (5, '张伟',                 'zhang.wei@example.com',             '软件工程师'),
+    (6, '田中ゆり',             'tianzhongyuri@example.com',         'ソフトウェアエンジニア');
+```
+
+  </div>
+</div>
+
+</div>
+
+<span class="hl">Updating Unicode Data:</span>
+
+<div class="info-card">
+
+- <span class="hl">Example 4:</span> Change the CustomerName to "ዮናስ ተስፋዬ" whose CutomerID is 3:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="sql" data-target="upd1"><span class="lang-icon lang-icon--sql"></span>SQL</button>
+  </div>
+  <div class="lang-block active" data-lang="sql" data-group="upd1">
+
+```sql
+UPDATE Customers
+SET CustomerName = N'ዮናስ ተስፋዬ'
+WHERE CustomerID = 3;
+```
+
+  </div>
+</div>
+
+</div>
+
+---
+
+## Column Indexing for Unicode Character Data:
+
+- <span class="hl">Character Encoding</span>: Ensure that your database is configured to use a Unicode-compatible character encoding such as UTF-8.
+- <span class="hl">Index Types</span>: Most modern databases support indexing on Unicode columns using standard index types like B-tree or hash indexes.
+- <span class="hl">Collation:</span> Choose an appropriate collation for your indexed column.
+- <span class="hl">Index Key Length:</span> Be aware that certain database systems have limitations on the length of indexed keys.
+- <span class="hl">Indexing Performance:</span> Indexing on columns with Unicode characters may have an impact on indexing performance.
+- <span class="hl">Querying Unicode Columns:</span> Ensure that the query conditions or search terms are consistent with the collation used for indexing.
+
+<span class="hl">How to Create a Column Index for Unicode Character Data?</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="mysql" data-target="idx1"><span class="lang-icon lang-icon--sql"></span>MySQL</button>
+    <button class="lang-btn" data-lang="postgresql" data-target="idx1"><span class="lang-icon lang-icon--sql"></span>PostgreSQL</button>
+  </div>
+  <div class="lang-block active" data-lang="mysql" data-group="idx1">
+
+```sql
+-- Add an index on the customer name column
+CREATE INDEX idx_CustomerName ON Customers
+    (CustomerName COLLATE utf8mb4_unicode_ci);
+```
+
+  </div>
+  <div class="lang-block" data-lang="postgresql" data-group="idx1">
+
+```sql
+-- Add an index on the name column
+CREATE INDEX idx_CustomerName ON Customers
+    USING btree (CustomerName COLLATE "und-x-icu");
+```
+
+  </div>
+</div>
+
+<div class="obs-card">
+
+In both SQL statements the COLLATE clause is added to specify the collation for the index.
+
+</div>
+
+---
+
+## Some of the Common Challenges Faced When Working with Unicode in Database Systems
+
+Working with Unicode in database systems can present several challenges. Here are some common ones:
+
+- <span class="hl">Character Encoding</span>: Unicode supports a vast range of characters, and choosing the appropriate character encoding is crucial.
+- <span class="hl">Storage Size</span>: Unicode characters often require more storage space compared to ASCII or other single-byte character encodings.
+- <span class="hl">Collation and Sorting</span>: Choosing the correct collation for sorting Unicode data is crucial to ensure accurate and culturally appropriate sorting results.
+- <span class="hl">Indexing and Searching</span>: Indexing Unicode data for efficient searching and querying can be challenging.
+- <span class="hl">Compatibility</span>: Handling Unicode data consistently and correctly across various components of the database ecosystem can be a challenge.
+- <span class="hl">Migration and Legacy Systems</span>: Data conversion, code modifications, and ensuring backward compatibility can be complex and time-consuming tasks.
+- <span class="hl">Application Support</span>: Developing or modifying applications to handle Unicode data correctly is crucial.
+
+---
+
+## Best practices for Choosing the Appropriate Character Encoding
+
+When working with Unicode in database systems choosing appropriate character encoding is critical:
+
+- <span class="hl">Use Unicode-Compatible Encodings</span>: Choose character encodings that are compatible with Unicode, such as UTF-8, UTF-16, or UTF-32.
+- <span class="hl">Consider Storage Efficiency</span>: Evaluate the storage efficiency of different encodings. UTF-8 is a popular choice due to its variable-length encoding.
+- <span class="hl">Collation and Sorting Considerations</span>: Ensure that the chosen character encoding aligns with the collation and sorting requirements of the database system.
+- <span class="hl">Compatibility with Existing Systems</span>: If you are working with existing systems or databases that use a specific character encoding, consider compatibility and interoperability requirements.
+- <span class="hl">Consider Application and User Requirements</span>: Understand the requirements of the applications and users interacting with the database.
+- <span class="hl">Documentation and Standards</span>: Consult the documentation and standards recommended by your database system.
+- <span class="hl">Testing and Validation</span>: Thoroughly test and validate the chosen character encoding with representative data sets and use cases.
+
+---
+
+## Sorting Unicode Data in Database Systems:
+
+Points to consider for sorting Unicode data in database systems:
+
+- <span class="hl">Collation</span>: Choose an appropriate collation that supports Unicode and the specific language(s) you are working with (applies to MySQL).
+- <span class="hl">Character Encoding</span>: Ensure that the database and table are set to use a Unicode character encoding.
+- <span class="hl">Indexing</span>: Consider creating indexes on columns that store Unicode data for improved sorting performance.
+- <span class="hl">Locale-Specific Sorting</span>: Some collations offer locale-specific sorting, which considers language-specific rules for sorting.
+- <span class="hl">Case Sensitivity</span>: Decide whether case sensitivity is required for sorting Unicode data.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="mysql" data-target="sort1"><span class="lang-icon lang-icon--sql"></span>MySQL</button>
+    <button class="lang-btn" data-lang="postgresql" data-target="sort1"><span class="lang-icon lang-icon--sql"></span>PostgreSQL</button>
+  </div>
+  <div class="lang-block active" data-lang="mysql" data-group="sort1">
+
+```sql
+SELECT * FROM Customers
+ORDER BY CustomerName COLLATE utf8mb4_unicode_ci;
+```
+
+  </div>
+  <div class="lang-block" data-lang="postgresql" data-group="sort1">
+
+```sql
+SELECT * FROM Customers
+ORDER BY CustomerName COLLATE "und-x-icu";
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+- <span class="hl">MySQL</span>: In the above query, the ORDER BY clause is used to specify the sorting order based on the CustomerName column. The COLLATE utf8mb4_unicode_ci clause ensures that the sorting is performed using the UTF-8 character set and the utf8mb4_unicode_ci collation.
+- <span class="hl">PostgreSQL</span>: The ORDER BY clause is used to specify the sorting order based on the CustomerName column. The COLLATE "und-x-icu" clause ensures that the sorting is performed using the ICU collation.
+
+</div>
+
+---
+
+## Normalization of Unicode Strings in Database Systems
+
+<span class="hl">Example</span>: Normalizing Unicode data or strings in MySQL and PostgreSQL:
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="mysql" data-target="norm1"><span class="lang-icon lang-icon--sql"></span>MySQL</button>
+    <button class="lang-btn" data-lang="postgresql" data-target="norm1"><span class="lang-icon lang-icon--sql"></span>PostgreSQL</button>
+  </div>
+  <div class="lang-block active" data-lang="mysql" data-group="norm1">
+
+```sql
+-- MySQL 8.0+: Unicode normalization using UNICODE function
+SELECT UNICODE(Column_Name) AS Normalized_Column FROM Table_Name;
+```
+
+  </div>
+  <div class="lang-block" data-lang="postgresql" data-group="norm1">
+
+```sql
+-- First, install the unaccent extension:
+CREATE EXTENSION unaccent;
+
+-- Normalize Unicode strings:
+SELECT unaccent('NFD', NormalizeString) AS NormalizedString FROM YourTable;
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+- <span class="hl">MySQL</span>: MySQL 8.0+ supports Unicode normalization using the UNICODE and UNICODECHR functions. You can use these functions to normalize strings within your queries.
+- <span class="hl">PostgreSQL</span>: PostgreSQL provides built-in support for Unicode normalization using the unaccent extension and the pg_collkey function.
+
+</div>
+
+---
+
+## Integrity Constraints Based on Columns with Unicode Characters
+
+When defining primary keys and foreign keys, it's important to consider the following:
+
+- <span class="hl">Character Encoding</span>: Ensure that the character encoding used for columns involved in integrity constraints is consistent across the related tables.
+- <span class="hl">Collation</span>: Choose an appropriate collation for the columns involved in integrity constraints.
+- <span class="hl">Normalization</span>: Apply Unicode normalization forms, such as NFC or NFD, to the columns used in integrity constraints.
+- <span class="hl">Data Validation</span>: Implement data validation mechanisms to ensure that Unicode data entered into columns involved in integrity constraints follows the expected format and rules.
+- <span class="hl">Foreign Key Constraints</span>: When using foreign key constraints, ensure that the collation and character encoding of the referenced column match the collation and encoding of the referencing column.
+- <span class="hl">Indexing</span>: Consider creating indexes on the columns involved in integrity constraints to improve performance and enforce uniqueness or referential integrity.
+
+<div class="info-card">
+
+<span class="hl">Example</span>: Defining Integrity Constraints in Column(s) of Database Tables with Unicode Values:
+
+</div>
+
+<div class="info-card">
+
+- Suppose we have two tables in a database: "Customers" and "Orders." The "Customers" table has a primary key column named "CustomerID," which contains Unicode characters, and the "Orders" table has a foreign key column named "CustomerID" that references the "CustomerID" column in the "Customers" table.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="sql" data-target="int1"><span class="lang-icon lang-icon--sql"></span>SQL</button>
+  </div>
+  <div class="lang-block active" data-lang="sql" data-group="int1">
+
+```sql
+-- Create the Customers table with a Unicode primary key
+CREATE TABLE Customers (
+    CustomerID   VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci PRIMARY KEY,
+    CustomerName VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+);
+
+-- Create the Orders table with a foreign key constraint referencing CustomerID
+CREATE TABLE Orders (
+    OrderID      INT PRIMARY KEY,
+    OrderNumber  VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    CustomerID   VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+```
+
+  </div>
+</div>
+
+</div>
+
+---
+
+## SQL Queries- Regular Expression with Unicode Characters in Database Systems
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="mysql" data-target="regex1"><span class="lang-icon lang-icon--sql"></span>MySQL</button>
+    <button class="lang-btn" data-lang="postgresql" data-target="regex1"><span class="lang-icon lang-icon--sql"></span>PostgreSQL</button>
+  </div>
+  <div class="lang-block active" data-lang="mysql" data-group="regex1">
+
+```sql
+-- Find all rows where the CustomerName starts with a Unicode letter
+SELECT * FROM Customers WHERE CustomerName REGEXP '^[[:alpha:]]';
+
+-- Find all rows where the CustomerName contains a specific Unicode character/pattern
+SELECT * FROM Customers WHERE CustomerName REGEXP '日本';
+
+-- Find all rows where the CustomerName matches a Unicode pattern using CI search.
+SELECT * FROM Customers WHERE CustomerName REGEXP '(?i)pattern';
+```
+
+  </div>
+  <div class="lang-block" data-lang="postgresql" data-group="regex1">
+
+```sql
+-- Find all rows where the CustomerName starts with a Unicode letter.
+SELECT * FROM Customers WHERE CustomerName ~ '^\p{L}';
+
+-- Find all rows where the CustomerName contains a specific Unicode character/pattern.
+SELECT * FROM Customers WHERE CustomerName ~ '日本';
+
+-- Find all rows where the CustomerName matches a Unicode pattern using a CI search.
+SELECT * FROM Customers WHERE CustomerName ~* 'pattern';
+```
+
+  </div>
+</div>
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. MySQL documentation. (n.d.). Retrieved November 13, 2023, from [https://dev.mysql.com/doc/](https://dev.mysql.com/doc/).
+2. PostgreSQL documentation. (n.d.). Retrieved November 13, 2023, from [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/).
+3. Oracle documentation. (n.d.). Retrieved November 13, 2023, from [https://docs.oracle.com/](https://docs.oracle.com/).
+4. Microsoft SQL Server documentation. (n.d.). Retrieved November 13, 2023, from [https://learn.microsoft.com/en-us/sql/?view=sql-server-ver16](https://learn.microsoft.com/en-us/sql/?view=sql-server-ver16).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a>.</p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License — Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

@@ -1,0 +1,39 @@
+---
+moduleId: "mod10"
+challengeId: "c1"
+moduleTitle: "Module 10 – Processing IDNs and EAI in Mobile Apps"
+moduleDesc: "Explore the essential aspects of Unicode character sets and their significance in mobile apps."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Convert IDN to Punycode and back in Android"
+exerciseItems:
+  - "Develop a code in Java for Android that converts an Internationalized Domain Name (IDN) to Punycode, and then converts it back to IDN."
+solutionLang: "java"
+solutionCode: |
+  import android.os.Bundle;
+  import android.util.Log;
+  import androidx.appcompat.app.AppCompatActivity;
+  import com.ibm.icu.text.IDNA;
+  import com.ibm.icu.text.IDNA.Info;
+  
+  public class IDNProcessingActivity extends AppCompatActivity {
+      @Override
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          
+          String domain = "こんにちは.com";
+          IDNA idna = IDNA.getUTS46Instance(IDNA.DEFAULT);
+          
+          StringBuilder encodedDomain = new StringBuilder();
+          StringBuilder decodedDomain = new StringBuilder();
+          Info info = new Info();
+  
+          idna.nameToASCII(domain, encodedDomain, info); 
+          idna.nameToUnicode(encodedDomain, decodedDomain, info);
+  
+          Log.d("IDNTest", "Original Domain: " + domain);
+          Log.d("IDNTest", "Encoded (Punycode): " + encodedDomain.toString());
+          Log.d("IDNTest", "Decoded (Unicode): " + decodedDomain.toString());
+      }
+  }
+draft: false
+---

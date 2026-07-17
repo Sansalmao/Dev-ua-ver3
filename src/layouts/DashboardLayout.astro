@@ -1,0 +1,32 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+    title: string;
+    description?: string;
+}
+
+const { title, description } = Astro.props;
+
+// Protección de ruta básica
+// Leer la cookie de sesión del frontmatter de Astro
+const session = Astro.cookies.get("ua_session");
+
+// Si no existe la cookie, redirige a /login
+if (!session?.value) {
+    return Astro.redirect("/login");
+}
+---
+
+<BaseLayout title={title} description={description}>
+    <div class="dashboard-wrap">
+        <slot />
+    </div>
+</BaseLayout>
+
+<style>
+    .dashboard-wrap {
+        min-height: 100vh;
+        background-color: var(--bg);
+    }
+</style>

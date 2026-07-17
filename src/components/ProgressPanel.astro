@@ -1,0 +1,133 @@
+---
+interface Props {
+    completados: number;
+    total: number;
+    pct: number;
+}
+
+const { completados, total, pct } = Astro.props;
+const safePct = Math.max(0, Math.min(100, pct));
+---
+
+<div class="progress-panel">
+    <div class="prog-lbl">Tu Progreso</div>
+
+    <div class="prog-count">
+        <!--
+            data-prog-num y data-prog-tot: selectores semánticos para JS.
+            Evitamos buscar por clase porque .num y .tot son nombres
+            demasiado genéricos que podrían colisionar con otros componentes.
+        -->
+        <span class="num" data-prog-num>{completados}</span>
+        <span class="tot" data-prog-tot>/{total}</span>
+    </div>
+
+    <div class="prog-bwrap" aria-hidden="true">
+        <div class="prog-bfill" data-prog-bar style={`width: ${safePct}%;`}>
+        </div>
+    </div>
+
+    <div class="prog-pct" data-prog-pct>{safePct}% COMPLETADO</div>
+
+    <div class="prog-tip">
+        <span class="prog-bolt" aria-hidden="true">⚡</span>
+        <div class="prog-tip-t">
+            <p>Comienza ahora</p>
+            <p>Explora los módulos y completa las lecciones a tu ritmo.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress-panel {
+        width: 100%;
+        max-width: 204px;
+        flex-shrink: 0;
+        border-radius: 16px;
+        border: 2px solid var(--accent-border-soft);
+        padding: 20px;
+        background: linear-gradient(
+            145deg,
+            var(--card-bg) 55%,
+            var(--accent-bg-soft) 100%
+        );
+    }
+
+    .prog-lbl {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 10px;
+    }
+
+    .prog-count {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+        margin-bottom: 8px;
+    }
+
+    .prog-count .num {
+        font-size: 42px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    .prog-count .tot {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--muted-2);
+    }
+
+    .prog-bwrap {
+        width: 100%;
+        height: 5px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+
+    .prog-bfill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .prog-pct {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .prog-tip {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .prog-bolt {
+        font-size: 14px;
+        color: var(--accent);
+        margin-top: 1px;
+    }
+
+    .prog-tip-t p:first-child {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 3px;
+    }
+
+    .prog-tip-t p:last-child {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+</style>

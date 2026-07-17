@@ -1,0 +1,88 @@
+---
+moduleId: "mod9"
+challengeId: "c2"
+moduleTitle: "Module 9 – Programming in Email Address Internationalization (EAI)"
+moduleDesc: "Explore the fundamentals of EAI programming, including validation, encoding, parsing, and handling of internationalized email addresses."
+exerciseNum: "Exercise 2"
+exerciseTitle: "Send EAI Emails using Java"
+exerciseItems:
+  - "Develop a code in Java that sends EAI emails using the JavaMail (Jakarta Mail) API."
+solutionLang: "java"
+solutionCode: |
+  import com.sun.mail.smtp.SMTPTransport;
+  import jakarta.mail.Message;
+  import jakarta.mail.MessagingException;
+  import jakarta.mail.PasswordAuthentication;
+  import jakarta.mail.Session;
+  import jakarta.mail.Transport;
+  import jakarta.mail.internet.InternetAddress;
+  import jakarta.mail.internet.MimeMessage;
+  import java.util.Date;
+  import java.util.Properties;
+  
+  
+  public static boolean sendEmail(String to, String host, String sender, 
+  String subject, String content,String username,String password){
+          if(isValidEmail(to))
+          {
+              Properties props =  new Properties();
+              props.put("mail.smtp.host", host);
+              props.put("mail.smtp.port", "587");
+              props.put("mail.smtp.auth", "true");
+              props.put("mail.smtp.starttls.enable", "true");
+              // enable UTF-8 support, mandatory for EAI support
+              props.put("mail.mime.allowutf8", true);
+              Session session = Session.getInstance(props,
+              new jakarta.mail.Authenticator() {
+              protected PasswordAuthentication getPasswordAuthentication() {
+                 return new PasswordAuthentication(username, password);
+                  }
+               });                    
+  
+        /*
+         * Jakarta mail is EAI compliant with 2 issues:
+         *   - it rejects domains that are not NFC normalized
+         *   - it rejects some unicode domains
+         * In such case, first try to normalize, then convert domain to A-label. We do normalization
+         * first to get an email address the closest possible to the user input because once
+         * converted in A-label it may be displayed as is to the user.
+         */
+  
+  String[] add_parts = to.split("@");
+  String mailboxName = add_parts[0];
+  String domainName = add_parts[1];
+  String domainNameNormalized =Normalizer2.getNFCInstance().normalize(domainName);
+  String domainNameAlabelForm = convertULabeltoALabel(domainNameNormalized);
+  String compliantTo = mailboxName+"@"+domainNameAlabelForm;
+  
+  
+  try (Transport transport = session.getTransport()) 
+              {
+                     if (transport instanceof SMTPTransport && !((SMTPTransport) transport).supportsExtension("SMTPUTF8")) {
+                      try {
+                              MimeMessage message = new MimeMessage(session);
+                              //set message headers for internationalized content
+                              message.addHeader("Content-type", "text/HTML; charset=UTF-8");
+                              message.addHeader("Content-Transfer-Encoding", "8bit");
+                              message.addHeader("format", "flowed");
+  
+                              message.setFrom(new InternetAddress(sender));
+                              message.setSubject(subject, "UTF-8");
+                              message.setText(content, "UTF-8");
+                              message.setSentDate(new Date());
+                              message.setRecipient(Message.RecipientType.TO, new InternetAddress(compliantTo));                           
+                              Transport.send(message);
+                              return true;
+                            } catch (Exception e) {
+                              System.out.println(String.format("Failed to send email to %s: %s", to, e));
+                            }
+                  }
+                  else
+                  { return false;}
+            } catch (MessagingException e) {
+              // ignore
+            } 
+          }
+          return false;}
+draft: false
+---

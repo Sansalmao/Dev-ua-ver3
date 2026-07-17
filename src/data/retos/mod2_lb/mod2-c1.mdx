@@ -1,0 +1,40 @@
+---
+moduleId: "mod2"
+challengeId: "c1"
+moduleTitle: "Module 2 – Unicode Advanced Programming"
+moduleDesc: "Expands understanding of Unicode: character-glyph model, normalization, character database, string comparison, and bidirectional scripts."
+exerciseNum: "Exercise 1"
+exerciseTitle: "Develop a code in Java that applies the normalization forms NFC and NFD to a given text with diacritics. Then, print the individual Unicode code point values for each character in both NFC and NFD normalized texts."
+exerciseItems:
+  - "Normalize the input string (e.g., 'résumé') to NFC and NFD using `java.text.Normalizer`."
+  - "Print the normalized strings."
+  - "Print each character and its Unicode code point (in hexadecimal) for both normalized versions."
+solutionLang: "java"
+solutionCode: |
+  import java.text.Normalizer;
+
+  public class Mod2_Exercise1 {
+      public static void main(String[] args) {
+          String text = "résumé";
+
+          // Normalize to NFC
+          String nfcText = Normalizer.normalize(text, Normalizer.Form.NFC);
+          System.out.println("NFC normalized text: " + nfcText);
+          System.out.println("Individual Unicode Code Points for the NFC normalized text:");
+          for (int i = 0; i < nfcText.length(); i++) {
+              char c = nfcText.charAt(i);
+              System.out.printf("%s U+%04X\n", c, (int) c);
+          }
+
+          // Normalize to NFD
+          String nfdText = Normalizer.normalize(text, Normalizer.Form.NFD);
+          System.out.println("NFD normalized text: " + nfdText);
+          System.out.println("Individual Unicode Code Points for the NFD normalized text:");
+          for (int i = 0; i < nfdText.length(); i++) {
+              char c = nfdText.charAt(i);
+              System.out.printf("%s U+%04X\n", c, (int) c);
+          }
+      }
+  }
+draft: false
+---

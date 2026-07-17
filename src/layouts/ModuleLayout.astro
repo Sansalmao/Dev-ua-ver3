@@ -1,0 +1,569 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import NavBar from "../components/NavBar.astro";
+import BreadCrumb from "../components/BreadCrumb.astro";
+import PageHeader from "../components/PageHeader.astro";
+import MetadataCard from "../components/MetadataCard.astro";
+import TabsNav from "../components/TabsNav.astro";
+import TabsPanel from "../components/TabsPanel.astro";
+import type { ModuleSection } from "../lib/module-schema";
+
+interface Props {
+    title: string;
+    description?: string;
+    padre: string;
+    padreHref: string;
+    titulo: string;
+    subtitulo: string;
+    dificultad: string;
+    duracion: string;
+    objetivo: string;
+    progreso?: number;
+    filename: string;
+    sections?: ModuleSection[];
+}
+
+const {
+    title,
+    description,
+    padre,
+    padreHref,
+    titulo,
+    subtitulo,
+    dificultad,
+    duracion,
+    objetivo,
+    progreso = 0,
+    filename,
+    sections = [],
+} = Astro.props;
+
+const hasNav = sections.length > 0;
+const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
+---
+
+<BaseLayout title={title} description={description}>
+    <NavBar slot="navbar" />
+
+    <div class="module-wrap">
+        <div class="module-topbar">
+            <BreadCrumb padre={padre} padreHref={padreHref} actual={titulo} />
+            <a href="/" class="btn-back-ruta" id="btn-back-ruta">
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+                Volver a la ruta
+            </a>
+        </div>
+        <PageHeader titulo={titulo} descripcion={subtitulo} />
+        <MetadataCard
+            dificultad={dificultad}
+            tiempo={duracion}
+            objetivo={objetivo}
+            progreso={progreso}
+            filename={filename}
+        />
+
+        <div
+            class={hasNav ? "module-body module-body--with-nav" : "module-body"}
+        >
+            {
+                hasNav && (
+                    <aside class="module-sidebar">
+                        <TabsNav
+                            sections={sections}
+                            activePanel={defaultPanel}
+                        />
+                    </aside>
+                )
+            }
+
+            <div class="module-content">
+                {
+                    hasNav ? (
+                        <TabsPanel defaultPanel={defaultPanel}>
+                            <slot />
+                        </TabsPanel>
+                    ) : (
+                        <slot />
+                    )
+                }
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // NÚMEROS DE LÍNEA + FOLD
+        // ═══════════════════════════════════════════════════════════════════
+
+        const OPENS = /[{$$(]\s*(?:\/\/.*)?(?:\/\*.*)?$/;
+        const CLOSES = /^\s*[}$$)]/;
+
+        function processCodeBlock(codeEl: HTMLElement) {
+            if (codeEl.querySelector(".code-line")) return;
+
+            const rawHtml = codeEl.innerHTML;
+            const lines = rawHtml.split("\n");
+            if (lines.length > 0 && lines[lines.length - 1].trim() === "") {
+                lines.pop();
+            }
+
+            type FoldRange = { open: number; close: number };
+            const foldRanges: FoldRange[] = [];
+            const stack: number[] = [];
+
+            lines.forEach((lineHtml, i) => {
+                const text = lineHtml.replace(/<[^>]+>/g, "");
+                if (OPENS.test(text)) stack.push(i);
+                if (CLOSES.test(text) && stack.length > 0) {
+                    const openIdx = stack.pop()!;
+                    if (i - openIdx > 1)
+                        foldRanges.push({ open: openIdx, close: i });
+                }
+            });
+
+            const foldOpeners = new Map<number, number>();
+            const foldChildren = new Map<number, Set<number>>();
+
+            foldRanges.forEach((range, foldId) => {
+                foldOpeners.set(range.open, foldId);
+                for (let i = range.open + 1; i <= range.close; i++) {
+                    if (!foldChildren.has(i)) foldChildren.set(i, new Set());
+                    foldChildren.get(i)!.add(foldId);
+                }
+            });
+
+            const html = lines
+                .map((lineHtml, i) => {
+                    const num = i + 1;
+                    const content = lineHtml === "" ? "\u00A0" : lineHtml;
+                    const foldId = foldOpeners.get(i);
+                    const children = foldChildren.get(i);
+
+                    const isFoldable = foldId !== undefined;
+                    const isChild = children && children.size > 0;
+                    const childAttr = isChild
+                        ? ` data-fold-child="${[...children!].join(" ")}"`
+                        : "";
+                    const foldAttr = isFoldable
+                        ? ` data-fold-id="${foldId}"`
+                        : "";
+                    const lineClass = [
+                        "code-line",
+                        isFoldable ? "code-line--foldable" : "",
+                    ]
+                        .filter(Boolean)
+                        .join(" ");
+
+                    const foldBtn = isFoldable
+                        ? `<button class="fold-btn" aria-label="Colapsar bloque" data-fold-target="${foldId}">` +
+                          `<svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true">` +
+                          `<path d="M2 1l4 3-4 3V1z"/></svg></button>`
+                        : "";
+
+                    return (
+                        `<span class="${lineClass}"${foldAttr}${childAttr}>` +
+                        `<span class="code-line-num" aria-hidden="true">${foldBtn}${num}</span>` +
+                        `<span class="code-line-content">${content}</span>` +
+                        `</span>`
+                    );
+                })
+                .join("");
+
+            codeEl.innerHTML = html; // ← DOM poblado
+
+            // ── Ajuste dinámico del gutter ── VA AQUÍ ────────────────────────
+            const realLines = codeEl.querySelectorAll(".code-line").length;
+            const digits = Math.max(1, String(realLines).length);
+            const pre = codeEl.closest<HTMLElement>("pre");
+            if (pre) pre.style.setProperty("--gutter-digits", String(digits));
+            // ─────────────────────────────────────────────────────────────────
+
+            // Listeners de fold — siempre al final
+            codeEl
+                .querySelectorAll<HTMLButtonElement>(".fold-btn")
+                .forEach((btn) => {
+                    btn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        const foldId = btn.dataset.foldTarget!;
+                        const opener = codeEl.querySelector<HTMLElement>(
+                            `.code-line[data-fold-id="${foldId}"]`,
+                        );
+                        if (!opener) return;
+                        const isCollapsed = opener.classList.toggle(
+                            "code-line--collapsed",
+                        );
+                        codeEl
+                            .querySelectorAll<HTMLElement>(
+                                `[data-fold-child~="${foldId}"]`,
+                            )
+                            .forEach((child) => {
+                                child.style.display = isCollapsed ? "none" : "";
+                            });
+                        btn.classList.toggle("fold-btn--open", !isCollapsed);
+                    });
+                });
+        }
+
+        function initLineNumbers() {
+            document
+                .querySelectorAll<HTMLElement>(".code-switcher pre code")
+                .forEach(processCodeBlock);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PILL FUSIONADO — [icono][Lenguaje][▼]?[|][copiar]
+        // ═══════════════════════════════════════════════════════════════════
+
+        const LANG_LABELS: Record<string, string> = {
+            python: "Python",
+            java: "Java",
+            sql: "SQL",
+            mysql: "MySQL",
+            mssql: "MS-SQL",
+            postgresql: "PostgreSQL",
+            oracle: "Oracle",
+        };
+
+        function copyIconSvg(): string {
+            return (
+                `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" ` +
+                `stroke="currentColor" stroke-width="2" aria-hidden="true">` +
+                `<rect x="9" y="9" width="13" height="13" rx="2"/>` +
+                `<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>` +
+                `</svg>`
+            );
+        }
+
+        function getCodeText(switcher: HTMLElement): string {
+            const activeBlock =
+                switcher.querySelector<HTMLElement>(".lang-block.active");
+            const lines =
+                activeBlock?.querySelectorAll<HTMLElement>(
+                    ".code-line-content",
+                );
+            if (lines && lines.length > 0) {
+                return Array.from(lines)
+                    .map((l) => l.textContent ?? "")
+                    .join("\n");
+            }
+            return (
+                activeBlock?.querySelector("code")?.textContent ??
+                activeBlock?.textContent ??
+                ""
+            );
+        }
+
+        function copyText(text: string): Promise<void> {
+            if (navigator.clipboard?.writeText) {
+                return navigator.clipboard.writeText(text);
+            }
+            return new Promise((resolve) => {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.cssText = "position:fixed;opacity:0";
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+                resolve();
+            });
+        }
+
+        function buildPill(switcher: HTMLElement) {
+            if (switcher.querySelector(".cs-pill")) return;
+
+            // ── Recopilar lenguajes disponibles ──────────────────────────
+            const blocks = Array.from(
+                switcher.querySelectorAll<HTMLElement>(".lang-block"),
+            );
+            const langs = blocks.map((b) => b.dataset.lang ?? "");
+            const multiLang = langs.length > 1;
+
+            const activeLang =
+                switcher.querySelector<HTMLElement>(".lang-block.active")
+                    ?.dataset.lang ??
+                langs[0] ??
+                "java";
+
+            // ── Eliminar barra superior original ─────────────────────────
+            const oldBar =
+                switcher.querySelector<HTMLElement>(".lang-switcher");
+            if (oldBar) oldBar.remove();
+
+            // ── Dropdown items (solo si multiLang) ────────────────────────
+            const dropdownHtml = multiLang
+                ? `<div class="cs-dropdown" role="menu">` +
+                  langs
+                      .map(
+                          (lang) =>
+                              `<button class="cs-dd-item${lang === activeLang ? " active" : ""}" ` +
+                              `data-lang="${lang}" type="button" role="menuitem">` +
+                              `<span class="lang-icon lang-icon--${lang}"></span>` +
+                              (LANG_LABELS[lang] ?? lang) +
+                              `</button>`,
+                      )
+                      .join("") +
+                  `</div>`
+                : "";
+
+            // ── Caret (solo si multiLang) ─────────────────────────────────
+            const caretHtml = multiLang
+                ? `<svg class="cs-pill-caret" width="10" height="10" viewBox="0 0 10 10" ` +
+                  `fill="none" aria-hidden="true">` +
+                  `<path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" ` +
+                  `stroke-linecap="round" stroke-linejoin="round"/></svg>`
+                : "";
+
+            // ── HTML del pill ─────────────────────────────────────────────
+            const pillHtml =
+                `<div class="cs-pill-wrap">` +
+                `<div class="cs-pill">` +
+                `<button class="cs-pill-lang${multiLang ? " cs-pill-lang--multi" : ""}" ` +
+                `type="button" ` +
+                `${multiLang ? `aria-haspopup="true" aria-expanded="false"` : ""} ` +
+                `aria-label="Lenguaje: ${LANG_LABELS[activeLang] ?? activeLang}">` +
+                `<span class="lang-icon lang-icon--${activeLang}" data-role="pill-icon"></span>` +
+                `<span data-role="pill-label">${LANG_LABELS[activeLang] ?? activeLang}</span>` +
+                caretHtml +
+                `</button>` +
+                `<span class="cs-pill-sep" aria-hidden="true"></span>` +
+                `<button class="cs-pill-copy" type="button" aria-label="Copiar código">` +
+                copyIconSvg() +
+                `<span class="cs-copy-label"> </span>` +
+                `</button>` +
+                `</div>` +
+                dropdownHtml +
+                `</div>`;
+
+            switcher.insertAdjacentHTML("afterbegin", pillHtml);
+
+            // ── Refs ──────────────────────────────────────────────────────
+            const pillWrap =
+                switcher.querySelector<HTMLElement>(".cs-pill-wrap")!;
+            const langBtn =
+                pillWrap.querySelector<HTMLButtonElement>(".cs-pill-lang")!;
+            const copyBtn =
+                pillWrap.querySelector<HTMLButtonElement>(".cs-pill-copy")!;
+            const copyLabel =
+                pillWrap.querySelector<HTMLElement>(".cs-copy-label")!;
+            const dropdown =
+                pillWrap.querySelector<HTMLElement>(".cs-dropdown");
+            const ddItems =
+                pillWrap.querySelectorAll<HTMLButtonElement>(".cs-dd-item");
+
+            // ── Dropdown logic ────────────────────────────────────────────
+            if (multiLang && dropdown) {
+                langBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isOpen = dropdown.classList.toggle("open");
+                    langBtn.setAttribute("aria-expanded", String(isOpen));
+                });
+
+                document.addEventListener("click", () => {
+                    dropdown.classList.remove("open");
+                    langBtn.setAttribute("aria-expanded", "false");
+                });
+
+                ddItems.forEach((item) => {
+                    item.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        const lang = item.dataset.lang ?? "";
+                        if (!lang) return;
+
+                        // Actualizar pill
+                        const icon = langBtn.querySelector<HTMLElement>(
+                            "[data-role='pill-icon']",
+                        )!;
+                        const label = langBtn.querySelector<HTMLElement>(
+                            "[data-role='pill-label']",
+                        )!;
+                        icon.className = `lang-icon lang-icon--${lang}`;
+                        label.textContent = LANG_LABELS[lang] ?? lang;
+                        langBtn.setAttribute(
+                            "aria-label",
+                            `Lenguaje: ${LANG_LABELS[lang] ?? lang}`,
+                        );
+
+                        // Marcar item activo
+                        ddItems.forEach((i) => i.classList.remove("active"));
+                        item.classList.add("active");
+
+                        // Mostrar bloque correcto
+                        blocks.forEach((b) => b.classList.remove("active"));
+                        const target = switcher.querySelector<HTMLElement>(
+                            `.lang-block[data-lang="${lang}"]`,
+                        );
+                        if (target) {
+                            target.classList.add("active");
+                            const code =
+                                target.querySelector<HTMLElement>("pre code");
+                            if (code) processCodeBlock(code);
+                        }
+
+                        // Cerrar dropdown
+                        dropdown.classList.remove("open");
+                        langBtn.setAttribute("aria-expanded", "false");
+                    });
+                });
+            }
+
+            // ── Copy logic ────────────────────────────────────────────────
+            copyBtn.addEventListener("click", async () => {
+                const text = getCodeText(switcher);
+                await copyText(text);
+                copyBtn.classList.add("copied");
+                copyLabel.textContent = "✓";
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                }, 2000);
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════════════
+
+        function initSwitchers() {
+            document
+                .querySelectorAll<HTMLElement>(".code-switcher")
+                .forEach((switcher) => {
+                    switcher
+                        .querySelectorAll<HTMLElement>(".lang-block pre code")
+                        .forEach(processCodeBlock);
+                    buildPill(switcher);
+                });
+        }
+
+        function initAll() {
+            initLineNumbers();
+            initSwitchers();
+        }
+
+        // ── Botón volver ──────────────────────────────────────────────────
+        const btnRuta = document.getElementById("btn-back-ruta");
+        if (btnRuta) {
+            btnRuta.addEventListener("click", (e) => {
+                e.preventDefault();
+                const wrap = document.querySelector(
+                    ".module-wrap",
+                ) as HTMLElement;
+                if (wrap) {
+                    wrap.style.transition =
+                        "opacity 0.2s ease, transform 0.2s ease";
+                    wrap.style.opacity = "0";
+                    wrap.style.transform = "translateY(8px)";
+                }
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 220);
+            });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initAll);
+        } else {
+            initAll();
+        }
+    </script>
+</BaseLayout>
+
+<style>
+    .module-wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .module-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .module-topbar :global(.breadcrumb) {
+        margin-bottom: 0;
+    }
+
+    .btn-back-ruta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--card-bg);
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        text-decoration: none;
+        transition:
+            background var(--transition-fast),
+            transform var(--transition-fast),
+            opacity var(--transition-fast);
+    }
+
+    .btn-back-ruta:hover {
+        background: var(--accent-hover);
+        color: var(--card-bg);
+        transform: translateX(-2px);
+    }
+
+    .btn-back-ruta:active {
+        transform: translateX(0);
+    }
+
+    .module-body {
+        width: 100%;
+    }
+
+    .module-body--with-nav {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    .module-sidebar {
+        position: sticky;
+        top: 88px;
+    }
+
+    .module-content {
+        min-width: 0;
+        max-width: 760px;
+        padding-left: 8px;
+    }
+
+    @media (max-width: 900px) {
+        .module-body--with-nav {
+            grid-template-columns: 1fr;
+        }
+
+        .module-sidebar {
+            position: static;
+        }
+
+        .module-content {
+            padding-left: 0;
+        }
+    }
+</style>

@@ -1,0 +1,52 @@
+---
+moduleId: "mod6"
+challengeId: "c2"
+moduleTitle: "Module 6 – Programming with Internationalized Domain Names (IDNs)"
+moduleDesc: "Implementing the IDNA2008 protocol and exploring available compatible libraries in programming languages."
+exerciseNum: "Exercise 2"
+exerciseTitle: "User Display vs DNS Query"
+exerciseItems:
+  - "Build a simple Java program that shows how URLs would appear to users in a browser (in Unicode) and how they would appear in a DNS query (in Punycode)."
+  - "Enter domain: xn--ehbfhi.xn--mgbcpq6gpa1a"
+  - "Display to user: مقهى.البحرين"
+  - "DNS query: xn--ehbfhi.xn--mgbcpq6gpa1a"
+  - "Enter domain: münchen.de"
+  - "Display to user: münchen.de"
+  - "DNS query: xn--mnchen-3ya.de"
+  - "Enter domain: bıss.social"
+  - "Display to user: bıss.social"
+  - "DNS query: xn--bss-jua.social"
+solutionLang: "java"
+solutionCode: |
+  import com.ibm.icu.text.IDNA;
+  import com.ibm.icu.text.IDNA.Info;
+  
+  public class Mod6_Exercise2 {
+      public static void main(String[] args) {
+          String domain = "münchen.de";
+          IDNA idna = IDNA.getUTS46Instance(IDNA.DEFAULT);
+  
+          // User Display
+          System.out.print("Display to user: ");
+          try {
+              StringBuilder unicodeDomainBuilder = new StringBuilder();
+              idna.nameToUnicode(domain, unicodeDomainBuilder, new Info());
+              System.out.println(unicodeDomainBuilder.toString());
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+  
+          //DNS
+          System.out.print("DNS query: ");
+          try {
+              StringBuilder punycodeDomainBuilder = new StringBuilder();
+              idna.nameToASCII(domain, punycodeDomainBuilder, new Info());
+              System.out.println(punycodeDomainBuilder.toString());
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }
+  }
+  
+draft: false
+---

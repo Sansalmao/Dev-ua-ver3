@@ -1,0 +1,345 @@
+---
+title: "Guide 11 - Internationalized Domain Names (IDNs) — Security"
+description: "Security vulnerabilities and challenges associated with Unicode in the context of IDNs — covering homograph attacks, spoofing, EAI integration, LGR solutions, and string similarity risks."
+difficulty: "Básico"
+duration: "130 min"
+objective: "Understand character deception, Unicode security mechanisms, IDN/EAI integration challenges, phishing vectors, and the role of Label Generation Rules in mitigating visual confusion."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+  - title: "Character Deception"
+    items:
+      - title: "Security Vulnerabilities in Unicode, DNS & IDN"
+        panelId: "character-deception-decoding-security-vulnerabilities-in-unicode-dns-and-idn"
+      - title: "Unicode Security Mechanisms"
+        panelId: "unicode-security-mechanisms"
+  - title: "EAI & IDN Integration"
+    items:
+      - title: "Optimizing EAI Handling"
+        panelId: "optimizing-eai-handling-implementing-technical-solutions-and-best-practices"
+      - title: "IDN and EAI Integration Challenges"
+        panelId: "idn-and-eai-integration-challenges"
+  - title: "Homograph Attacks"
+    items:
+      - title: "ASCII Homograph Attacks"
+        panelId: "ascii-homograph-attacks"
+      - title: "Digital Deception — Phishing, Spam & IDN/EAI Exploitation"
+        panelId: "digital-deception-phishing-spam--idneai-exploitation"
+      - title: "Mitigating Unicode-based Threats"
+        panelId: "essential-strategies-for-mitigating-unicode-based-threats"
+  - title: "IDN Security"
+    items:
+      - title: "IDN Security Essentials"
+        panelId: "idn-security-essentials"
+      - title: "Visual Distinction Challenges & LGR Solutions"
+        panelId: "beyond-unicode-normalization-visual-distinction-challenges-and-lgr-solutions"
+      - title: "IDN Homographs"
+        panelId: "idn-homographs"
+  - title: "LGRs & String Similarities"
+    items:
+      - title: "Security Considerations on LGRs and Variants"
+        panelId: "security-considerations-on-lgrs-and-variants"
+      - title: "Security Considerations on String Similarities"
+        panelId: "security-considerations-on-string-similarities"
+  - title: "References"
+    items:
+      - title: "References & Author"
+        panelId: "references--author"
+---
+
+## Objectives
+
+<div class="info-card">
+
+Covers relevant topics with the main focus being the security vulnerabilities and challenges associated with Unicode, specifically in the context of Internationalized Domain Names (IDNs).
+Additionally, we'll delve into pertinent security challenges in the integration of IDN and Email Address Internationalization (EAI) with the Domain Name System (DNS).
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Understand the concept of character deception and its security implications in Unicode, IDNs, and the DNS;
+- Explore the security mechanisms employed in Unicode to mitigate vulnerabilities and risks associated with IDN;
+- Learn best practices and technical solutions for optimizing EAI address handling to ensure seamless integrations and enhance security;
+- Explore the various forms of digital deception, including phishing, spam, and exploitation of IDN and EAI;
+- Gain an understanding of the challenges related to visual distinction in IDNs and explore solutions provided by Label Generation Rules (LGR) to address these challenges; and
+- Explore the security considerations related to string similarities and the methods to detect and mitigate potential risks.
+
+</div>
+
+---
+
+## Character Deception: Decoding Security Vulnerabilities in Unicode, DNS and IDN
+
+<span class="hl">Common security threats associated with Unicode, DNS, and IDNs:</span>
+
+<div class="info-card">
+
+The following are some common security threats associated with Unicode, DNS, and IDNs:
+- Homograph Attacks.
+- IDN Spoofing.
+- IDN Character Encoding Abuse.
+- DNS Cache Poisoning.
+- IDN Phishing.
+- Unicode Injection Attacks.
+
+</div>
+
+---
+
+## Unicode Security Mechanisms
+
+<div class="info-card">
+
+Outlined below are key Unicode security mechanisms and essential considerations:
+- Unicode Normalization.
+- Unicode Character Set Restrictions.
+- Unicode Bidirectional Text Handling.
+- Unicode Security Policies.
+-  Unicode-aware Input Validation.
+- Unicode Encoding and Decoding Safeguards.
+- Unicode-based Collation and Sorting.
+
+</div>
+
+---
+
+## Optimizing EAI Handling: Implementing Technical Solutions and Best Practices
+
+<div class="info-card">
+
+Outlined below are key strategies to effectively mitigate EAI address blocking:
+- DNS Configuration.
+- Email Server Configuration.
+- Email Filtering and Anti-Spam Solutions.
+- Regular Software Updates.
+- Collaboration and Testing.
+- User Education and Awareness.
+
+</div>
+
+---
+
+## IDN and EAI Integration Challenges
+
+<div class="info-card">
+
+The following are some of the challenges the DNS infrastructure is facing when it comes to IDN and EAI integration:
+- Homograph Attacks.
+- Visual Confusion.
+- User Familiarity
+- Phishing and Spoofing.
+- Character encoding and Handling.
+- User Awareness.
+
+</div>
+
+---
+
+## ASCII Homograph Attacks
+
+<div class="info-card">
+
+The following are some of the preventive measures that can be taken to protect against ASCII homograph attacks:
+- Exercise caution when clicking on links.
+- Use browser Features and Extensions.
+- Enable Punycode display.
+- Keep Software up to date.
+- Stay vigilant and well-informed.
+
+</div>
+
+---
+
+## Digital Deception: Phishing, Spam & IDN/EAI Exploitation
+
+<div class="info-card">
+
+The following are some potential threats related to Unicode security:
+- Homograph Attacks.
+- URL Spoofing.
+- Obfuscation Techniques.
+- Unicode-based Evasion.
+- Unicode-based Attacks on Web Forms.
+- Unicode in Malware Payloads.
+
+</div>
+
+---
+
+## Essential Strategies for Mitigating Unicode-based Threats
+
+<div class="info-card">
+
+To mitigate the  Unicode-related security threats organizations and individuals can implement the following measures:
+- Education and Awareness.
+- Domain Name Registration Policies.
+- Secure Browsing Practices.
+- Email Filtering and Authentication.
+- Unicode Character Whitelisting.
+- Web Browser and Security Software Updates.
+- Multi-Factor Authentication (MFA).
+- Security Assessments and Penetration Testing.
+- Implement Unicode-aware Security Solutions.
+- Implement Domain Validation.
+- Monitor for Anomalies.
+- Keep Software Updated.
+
+</div>
+
+---
+
+## IDN Security Essentials
+
+<div class="info-card">
+
+Outlined below are some key aspects of IDN security:
+- IDN Policies and Guidelines.
+- Unicode Character Validation.
+- Phishing and Homograph Detection.
+- SSL/TLS Certificate Verification.
+- Email Security Measures.
+- WHOIS Data Accuracy.
+- Continuous Monitoring and Response.
+- Unicode Equivalence.
+- Registrar and Registry Controls.
+- DNSSEC for IDNs.
+- IDN Codepoint Restrictions.
+- DNS Resolver Security.
+- User Education and Awareness.
+
+</div>
+
+---
+
+## Beyond Unicode Normalization: Visual Distinction Challenges and LGR Solutions
+
+<div class="info-card">
+
+The following outlines how LGRs can effectively manage visually similar yet distinct strings:
+- Variant Rules.
+- Context Rules.
+- Actions.
+- LGRs Regular Updates.
+
+</div>
+
+---
+
+## IDN Homographs
+
+<div class="info-card">
+
+To protect against IDN homograph attacks, various measures can be implemented, including the following:
+- Unicode Technical Standard #39 (UTS #39)
+  - provides guidelines for IDN registries, registrars, and software developers to prevent or mitigate homograph attacks.
+- IDN Guidelines and Policies.
+- Punycode Display.
+- Browser and Application Security.
+- Punctuation and Script Restrictions.
+- User Vigilance.
+- Regular Updates.
+
+</div>
+
+### Examples of IDN Homographs
+
+<div class="info-card">
+
+The following are some examples of visually similar characters that can be used in IDN homograph attacks:
+- **Latin and Cyrillic:**
+  - Latin small letter "a" (U+0061) and Cyrillic small letter "а" (U+0430).
+  - Latin small letter "o" (U+006F) and Cyrillic small letter "о" (U+043E).
+  - Latin small letter "c" (U+0063) and Cyrillic small letter "с" (U+0441).
+- **Latin and Greek:**
+  - Latin small letter "a" (U+0061) and Greek small letter "α" (U+03B1).
+  - Latin small letter "e" (U+0065) and Greek small letter "ε" (U+03B5).
+  - Latin small letter "o" (U+006F) and Greek small letter "ο" (U+03BF).
+
+</div>
+
+---
+
+## Security Considerations on LGRs and Variants
+
+<div class="info-card">
+
+Security considerations related to LGRs and variants in the context of IDNs include the following:
+- Trustworthiness.
+- Vulnerability Assessments.
+- Robust Validation Processes.
+- Regular Updates.
+- Transparency and Documentation.
+- Collaboration and Community Involvement.
+- Interoperability and Consistency.
+- Security Awareness and Education.
+
+</div>
+
+---
+
+## Security Considerations on String Similarities
+
+<div class="info-card">
+
+The following outlines key considerations crucial for addressing vulnerabilities arising from string similarities:
+- Visual Similarity Detection.
+- Homograph Detection.
+- Contextual Analysis.
+- Whitelisting and Blacklisting.
+- User Warnings and Education.
+- Browser and Software Security Features.
+- Malware Detection.
+- Regular Updates and Collaboration.
+
+</div>
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. Curts, M., et al. (2005). Homograph Attacks: A New Threat to Online Security. *Proceedings of the 14th ACM CCS* (pp. 467–476).
+2. Syverson, P. (2008). IDN Spoofing: Tricking Users with Internationalized Domain Names. *Proceedings of the 2008 ACM CCS* (pp. 947–958).
+3. Halderman, J. A., et al. (2013). Phishing with Punycode: Evolving Techniques and Countermeasures. *Proceedings of the 22nd ACM SIGSAC CCS* (pp. 80–91).
+4. Kuhn, M. (2009). A Survey of Unicode Security Issues. *Proceedings of the 2009 ACM ASIACCS* (pp. 131–140).
+5. OWASP. Retrieved from [https://owasp.org/](https://owasp.org/).
+6. IANA. Retrieved from [https://iana.org/](https://iana.org/).
+7. The Unicode Consortium. Retrieved from [https://home.unicode.org/](https://home.unicode.org/).
+8. Moonen, B. (2008). Unicode security mechanisms: A survey. *ACM TISSEC*, 11(2), 1–33.
+9. Yüksel, M., & Alp, H. (2012). Bidirectional text support in web applications. *International Journal of Network Security*, 15(1), 1–10.
+10. Mott, G. (2012). Unicode security guidelines for programmers. Unicode Consortium.
+11. Strayer, W. R. (2013). Internationalized email addresses: A security analysis. *Proceedings of the 22nd ACM SIGSAC CCS* (pp. 157–168).
+12. Cantineau, B. (2011). EAI blocking: An analysis of the problem. *Proceedings of the 2011 International Conference on NCA* (pp. 117–122).
+13. Halderman, J. A., et al. (2013). Phishing with Punycode (see ref. 3 above).
+14. APWG. (2023). Phishing Trends Report. Retrieved from [https://apwg.org/trendsreports/](https://apwg.org/trendsreports/).
+15. The Unicode Consortium. (2002). UTS#36: Unicode IDN Compatibility Guidelines. Retrieved from [https://www.unicode.org/reports/tr36/](https://www.unicode.org/reports/tr36/).
+16. IANA. Retrieved from [https://iana.org/](https://iana.org/).
+17. ICANN. Retrieved from [https://www.icann.org/](https://www.icann.org/).
+18. APWG. Retrieved from [https://www.apwg.org/](https://www.apwg.org/).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

@@ -1,0 +1,1179 @@
+---
+title: "Module 1 - Unicode Programming Fundamentals"
+description: "Provide the basic understanding of Unicode and its applications."
+difficulty: "Básico"
+duration: "87 min"
+objective: "Understand the foundational concepts of Unicode and how to apply them in software development."
+progress: 0
+pubDate: 2026-03-17
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Introduction"
+        panelId: "introduction"
+      - title: "Objectives"
+        panelId: "objectives"
+  - title: "Encoding Schemes"
+    items:
+      - title: "Overview of Encoding Schemes"
+        panelId: "overview-of-encoding-schemes"
+      - title: "Why do we need Unicode?"
+        panelId: "why-do-we-need-unicode"
+  - title: "Unicode in Depth"
+    items:
+      - title: "Basic Unicode Terminologies"
+        panelId: "basic-unicode-terminologies-and-understanding-unicode-encoding-schemes"
+      - title: "What is Surrogate Pair?"
+        panelId: "what-is-surrogate-pair"
+      - title: "Character Data Type"
+        panelId: "character-data-type-for-unicode-code-points"
+  - title: "Working with Unicode"
+    items:
+      - title: "Char Data Type in Java"
+        panelId: "char-data-type-in-java"
+      - title: "Character as str Data Type in Python"
+        panelId: "character-as-str-data-type-in-python"
+      - title: "Working with Surrogate Pairs"
+        panelId: "working-with-surrogate-pairs"
+      - title: "Storing & Processing Unicode Strings"
+        panelId: "how-to-store-and-process-unicode-characters-or-strings"
+      - title: "Iterating Over Code Points"
+        panelId: "iterating-over-code-points"
+      - title: "Concatenating Unicode Strings"
+        panelId: "concatenating-unicode-strings"
+  - title: "Unicode in Practice"
+    items:
+      - title: "Introduction to Unicode Charts"
+        panelId: "introduction-to-unicode-charts"
+      - title: "Storing Unicode Data in UTF-8 Files"
+        panelId: "working-with-unicode-formats-storing-unicode-data-in-utf-8-format-files"
+  - title: "References"
+    items:
+      - title: "References & Author"
+        panelId: "references--author"
+---
+
+## Introduction
+
+Welcome to this module dedicated to the essential concepts and techniques of Unicode programming.
+
+In the field of modern software development, knowledge of Unicode is essential as it serves as the foundation for effectively representing and manipulating characters from diverse languages, scripts, and symbol systems.
+
+Mastery of Unicode is not only critical for building robust applications but is also pivotal in the pursuit of Internationalization which extends to Universal Acceptance, where software systems can embrace and accommodate the richness of linguistic diversity.
+
+In this module, we will discuss the fundamental principles of Unicode, covering key areas such as encoding, decoding, character manipulation, and the effective handling of various Unicode transformation formats.
+
+By the conclusion of this module, you will have acquired a solid foundation in Unicode programming. With this newfound knowledge, you will gain the confidence to write Java and Python codes that effortlessly meets the demands of Unicode requirements, allowing for seamless handling of Unicode in your programming tasks.
+
+## Objectives
+
+Upon completion of this micro-learning UA module, students will be able to:
+
+- Understand the concept of Unicode;
+- Comprehend Unicode encoding and its advantages;
+- Acquire a solid grasp of Unicode code points and code units;
+- Understand the concept of surrogate pairs and their usage;
+- Develop a comprehensive understanding of key Unicode terminologies;
+- Work with Unicode in programming:
+  - How to represent Unicode characters in a character data type
+  - How to create, input, and concatenate Unicode strings
+  - How to display Unicode strings.
+- Appreciate the significance of Unicode in promoting linguistic diversity and cultural exchange.
+
+---
+
+## Overview of Encoding Schemes
+
+Character encoding schemes play a fundamental role in representing characters within digital systems, making a solid understanding of them vital for working with text. In digital systems, three prominent character encoding schemes are commonly employed: <span class="hl">ASCII</span>, <span class="hl">ISO 8859</span>, and <span class="hl">Unicode</span>.
+
+<span class="hl">ASCII</span> is a widely used character encoding scheme that represents text in digital systems. It uses 7 bits to encode characters, allowing for a total of 128 characters. Originally designed for the English language, ASCII includes control characters and printable characters commonly used in English text, such as letters, numbers, punctuation marks, and special symbols. ASCII enjoys wide compatibility across systems and programming languages, serving as a foundational encoding scheme. However, it has limitations in supporting non-English languages and lacks the comprehensive character set found in more modern encoding schemes like Unicode.
+
+It is compatible with many systems but lacks support for non-English languages. <span class="hl">ISO 8859</span> extends ASCII by adding variations that cover specific regions and languages, providing limited multilingual support. However, <span class="hl">Unicode</span> surpasses both ASCII and ISO 8859 by offering a comprehensive encoding standard for characters from all writing systems worldwide. Unicode ensures compatibility across languages, scripts, and symbols, enabling multilingual communication and global software development.
+
+<span class="hl">ISO 8859</span> is a set of character encoding schemes that extend the ASCII encoding scheme to support additional languages. Each ISO 8859 variation, such as ISO 8859-1, ISO 8859-2, etc., covers specific regions or languages. These variations introduce additional characters beyond the ASCII set, allowing for better language support. ISO 8859 is generally backward compatible with ASCII, preserving the ASCII character set in the lower 7 bits while incorporating additional characters in the higher bits.
+
+<span class="hl">Unicode</span> is a comprehensive character encoding scheme that represents characters from a vast array of writing systems worldwide. It provides a unified standard for character representation across languages, scripts, and symbols. The Unicode standard currently supports over 143,000 characters, which are represented by code points ranging from **U+0000** to **U+10FFFF**.
+
+While they all serve the purpose of character representation in digital systems, there are significant differences among them. The following is a summary highlighting the comparative differences among the three encoding schemes.
+
+<details>
+<summary>Range of character set support:</summary>
+
+- <span class="hl">ASCII</span> uses a 7-bit character set, providing codes for 128 characters. It primarily focuses on the English language and includes control characters and printable characters commonly used in English text.
+- <span class="hl">ISO 8859:</span> ISO 8859 extends the character set beyond ASCII, providing several variations (such as ISO 8859-1, ISO 8859-2, etc.) to support additional languages. Each variation covers a specific region or language, expanding the range of characters available. The ISO 8859 standard defines a series of character sets for various languages and regions. However, ISO 8859 specifies a total of 15 character sets, numbered as ISO 8859-1 to ISO 8859-15. Each ISO 8859 character set within the ISO 8859 standard can represent 256 different characters.
+- <span class="hl">Unicode</span> is a comprehensive encoding scheme designed to represent characters from a vast array of writing systems worldwide. It includes a vast range of characters, symbols, scripts, and emojis, with each character assigned a unique code point. The Unicode standard currently supports over 143,000 characters, which are represented by code points ranging from U+0000 to U+10FFFF.
+
+</details>
+
+<details>
+<summary>Language Support:</summary>
+
+- <span class="hl">ASCII</span> is primarily designed for the English language. It does not have dedicated support for characters from non-English languages or special characters commonly used in other languages.
+- <span class="hl">ISO 8859</span> variations provide limited support for non-English languages by incorporating additional characters specific to different regions. However, the language coverage varies across the ISO 8859 variations, and it may not fully cater to all languages and writing systems.
+- <span class="hl">Unicode</span> provides extensive multilingual support, accommodating characters from various languages and scripts globally. It aims to ensure comprehensive representation and communication across different languages.
+
+</details>
+
+<details>
+<summary>Compatibility:</summary>
+
+- <span class="hl">ASCII</span> is widely compatible across different systems and programming languages. It serves as a foundational encoding scheme and is supported by almost all modern computing environments.
+- <span class="hl">ISO 8859</span> variations are generally backward compatible with ASCII. They preserve the ASCII character set in the lower 7 bits while introducing additional characters in the higher bits. This compatibility allows systems and software designed for ASCII to handle ISO 8859-encoded text without significant issues.
+- <span class="hl">Unicode</span> is designed to be compatible with ASCII, ensuring a smooth transition and backward compatibility. It allows systems and software designed for ASCII to handle Unicode-encoded text without significant issues.
+
+</details>
+
+<details>
+<summary>Scope and Purpose:</summary>
+
+- <span class="hl">ASCII</span> is a basic encoding scheme suitable for English text and simple digital communication.
+- <span class="hl">ISO 8859</span> variations expand the character set to support additional languages but still have limitations in terms of comprehensive multilingual coverage.
+- <span class="hl">Unicode</span> is the most comprehensive encoding scheme, addressing the limitations of ASCII and ISO 8859. It provides a unified standard for character representation, enabling global compatibility and multilingual communication.
+
+</details>
+
+<div class="obs-card">
+
+**Observation:** The principles of representing plain text and the Unicode character-glyph model are covered in Module 2 (Unicode Advanced Programming).
+
+</div>
+
+---
+
+## Why do we need Unicode?
+
+<div class="info-card">
+
+<span class="hl">Unicode</span> has gained significant popularity and is increasingly used as the standard for character encoding in modern software development. It addresses the limitations of ASCII and ISO 8859, offering comprehensive multilingual support and enabling globalization and localization efforts in software systems.
+
+While ASCII focuses on the English language, ISO 8859 extends the character set to support additional languages. Unicode surpasses both ASCII and ISO 8859, providing a unified standard for character representation across all languages and scripts globally.
+
+</div>
+
+---
+
+## Basic Unicode Terminologies and Understanding Unicode Encoding Schemes
+
+Unicode provides various encoding schemes to represent characters from different writing systems and languages. Below is a summary of the prevalent Unicode encoding schemes:
+
+<details>
+<summary>Basic Unicode Terminologies:</summary>
+
+- <span class="hl">Unicode Scalar Value:</span> refers to the numerical representation of individual characters within the Unicode character set. It represents a unique and standardized code point assigned to each character. These values are represented in hexadecimal notation and range from 0 to 10FFFF (hexadecimal).
+- <span class="hl">Code Unit:</span> refers to the basic unit of storage or representation for encoded characters. It is the smallest individually addressable element within a given encoding scheme.
+- <span class="hl">Code Unit Sequence:</span> refers to a consecutive series or sequence of code units within a character encoding. It represents a sequence of individual units that collectively encode characters or textual data.
+
+</details>
+
+<details>
+<summary>Understanding Unicode Encoding Schemes:</summary>
+
+<details>
+<summary>UTF-8:</summary>
+
+- UTF-8 is a widely used variable-length encoding scheme.
+- It uses one to four bytes to represent characters, with ASCII characters represented by a single byte.
+- UTF-8 is backward compatible with ASCII and offers efficient storage and transmission of commonly used characters.
+- In UTF-8, a code unit is typically 8 bits (1 byte) and represents a single Unicode character. However, it can be larger for characters outside the Basic Multilingual Plane (BMP).
+
+</details>
+
+<details>
+<summary>UTF-16:</summary>
+
+- UTF-16 is a fixed-length encoding scheme that uses 16-bit code units.
+- It can handle the entire Unicode character set, including characters outside the Basic Multilingual Plane (BMP).
+- UTF-16 is commonly used in programming languages and platforms that internally represent characters as 16-bit code units.
+- In UTF-16, a code unit is 16 bits (2 bytes) and can represent either a single Unicode character within the BMP or a surrogate pair that encodes characters beyond the BMP.
+
+</details>
+
+<details>
+<summary>UTF-32:</summary>
+
+- UTF-32 is a fixed-length encoding scheme where each character is represented by a four-byte code unit.
+- UTF-32 has big-endian and little-endian variants based on the order of bytes within the code unit, known as **UTF-32BE** and **UTF-32LE** respectively.
+- It provides a direct one-to-one mapping between code points and code units.
+- In UTF-32, a code unit is 32 bits (4 bytes) and directly corresponds to a single Unicode character, regardless of its code point value.
+
+</details>
+
+</details>
+
+Choosing the appropriate Unicode encoding scheme depends on factors such as storage efficiency, compatibility requirements, and the specific context or platform being used. Understanding the characteristics and differences between these encoding schemes is crucial for accurately representing and manipulating characters from diverse writing systems in a consistent manner.
+
+UTF-8 is a widely used character encoding scheme that allows the representation of all Unicode code points. It offers efficient storage and transmission of Unicode characters by utilizing variable-length encoding. Key points:
+
+- UTF-8 uses variable-length encoding, where different Unicode characters require different numbers of bytes for representation.
+- ASCII characters are represented using a single byte, maintaining compatibility with the ASCII character set.
+- Characters outside the ASCII range use multiple bytes, allowing for the representation of diverse characters from different writing systems.
+- Each Unicode code point is represented by a sequence of bytes, with the number of bytes determined by the code point value.
+- UTF-8 follows specific encoding rules to ensure self-synchronization and proper decoding of byte sequences.
+- ASCII characters (0 to 127) are encoded using a single byte, while higher code points require multiple bytes.
+- UTF-8 is backward compatible with ASCII and provides efficient storage and transmission of commonly used characters.
+- It is widely supported by modern systems, programming languages, and web standards.
+
+---
+
+## What is Surrogate Pair?
+
+A surrogate pair is a UTF-16 encoding mechanism used to represent supplementary characters outside the Basic Multilingual Plane (BMP). It involves using a combination of two 16-bit values, known as **high surrogates** and **low surrogates**, to represent characters in the supplementary planes. Surrogate pairs are important for accurately encoding and handling characters from less commonly used scripts and specialized symbols.
+
+<div class="info-card">
+
+<span class="hl">Example:</span> Examples of surrogate pairs used to represent emojis.
+
+- <span class="hl">Grinning Face with Smiling Eyes Emoji:</span>
+  - Emoji: 😄
+  - Unicode Code Point: U+1F604
+  - Surrogate Pair: U+D83D U+DE04
+
+- <span class="hl">Thumbs Up Emoji:</span>
+  - Emoji: 👍
+  - Unicode Code Point: U+1F44D
+  - Surrogate Pair: U+D83D U+DC4D
+
+</div>
+
+---
+
+## Character Data Type for Unicode Code Points
+
+The character data type commonly used for representing Unicode code points is `char`. In many programming languages, including Java, C++, C#, and Python, the `char` data type is used to store a single Unicode character.
+
+<div class="info-card">
+
+**Note:**
+
+- The `char` data type typically uses a fixed number of bits to represent the Unicode code unit, allowing for the storage of a wide range of characters.
+- Unicode code points can be assigned to a `char` variable, allowing for character manipulation, comparison, and other applicable operations.
+- It is important to note that the specific implementation and size of the `char` data type may vary across programming languages and platforms.
+- Throughout this module, we delve into the basics and nuances of utilizing the `char` data type for handling Unicode code points specifically within the **Java** and **Python** programming environments.
+
+</div>
+
+---
+
+## Char Data Type in Java
+ 
+In Java, the char data type is used to represent a single code unit. Java supports Unicode by using the UTF-16 encoding scheme, where each Unicode code point is represented by one or two char values. It is designed to store Unicode characters and uses 16 bits (2 bytes) of memory. This 16-bit size allows the char data type to cover a wide range of Unicode code points.
+
+<div class="obs-card">
+
+The following Java code demonstrates how char data type can be used in Java to store Unicode characters.
+ 
+<span class="hl">Example: Creating/Storing Unicode Characters in Java.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="char1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="char1">
+ 
+```java
+public class UnicodeExample
+{
+    public static void main(String[] args)
+    {
+        char unicodeChar1 = '\u0627'; // Unicode character for Arabic letter "alef" (ا)
+        char unicodeChar2 = '\u1200'; // Unicode character for Ethiopic letter "ሀ" (ha)
+        char unicodeChar3 = '\u0411'; // Unicode character for Cyrillic letter 'Б' (be)
+        // Printing the stored Unicode characters
+        System.out.println("Arabic Letter:" + unicodeChar1);       // Output: ا
+        System.out.println("Ethiopic/Geʽez Letter:" + unicodeChar2); // Output: ሀ
+        System.out.println("Cyrrilic Letter: " + unicodeChar3);    // Output: Б
+    }
+}
+```
+ 
+  </div>
+</div>
+
+</div>
+
+---
+
+## Character as str Data Type in Python
+ 
+In Python, the str data type represents a sequence of characters. There is no separate char data type; characters are represented as strings of length 1. Since characters are represented as strings, all strings operation and methods can be applied to single characters.
+ 
+Python offers extensive support for Unicode, allowing developers to work with characters from diverse writing systems. This support is achieved through the use of UTF-8 encoding, which is a variable-length encoding that can represent all possible Unicode characters. Python 3 adopts Unicode as the default encoding for strings, simplifying the handling of international characters and enabling the processing of multilingual text more efficiently.
+ 
+<span class="hl">Example: Storing Unicode characters in Python</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="char2"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="char2">
+ 
+```python
+# Define Unicode characters
+unicodeChar1 = '\u0627'  # Unicode character for Arabic letter "alef" (ا)
+unicodeChar2 = '\u1200'  # Unicode character for Ethiopic letter "ሀ" (ha)
+unicodeChar3 = '\u0411'  # Unicode character for Cyrillic letter 'Б' (be)
+ 
+# Prints the stored Unicode characters or letters
+print("Arabic Letter:", unicodeChar1)        # Output: ا
+print("Ethiopic/Geʽez Letter:", unicodeChar2) # Output: ሀ
+print("Cyrillic Letter:", unicodeChar3)      # Output: Б
+```
+ 
+  </div>
+</div>
+
+---
+
+## Working with Surrogate Pairs
+ 
+### Working with Surrogate Pairs in Java
+ 
+Java provides built-in methods to encode and decode surrogate pairs. Surrogate pairs are used to represent Unicode characters that fall outside the Basic Multilingual Plane (BMP), which includes characters up to U+FFFF. Emoji characters often fall outside the BMP and require surrogate pairs.
+ 
+Below is a sample code snippet that demonstrates storing and printing the Unicode character using surrogate pairs in Java. It showcases the usage of surrogate pairs to handle Unicode characters beyond the Basic Multilingual Plane, i.e. it uses a combination of two char values to represent emoji (😀).
+ 
+When storing surrogate pairs in Java using the char data type with escape sequences, consider the following main points:
+ 
+- <span class="hl">Surrogate Pair Escape Sequence</span>: you can use Unicode escape sequences to represent surrogate pairs. A surrogate pair is represented by two Unicode escape sequences, one for the high surrogate and one for the low surrogate.
+- <span class="hl">High Surrogate Escape Sequence</span>: The Unicode escape sequence for the high surrogate is \u####, where #### represents the hexadecimal value of the high surrogate. The high surrogate range is from \uD800 to \uDBFF.
+- <span class="hl">Low Surrogate Escape Sequence</span>: The Unicode escape sequence for the low surrogate is also \u####, where #### represents the hexadecimal value of the low surrogate. The low surrogate range is from \uDC00 to \uDFFF.
+- <span class="hl">Combining Escape Sequences</span>: To store a surrogate pair, you need to combine the escape sequences for the high and low surrogates together.
+ 
+<span class="hl">Example: Separately storing the surrogate pairs.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="surr1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="surr1">
+ 
+```java
+char lowSurr = '\uD83D'
+char highSurr = '\uDE00'
+```
+ 
+  </div>
+</div>
+ 
+<span class="hl">String Formation from surrogate pairs:</span>
+ 
+You can form a String object containing surrogate pairs using escape sequences. By concatenating the escape sequences for the high and low surrogates together the surrogate pair can be formed. Below is a Java code to illustrate how Java's String class can be used to store surrogate pairs.
+ 
+<span class="hl">Example: Using surrogate pairs in Java.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="surr2"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="surr2">
+ 
+```java
+public class SurrogatePair
+{
+    public static void main(String[] args)
+    {
+        String unicodeCharEmoji = "\uD83D\uDE00"; // Unicode character for 😀 (represented by surrogate pairs)
+        // Printing the emoji character
+        System.out.println(unicodeCharEmoji); // Output: 😊
+    }
+}
+```
+ 
+  </div>
+</div>
+ 
+### Working with Characters that Fall Outside the BMP in Python
+ 
+Python provides a range of features and functionalities specifically designed to facilitate working with characters beyond the BMP. These include:
+ 
+- **Encoding and decoding functions:** Python offers built-in functions that enable the encoding of surrogate pairs into byte sequences and the decoding of byte sequences containing surrogate pairs back into Unicode characters.
+- **String operations:** Characters that fall outside the BMP can be treated as individual characters within Python strings, allowing for seamless application of string operations such as concatenation, slicing, and indexing.
+ 
+<span class="hl">Example: Using Characters that Fall Outside the BMP in Python.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="surr3"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="surr3">
+ 
+```python
+# Define the Unicode character using surrogate pair
+unicode_char_emoji = "\U0001F60A"
+ 
+# Prints the smiling face with smiling eyes emoji character
+print(unicode_char_emoji)
+```
+ 
+  </div>
+</div>
+ 
+---
+
+## How to Store and Process Unicode Characters or Strings
+ 
+### In Java
+ 
+Unicode string processing in Java involves handling strings that contain characters from various Unicode code points, including those outside the Basic Multilingual Plane (BMP). Java provides built-in support for Unicode string processing through its String class and related utility classes.
+ 
+The following are commonly used Unicode string processing operations in Java:
+ 
+- String creation.
+- String length.
+- Code point count.
+- Accessing individual code points.
+- Iterating over code points.
+
+<details>
+<summary>Unicode string creation:</summary>
+
+Java's String class supports the creation of strings containing Unicode characters. Strings can be created using Unicode escape sequences, surrogate pairs, or directly using the characters themselves.
+
+<div class="info-card">
+
+<span class="hl">Note</span>
+
+- Java's String class uses UTF-16 encoding to represent Unicode characters.
+- UTF-16 is a variable-length encoding that uses one or two 16-bit char values to represent characters.
+- You can store Unicode characters in string literals by directly including them as characters or using escape sequences as shown in the third bullet below.
+
+</div>
+
+<div class="obs-card">
+ 
+<span class="hl">Example: Examples on Creating Unicode Strings.</span>
+ 
+- <span class="hl">Using Unicode escape sequence</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="str1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="str1">
+ 
+```java
+String unicodeString = "\U178x"; //Khmer ក
+```
+ 
+  </div>
+</div>
+ 
+- <span class="hl">Surrogate pair for "smiling face with smiling eyes" emoji (😊):</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="str2"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="str2">
+ 
+```java
+String emojiString = "\uD83D\uDE0A"
+```
+ 
+  </div>
+</div>
+ 
+- <span class="hl">Directly using Unicode characters or string literals:</span>
+ 
+If you cannot switch your keyboard to the script used in the example string, you can use a language translator tool like Google Translate to obtain the string literals for the code snippet.
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="str3"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="str3">
+ 
+```java
+String plainString1 = "Hello, 世界!";
+String plainString2 = "Hello, ዓለም!";
+String plainString3 = "Hello, عالم!";
+```
+ 
+  </div>
+</div>
+ 
+The accompanying Unicode string for "Hello" represents "World" in Chinese, Ethiopic (Amharic), and Arabic respectively.
+
+</div>
+
+</details>
+ 
+<details>
+<summary>String length:</summary>
+ 
+The length() method of the String class returns the number of Unicode code units (16-bit char values) in the string. However, note that this may not be the same as the number of Unicode characters or code points.
+
+<div class="obs-card">
+
+<span class="hl">Example: Examples on Creating Unicode Strings.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="len1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="java-surr" data-target="len1"><span class="lang-icon lang-icon--java"></span>Java (surrogate)</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="len1">
+ 
+```java
+// For plain strings:
+String str = "Hello, عالم!";
+int codePointCount = str.codePointCount(0, str.length());
+System.out.println(codePointCount);
+// Output: The string length is: 12
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="java-surr" data-group="len1">
+ 
+```java
+// For non-plain strings such as surrogate pairs:
+String emojiString = "\uD83D\uDE0A";
+int length = emojiString.length();
+System.out.println("The emoji string length is: " + length);
+//Output: The emoji string length is: 2
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Code Point Count:</summary>
+ 
+To obtain the number of Unicode code points in a string, you can use the codePointCount() method of the String class. This method considers surrogate pairs as a single code point.
+
+<div class="obs-card">
+
+<span class="hl">Example: Examples on Creating Unicode Strings.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="cp1"><span class="lang-icon lang-icon--java"></span>Java (plain)</button>
+    <button class="lang-btn" data-lang="java-surr" data-target="cp1"><span class="lang-icon lang-icon--java"></span>Java (surrogate)</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="cp1">
+ 
+```java
+// Code point count for plain strings:
+String str = "Hello, 世界!";
+int codePointCount = str.codePointCount(0, str.length());
+System.out.println("Code point count is: " + codePointCount);
+//Output: Code point count is: 10
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="java-surr" data-group="cp1">
+ 
+```java
+// Code point count for non-plain strings such as surrogate pairs:
+String emojiString = "\uD83D\uDE0A";
+int codePointCountEmoji = emojiString.codePointCount(0, emojiString.length());
+System.out.println("Code points count is: " + codePointCountEmoji);
+//Output: Code points count is: 1
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Accessing Individual Code Point:</summary>
+ 
+The <span class="hl">charAt()</span> method of the String class returns the 16-bit char value at the specified index. However, to access individual Unicode code points, including those represented by surrogate pairs, you can use the <span class="hl">codePointAt()</span> method. This method returns the code point at the given index, taking into account surrogate pairs.
+
+<div class="obs-card">
+ 
+<span class="hl">Example:</span> <span class="hl">To find the code point at a given index:</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="acp1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="acp1">
+ 
+```java
+String str = "Hello, 世界!";
+int codePoint = str.codePointAt(7);
+System.out.println("Code point at Index 7 is:" + codePoint);
+//Output: Code point at index 7 is 19990 i.e. Unicode code point of '世' in decimal.
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+ 
+### In Python
+ 
+Python's string data type is designed to handle Unicode characters effectively. By using Unicode encoding, literals, encoding/decoding methods, and an extensive range of string operations and methods, developers can work with Unicode characters from various writing systems.
+ 
+The following are key Python features for handling Unicode characters:
+ 
+<span class="hl">String and Bytes Data Type:</span>
+ 
+- In Python, the string data type (str) is used to store and manipulate Unicode characters.
+- The str data type can represent characters from various writing systems, including non-Latin scripts and surrogate pairs or special symbols.
+- The bytes and bytearray data types are used to store and manipulate arbitrary bytes as storage units.
+- The operation of representing string data (str) as code units (bytes or bytearray) is called encoding. The complementary operation, of recovering string data from code units, is called decoding.
+ 
+<span class="hl">Unicode Encoding:</span>
+ 
+- Python 3 defines the string data type as Unicode characters, making it easier to work with international characters and multilingual text.
+- When storing Unicode characters in strings, no explicit encoding is required.
+ 
+<span class="hl">Unicode Literals:</span>
+ 
+- Python supports Unicode literals, which are prefixed with the letter "u".
+- Unicode literals allow direct inclusion of Unicode characters in strings without using escape sequences.
+ 
+<span class="hl">Encoding and Decoding</span>
+ 
+- If you need to convert Unicode strings to byte sequences or vice versa, Python provides methods to encode and decode strings using various encoding schemes, such as UTF-8 and UTF-16.
+- The encode() method converts Unicode strings to byte sequences, while the decode() method performs the reverse operation.
+ 
+<span class="hl">String Operations and Methods:</span>
+ 
+- Python's string operations and methods can be applied to Unicode strings seamlessly.
+- String concatenation, slicing, indexing, and searching can handle strings containing Unicode characters from diverse writing systems.
+
+<details>
+<summary>Unicode string creation:</summary>
+ 
+The accompanying Unicode string for "Hello" represents "World" in Chinese, Ethiopic (Amharic), and Arabic respectively.
+
+<div class="obs-card">
+
+<span class="hl">Example: Examples on Unicode String Creation:</span>
+ 
+<span class="hl">- Directly using Unicode characters</span>
+ 
+If you cannot switch your keyboard to the script used in the example string, you can use a language translator tool like Google Translate to obtain the string literals for the code snippet.
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="pstr1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="pstr1">
+ 
+```python
+# Define the Unicode string variables with string literals
+# The string literals below contain a combination of scripts beyond Latin.
+# The non-Latin strings represent the English equivalent of 'World'
+unicode_str1 = "Hello, 世界!"
+unicode_str2 = "Hello, ዓለም!"
+unicode_str3 = "Hello, عالم!"
+```
+ 
+  </div>
+</div>
+ 
+<span class="hl">- Using Unicode Escape Sequences</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="pstr2"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="pstr2">
+ 
+```python
+# Define Unicode escape sequences for "Hello, ዓለም!"
+unicode_str = "\u0048\u0065\u006C\u006C\u006F,\u12d3\u1208\u121d"
+print(unicode_str)
+# prints Hello,ዓለም!
+```
+ 
+  </div>
+</div>
+ 
+<span class="hl">- Using Unicode Code Points</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="pstr3"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="pstr3">
+ 
+```python
+# Define Unicode Code points
+code_points = [72, 101, 108, 108, 111, 44, 1593, 1575, 1604, 1605, 33]
+unicode_str = "".join(chr(code_point) for code_point in code_points)
+print(unicode_str)
+# prints Hello,عالم!
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>String length:</summary>
+
+In Python, you can determine the length of a Unicode string using the len() function. The len() function returns the number of Unicode characters in the string.
+
+<div class="obs-card">
+
+<span class="hl">Example: To Find the Number of Unicode Characters in a Unicode String.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="plen1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="plen1">
+ 
+```python
+unicode_str = "Hello, عالم!"
+length = len(unicode_str)
+# prints Character count is: 12
+print("Character counts is: ", length)
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Code Point Count:</summary>
+ 
+In Python, the len() function can be used to count the number of Unicode code points in a string.
+
+<div class="obs-card">
+
+<span class="hl">Example: To Find the Number of Code Points in a Unicode String.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="pcp1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="pcp1">
+ 
+```python
+unicode_str = "Hello, عالم!"
+length = len(unicode_str)
+# prints Code point count is: 12
+print("Code point count is: ", length)
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Accessing Individual Code Point:</summary>
+ 
+In Python, you can access individual code points in a Unicode string using indexing. The <span class="hl">ord()</span> function is used to access the Unicode code point of a character at a specified indexing of a string. It converts the character to its corresponding Unicode code point.
+
+<div class="obs-card">
+
+<span class="hl">Example: To Find the Code Point at a Given Index.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="pacp1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="pacp1">
+ 
+```python
+unicode_str = "Hello, عالم"
+# Accessing code point at index 0
+code_point_0 = ord(unicode_str[0])
+print(code_point_0)  # Output: 72
+# Accessing code point at index 7
+code_point_7 = ord(unicode_str[7])
+print(code_point_7)  # Output: 1593
+```
+ 
+  </div>
+</div>
+
+</div>
+ 
+<div class="info-card">
+ 
+<span class="hl">Note:</span>
+ 
+Accessing individual code points by index assumes that the string is well-formed and does not include combining characters or characters that fall outside the BMP. If dealing with more complex Unicode text, it's recommended to use libraries like <span class="hl">unicodedata</span> or regex for more advanced operations on code points.
+ 
+</div>
+
+</details>
+
+---
+
+## Iterating Over Code Points
+ 
+### In Java
+ 
+The codePointAt method in Java is used to retrieve the Unicode code point value of a character at a specified index within a string. It is particularly useful when dealing with Unicode characters that are represented by multiple code units. This method calculates and returns the index of the code point that is located a specified number of code points away from a given index.
+ 
+In other words, it enables you to navigate through a string by code points rather than by individual characters. This can be particularly useful when working with non-Latin scripts or when dealing with characters that require multiple code points to represent or surrogate pairs.
+ 
+<span class="hl">Example: Iterating Individual Code Points within a Unicode String.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="iter1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="iter1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="iter1">
+ 
+```java
+public class CodePointIteration
+{
+    public static void main(String[] args) {
+        String text = "Hello, عالم!";
+        // Iterate over code points
+        for (int i = 0; i < text.length(); ) {
+            int codePoint = text.codePointAt(i);
+            System.out.println("Code point: " + codePoint);
+            // Increment the index based on the code point
+            i += Character.charCount(codePoint);
+        }
+    }
+}
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="python" data-group="iter1">
+ 
+```python
+unicode_str = "Hello, عالم"
+for character in unicode_str:
+    code_point = ord(character)
+    print(code_point)
+```
+ 
+  </div>
+</div>
+ 
+In Python, the for loop iterates over each character in the unicode_str. The ord() function is then used to obtain the Unicode code point value for each character, which is printed to the console.
+ 
+---
+
+## Concatenating Unicode Strings
+ 
+### In Java
+ 
+In Java, similar to string concatenation in ASCII, Unicode string concatenation can be achieved using the <span class="hl">"+"</span> operator or the StringBuilder class. The <span class="hl">"+"</span> operator allows for straightforward concatenation of Unicode strings, treating them as regular strings. However, when concatenating a large number of strings, the <span class="hl">"+"</span> operator can lead to performance issues due to the creation of intermediate string objects. To address this, the StringBuilder class provides an efficient solution. It allows for appending Unicode strings without unnecessary object creations, making it suitable for concatenating a significant number of strings or building strings incrementally.
+
+<details>
+<summary>Concatenating Unicode strings using the "+" operator:</summary>
+ 
+You can concatenate Unicode strings using the <span class="hl">"+"</span> operator just like any other strings.
+
+<div class="obs-card">
+ 
+<span class="hl">Example: Concatenating Unicode string Using the "+" operator:</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="concat1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="concat1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="concat1">
+ 
+```java
+String unicodeStr1 = "ආයුබෝවන්, ";  //"Ayubowan" or "Hello" in Sinhala
+String unicodeStr2 = "ලෝක!";          // World in Sinhala
+String concatenatedStr = unicodeStr1 + unicodeStr2;
+System.out.println("Concatenated String is: " + concatenatedStr);
+//Output: Concatenated String is: ආයුබෝවන්, ලෝක!
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="python" data-group="concat1">
+ 
+```python
+unicode_str1 = "Hello, "
+unicode_str2 = "عالم"
+concatenated_str = unicode_str1 + unicode_str2
+print(concatenated_str)
+# Output: Hello, عالم
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Concatenating Unicode string Using the StringBuilder class:</summary>
+ 
+- The StringBuilder class provides efficient concatenation of strings, including Unicode strings.
+- You can use the append() method of StringBuilder to append Unicode strings.
+- After appending all the strings, you can convert the StringBuilder back to a regular string using the toString() method.
+
+<div class="obs-card">
+ 
+<span class="hl">Example: Concatenating Unicode string Using the StringBuilder class.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="concat2"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="concat2"><span class="lang-icon lang-icon--python"></span>Python (str.join)</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="concat2">
+ 
+```java
+String unicodeStr1 = "ආයුබෝවන්, ";
+String unicodeStr2 = "ලෝක!";
+StringBuilder stringBuilder = new StringBuilder();
+stringBuilder.append(unicodeStr1);
+stringBuilder.append(unicodeStr2);
+String concatenatedStr = stringBuilder.toString();
+System.out.println("Concatenated String is: " + concatenatedStr);
+//Output: Concatenated String is: ආයුබෝවන්, ලෝක!
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="python" data-group="concat2">
+ 
+```python
+# Concatenating Unicode Strings Using the str.join() method:
+unicode_strs = ["Hello, ", "عالم, ", "ዓለም"]
+concatenated_str = "".join(unicode_strs)
+print(concatenated_str)
+# Output: Hello, عالم, ዓለም
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+ 
+---
+
+## Introduction to Unicode Charts
+ 
+Unicode code charts provide a comprehensive visual reference for the characters assigned in the Unicode standard. These charts categorize characters by script, block, or other groupings, making it easier to locate and understand the Unicode code points associated with specific characters. The code charts display the characters, their corresponding code points, and often include additional information such as character names, descriptions, and usage examples.
+ 
+Unicode code charts serve as a valuable resource for developers, linguists, and anyone working with Unicode characters. They aid in character discovery, understanding character properties, and ensuring accurate character representation across different systems and platforms. By consulting the code charts, users can access a wealth of information about the vast range of characters supported by Unicode, facilitating effective character handling and implementation in software systems.
+ 
+<span class="hl">Example: How Unicode Code Charts can be used in Software Development.</span>
+ 
+<span class="hl">Scenario:</span>
+ 
+Let us say you are developing a text processing application, and you want to implement a feature that converts characters from one script to another. To accomplish this, you need to identify the Unicode code points for the characters in both scripts.
+
+<details>
+<summary>Accessing Unicode Code Charts:</summary>
+ 
+- Visit the official Unicode website (unicode.org) and navigate to the "Code Charts" section.
+- Locate the code chart relevant to the source script you want to convert from and the target script you want to convert to. For example, if you want to convert characters from Latin script to Devanagari script, you would refer to the Latin and Devanagari code charts.
+
+</details>
+
+<details>
+<summary>Finding Unicode Code Points:</summary>
+ 
+- In the code chart, locate the specific characters you need to convert. Each character is represented by its Unicode code point, typically displayed in hexadecimal format.
+- Note down the Unicode code points for the source and target characters you want to convert.
+
+</details>
+
+<details>
+<summary>Implementing the Conversion Logic:</summary>
+ 
+- In your software application, use the identified Unicode code points to perform the character conversion.
+- Retrieve the source characters from the input text based on their Unicode code points and map them to the corresponding target characters using the desired conversion logic.
+- Apply the conversion logic to all relevant characters in the input text, replacing the source characters with the corresponding target characters.
+
+</details>
+ 
+---
+
+## Working with Unicode Formats: Storing Unicode Data in UTF-8 Format Files
+ 
+### Java
+
+<details>
+<summary>Creating a UTF-8 Encoded File in Java:</summary>
+ 
+The following steps need to be applied in your Java code in order to store Unicode data in a UTF-8 format:
+- To store Unicode data in a UTF-8 encoded file in Java, you need to specify the UTF-8 encoding explicitly.
+- Create a Writer object, such as BufferedWriter or PrintWriter, and wrap it with an OutputStreamWriter specifying the UTF-8 encoding.
+- Open the file for writing and start writing the Unicode text to the file using the Writer object.
+
+<div class="obs-card">
+ 
+<span class="hl">Example: Storing Unicode Data in a UTF-8 File.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="utf1"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="utf1"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="utf1">
+ 
+```java
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+ 
+public class UnicodeFileWriter
+{
+    public static void main(String[] args)
+    {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("unicode.txt"), "UTF-8")))
+        {
+            String unicodeText = "Hello, ලෝක!"; // Unicode text to be stored
+            writer.write(unicodeText);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+}
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="python" data-group="utf1">
+ 
+```python
+unicode_str = "Hello, عالم"
+# Open file in UTF-8 mode for writing
+with open("test_file.txt", "w", encoding="utf-8") as file:
+    file.write(unicode_str)
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Reading UTF-8 Encoded Files in Java:</summary>
+
+The following steps need to be applied in your Java code in order to read UTF-8 encoded file:
+- When reading a UTF-8 encoded file that contains Unicode data, you need to ensure that the file is being read using the UTF-8 encoding.
+- Create a Reader object, such as BufferedReader or Scanner, and wrap it with an InputStreamReader specifying the UTF-8 encoding.
+- Open the file for reading and read the Unicode text from the file using the Reader object.
+
+<div class="obs-card">
+ 
+<span class="hl">Example: Reading Unicode Data from a UTF-8 File.</span>
+ 
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="java" data-target="utf2"><span class="lang-icon lang-icon--java"></span>Java</button>
+    <button class="lang-btn" data-lang="python" data-target="utf2"><span class="lang-icon lang-icon--python"></span>Python</button>
+  </div>
+  <div class="lang-block active" data-lang="java" data-group="utf2">
+ 
+```java
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+ 
+public class UnicodeFileReader
+{
+    public static void main(String[] args)
+    {
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream("unicode.txt"), "UTF-8")))
+        {
+            StringBuilder sbr = new StringBuilder();
+            int c;
+            while ((c = reader.read()) != -1) {
+                sbr.append((char) c);
+            }
+            String unicodeText = sbr.toString();
+            System.out.println(unicodeText);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+ 
+  </div>
+  <div class="lang-block" data-lang="python" data-group="utf2">
+ 
+```python
+# Open file in UTF-8 mode for reading
+with open("test.txt", "r", encoding="utf-8") as file:
+    file_contents = file.read()
+    print(file_contents)
+```
+ 
+  </div>
+</div>
+
+</div>
+
+</details>
+
+### Python Notes
+
+<div class="info-card">
+
+<span class="hl">Note:</span>
+
+- The open() function is used to open a file named "test.txt" in write mode ("w") or read mode ("r").
+- The encoding="utf-8" argument ensures that the file is treated as UTF-8 encoded.
+- The write() method encodes the Unicode string to UTF-8 automatically before writing. The read() method decodes from UTF-8 byte sequences to Unicode automatically.
+- By specifying the UTF-8 encoding when opening the file, you ensure that the data is stored and retrieved correctly as Unicode.
+ 
+</div>
+
+<span class="hl">Considerations for Storing Unicode Data in UTF-8 format File</span>
+
+By following the steps described above, you can store Unicode data in UTF-8 format files and retrieve the data correctly. When storing Unicode data in UTF-8 format, it is important to take the following considerations into account:
+
+- Ensure that the file is actually saved with UTF-8 encoding by using appropriate settings in your text editor or IDE.
+- Be cautious when manipulating or processing Unicode data, as characters outside the Basic Multilingual Plane (BMP) might require handling surrogate pairs.
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. Unicode Consortium. (n.d.). *Home*. Retrieved October 3, 2023, from [https://home.unicode.org/](https://home.unicode.org/).
+2. Stack Overflow. (n.d.). *Where Developers Learn, Share, & Build Careers*. Retrieved October 3, 2023, from [https://stackoverflow.com/](https://stackoverflow.com/).
+3. Python Software Foundation. (n.d.). *Unicode HOWTO*. Retrieved October 3, 2023, from [https://docs.python.org/3/howto/unicode.html](https://docs.python.org/3/howto/unicode.html).
+4. Programming with Unicode. (n.d.). Victor Stinner. Retrieved February 16, 2024, from [https://unicodebook.readthedocs.io/](https://unicodebook.readthedocs.io/).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a>.</p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License — Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>

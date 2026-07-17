@@ -1,0 +1,145 @@
+---
+// Sin props: contenido estático
+---
+
+<section class="hero">
+    <div class="badge-init">Iniciativa LACNOG</div>
+
+    <h1>Aceptación Universal</h1>
+
+    <p class="hero-p1">
+        Prepara tus aplicaciones para la próxima generación sumando la <span
+            class="hero-ua">Aceptación Universal (UA)</span
+        > a tu set de skills técnicas.
+    </p>
+
+    <p class="hero-p2">
+        Domina las competencias necesarias para construir sistemas robustos que
+        validen, almacenen y procesen identificadores en cualquier idioma,
+        escritura o longitud.
+    </p>
+
+    <button
+        type="button"
+        class="btn-cta"
+        id="btn-abrir-modal"
+        data-open-profile-modal
+    >
+        <span>$</span>
+        <span>Explorar Skills</span>
+    </button>
+</section>
+
+<style>
+    .hero {
+        text-align: center;
+        padding: 60px 24px 44px;
+    }
+
+    .badge-init {
+        display: inline-block;
+        border-radius: 100px;
+        background: var(--accent-bg-soft);
+        border: 1px solid var(--accent-border-soft);
+        padding: 6px 18px;
+        margin-bottom: 24px;
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        /* Sin sombra — aspecto plano y limpio */
+        box-shadow: none;
+    }
+
+    /* Título en color accent — naranja del sistema de diseño */
+    .hero h1 {
+        font-size: clamp(34px, 5.5vw, 60px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--accent);
+        margin-bottom: 20px;
+    }
+
+    /* Párrafo 1: texto negro, "Aceptación Universal (UA)" en accent */
+    .hero-p1 {
+        font-size: 16px;
+        color: var(--text);
+        max-width: 480px;
+        margin: 0 auto 14px;
+        line-height: 1.65;
+    }
+
+    .hero-ua {
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    /* Párrafo 2: texto negro, separado visualmente del p1 */
+    .hero-p2 {
+        font-size: 16px;
+        color: var(--text);
+        max-width: 520px;
+        margin: 0 auto 36px;
+        line-height: 1.65;
+    }
+
+    .btn-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 30px;
+        border-radius: 12px;
+        border: 2px solid var(--accent);
+        background: var(--accent);
+        color: var(--card-bg);
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 15px;
+        transition:
+            background var(--transition-base),
+            transform var(--transition-base);
+        animation: pulse-glow 2.4s ease-in-out infinite;
+    }
+
+    .btn-cta:hover {
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+        transform: translateY(-2px);
+        animation-play-state: paused;
+        box-shadow:
+            0 0 0 4px rgba(229, 98, 26, 0.25),
+            0 8px 24px rgba(229, 98, 26, 0.45);
+    }
+
+    .btn-cta:active {
+        transform: translateY(0);
+        animation-play-state: paused;
+        box-shadow: 0 0 0 2px rgba(229, 98, 26, 0.3);
+    }
+
+    @keyframes pulse-glow {
+        0%,
+        100% {
+            box-shadow:
+                0 0 0 0px rgba(229, 98, 26, 0.55),
+                0 0 10px 2px rgba(229, 98, 26, 0.25),
+                0 4px 18px 0px rgba(229, 98, 26, 0.18);
+        }
+        50% {
+            box-shadow:
+                0 0 0 6px rgba(229, 98, 26, 0),
+                0 0 22px 8px rgba(229, 98, 26, 0.35),
+                0 8px 32px 4px rgba(229, 98, 26, 0.22);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .btn-cta {
+            animation: none;
+            box-shadow: var(--shadow-accent-sm);
+        }
+    }
+</style>

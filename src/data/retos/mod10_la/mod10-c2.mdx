@@ -1,0 +1,64 @@
+---
+moduleId: "mod10"
+challengeId: "c2"
+moduleTitle: "Module 10 – Processing IDNs and EAI in Mobile Apps"
+moduleDesc: "Explore the essential aspects of Unicode character sets and their significance in mobile apps."
+exerciseNum: "Exercise 2"
+exerciseTitle: "Send EAI emails in Android using Jakarta Mail"
+exerciseItems:
+  - "Develop a code in Java for Android that sends EAI emails using the JavaMail (Jakarta Mail) API, ensuring proper handling of internationalized email addresses."
+solutionLang: "java"
+solutionCode: |
+  import android.os.AsyncTask;
+  import android.os.Bundle;
+  import android.util.Log;
+  import androidx.appcompat.app.AppCompatActivity;
+  import javax.mail.*;
+  import javax.mail.internet.InternetAddress;
+  import javax.mail.internet.MimeMessage;
+  import java.util.Properties;
+  
+  public class EaiEmailActivity extends AppCompatActivity {
+      @Override
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          new SendEmailTask().execute();
+      }
+  
+      private class SendEmailTask extends AsyncTask<Void, Void, Void> {
+          @Override
+          protected Void doInBackground(Void... voids) {
+              final String username = "your-server-email@example.com";
+              final String password = "your-server-email-password";
+              String host = "your-email-server-host";
+  
+              Properties props = new Properties();
+              props.put("mail.smtp.auth", "true");
+              props.put("mail.mime.allowutf8", "true");
+              props.put("mail.smtp.starttls.enable", "true");
+              props.put("mail.smtp.host", host);
+              props.put("mail.smtp.port", "587");
+              
+              Session session = Session.getInstance(props, new Authenticator() {
+                  protected PasswordAuthentication getPasswordAuthentication() {
+                      return new PasswordAuthentication(username, password);
+                  }
+              });
+  
+              try {
+                  MimeMessage message = new MimeMessage(session);
+                  message.setFrom(new InternetAddress("تجربة-بريد-الكتروني@تجربة-القبول-الشامل.موريتانيا"));
+                  message.setRecipient(Message.RecipientType.TO, new InternetAddress("电子邮件测试@普遍适用测试.我爱你"));
+                  message.setSubject("Test Email");
+                  message.setText("This is a test email sent from the mobile app.");
+                  Transport.send(message);
+                  Log.d("EmailSender", "Email sent successfully.");
+              } catch (Exception e) {
+                  Log.e("EmailSender", "Error sending email", e);
+              }
+              return null;
+          }
+      }
+  }
+draft: false
+---

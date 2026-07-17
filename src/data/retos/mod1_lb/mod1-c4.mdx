@@ -1,0 +1,38 @@
+---
+moduleId: "mod1"
+challengeId: "c4"
+moduleTitle: "Module 1 – Unicode Programming Fundamentals"
+moduleDesc: "Provide the basic understanding of Unicode and its applications."
+exerciseNum: "Exercise 4"
+exerciseTitle: "Your task is to create a sign-up form for a Middle Eastern service that can support both Arabic and Latin scripts for the username and password. However, to improve accessibility, the company has decided to restrict the use of both scripts in the same username. What approach would you take to address this requirement? Write a code in Java implementing this solution."
+exerciseItems:
+  - "Detect the Unicode script of the first character of the username."
+  - "Verify that every subsequent character belongs to the same script (either Arabic or Latin)."
+  - "If a different script is found, print an error message and reject the username."
+  - "If all characters belong to the same script, accept the username."
+solutionLang: "java"
+solutionCode: |
+  public class Mod1_Exercise4 {
+      public static void main(String[] args) {
+          String username = "checkرَ";
+  
+          // Get the script of the first character
+          Character.UnicodeScript script = Character.UnicodeScript.of(username.codePointAt(0));
+  
+          // Iterate over the rest of the characters
+          for (int i = 1; i < username.codePointCount(0, username.length()); i++) {
+              int cp = username.codePointAt(i);
+              Character.UnicodeScript currentScript = Character.UnicodeScript.of(cp);
+  
+              // If any character belongs to a different script, reject
+              if (currentScript != script) {
+                  System.out.println("This is an invalid username. Please do not mix different scripts.");
+                  System.exit(0);
+              }
+          }
+  
+          System.out.println("This is a valid username.");
+      }
+  }
+draft: false
+---

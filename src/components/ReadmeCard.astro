@@ -1,0 +1,251 @@
+---
+// Sin props: contenido estático
+---
+
+<div class="readme-wrap">
+    <div class="readme-card">
+        <div class="rm-head">
+            <div class="rm-left">
+                <div class="d-g" aria-hidden="true"></div>
+                <span class="rm-fname">readme.md</span>
+            </div>
+        </div>
+
+        <div class="rm-body">
+            <div class="rm-col">
+                <div class="rm-cmd">$ cat README.md</div>
+                <div class="rm-h"># Skills UA</div>
+                <div class="rm-q">
+                    Descubre las skills técnicas que definen a la
+                    <strong>próxima generación de desarrolladores</strong>
+                    en nuestra comunidad de práctica.
+                </div>
+            </div>
+
+            <div class="rm-col">
+                <div class="rm-cmd">$ git remote -v</div>
+
+                <a
+                    class="rm-link"
+                    href="https://x.com/lacnog"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                        ></path>
+                    </svg>
+                    Twitter
+                </a>
+
+                <a
+                    class="rm-link"
+                    href="https://github.com/icann/ua-code-samples"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+                        ></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+
+            <div class="rm-col">
+                <div class="rm-cmd">$ ln ./resources/</div>
+                <a
+                    class="rm-link"
+                    href="https://icann-community.atlassian.net/wiki/spaces/TUA/pages/107194286/Draft+UA+Curriculum"
+                    target="_blank"
+                    rel="noopener">📋 Draft UA Curriculum - ICANN</a
+                >
+                <a
+                    class="rm-link"
+                    href="https://www.icann.org/ua"
+                    target="_blank"
+                    rel="noopener">📄 ICANN - UA</a
+                >
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer LACNOG -->
+    <div class="lacnog-footer">
+        <a
+            href="https://nog.lat"
+            target="_blank"
+            rel="noopener"
+            class="lacnog-link"
+        >
+            <img
+                src="/images/lacnog-logo.png"
+                alt="LACNOG — Grupo de operadores de Redes de Latinoamérica y el Caribe"
+                class="lacnog-logo"
+            />
+            <span class="lacnog-text">
+                Proyecto apoyado por LACNOG - Grupo de operadores de Redes de
+                Latinoamérica y el Caribe
+            </span>
+        </a>
+    </div>
+</div>
+
+<style>
+    .readme-wrap {
+        max-width: 860px;
+        margin: 0 auto 60px;
+        padding: 0 24px;
+    }
+
+    .readme-card {
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        overflow: hidden;
+    }
+
+    .rm-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .rm-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .rm-fname {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .rm-body {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .rm-col {
+        padding: 22px;
+        min-width: 0;
+    }
+
+    .rm-col + .rm-col {
+        border-left: 1px solid var(--border);
+    }
+
+    .rm-cmd {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+    }
+
+    .rm-h {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 8px;
+        font-family: var(--font-mono);
+    }
+
+    /* Sin barra blockquote — texto directo */
+    .rm-q {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.55;
+    }
+
+    .rm-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        color: var(--accent);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+
+    .rm-link:hover {
+        color: var(--accent-hover);
+    }
+
+    /* ── Footer LACNOG ── */
+    .lacnog-footer {
+        margin-top: 40px;
+        padding: 24px 0 12px;
+        text-align: center;
+    }
+
+    .lacnog-link {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .lacnog-logo {
+        height: 60px;
+        width: auto;
+        object-fit: contain;
+        /*
+         * El PNG tiene fondo negro.
+         * mix-blend-mode: multiply fusiona el negro con el fondo crema
+         * sin alterar los colores del pájaro (rojo, amarillo, azul).
+         */
+        mix-blend-mode: multiply;
+        transition: opacity var(--transition-fast);
+    }
+
+    .lacnog-link:hover .lacnog-logo {
+        opacity: 0.8;
+    }
+
+    .lacnog-text {
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.5;
+        max-width: 440px;
+        text-align: center;
+    }
+
+    .lacnog-link:hover .lacnog-text {
+        color: var(--accent);
+    }
+
+    @media (max-width: 900px) {
+        .rm-body {
+            grid-template-columns: 1fr;
+        }
+
+        .rm-col + .rm-col {
+            border-left: 0;
+            border-top: 1px solid var(--border);
+        }
+    }
+</style>

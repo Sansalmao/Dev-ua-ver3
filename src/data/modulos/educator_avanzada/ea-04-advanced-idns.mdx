@@ -1,0 +1,909 @@
+---
+title: "Guide 8 - Advanced Topics in Internationalized Domain Names (IDNs)"
+description: "Advanced concepts and techniques related to IDNs — covering IDNA2008 limitations, Label Generation Rules (LGRs), XML-based LGR formats, variant labels, and practical label verification and variant identification."
+difficulty: "Básico"
+duration: "90 min"
+objective: "Understand the limitations of IDNA2008, articulate the key components of LGRs, trace the evolution of LGR formats, and apply label verification and variant identification in code."
+progress: 0
+pubDate: 2026-04-20
+draft: false
+sections:
+  - title: "Overview"
+    items:
+      - title: "Objectives"
+        panelId: "objectives"
+      - title: "Note on String Literals"
+        panelId: "note-about-the-utilization-of-unicode-string-literals"
+  - title: "IDNA2008 Limitations"
+    items:
+      - title: "Understanding and Addressing IDNA2008 Limitations"
+        panelId: "understanding-and-addressing-idna2008-limitations"
+  - title: "Label Generation Rules"
+    items:
+      - title: "Introduction to LGRs"
+        panelId: "introduction-to-label-generation-rules-lgrs"
+      - title: "Evolution of LGR Formats"
+        panelId: "evolution-of-lgr-formats"
+      - title: "Advantages of XML-based LGR Format"
+        panelId: "advantages-of-xml-based-lgr-format"
+  - title: "LGR Structure"
+    items:
+      - title: "Section-by-Section LGR Illustration"
+        panelId: "example-section-by-section-illustration-of-an-lgr-definition"
+      - title: "Full LGR Definition for Ethiopic Script"
+        panelId: "example-full-lgr-definition-for-ethiopic-script"
+  - title: "Variant Labels"
+    items:
+      - title: "Variant Labels and their Definition in LGRs"
+        panelId: "variant-labels-and-their-definition-in-lgrs"
+      - title: "Full XML Code for Variant Labels"
+        panelId: "example-full-xml-code-for-defining-label-variants-in-ethiopic-script"
+      - title: "Supplementary Rules to Variant Labels"
+        panelId: "supplementarycomplementary-rules-to-variant-labels-definition-in-lgrs"
+  - title: "Application of LGRs"
+    items:
+      - title: "Label Verification and Variant Identification"
+        panelId: "application-of-lgrs"
+  - title: "References"
+    items:
+      - title: "References & Author"
+        panelId: "references--author"
+---
+
+## Objectives
+
+<div class="info-card">
+
+Delve into various advanced concepts and techniques related to IDNs, with a focus on understanding and addressing the limitations of the IDNA2008 protocol.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">At the end of this module, students should be able to:</span>
+
+- Understand the limitations of the IDNA2008 protocol in practical terms;
+- Articulate key components of Label Generation Rules (LGRs);
+- Trace the evolution of LGR formats;
+- Grasp the concept of variant labels and their definition and use in LGRs; and
+- Demonstrate proficiency in applying the concepts in reall -world scenarios- write and execute code to perform label verification and variant identification.
+
+</div>
+
+---
+
+## Note About the Utilization of Unicode String Literals
+
+<div class="info-card">
+
+- The Unicode string literals utilized in the code examples necessitate input methods, whether virtual or physical keyboards, suited to the script from which the literals are derived. In the event that these input methods are unavailable, alternatives such as language translation tools can be used.
+- Throughout the module, Unicode string literals derived from various scripts have been used in the example code, spanning from lesser-known to more widely used ones. This approach aims to broaden learners' exposure to a diverse range of scripts.
+- The module provides the meanings of Unicode string literals used in the example codes in English, along with their transliterations, to aid learners in accurately pronouncing them.
+- Instructors are free to use Unicode literal strings derived from a script of their choice rather than the ones included in the examples.
+
+</div>
+
+---
+
+## Understanding and Addressing IDNA2008 Limitations
+
+<div class="obs-card">
+
+<span class="hl">While IDNA2008 has made significant improvements over IDNA2003, there are still limitations to be aware of:</span>
+
+- **Contextual Variants**
+  - Uppercase and lowercase letters.
+  - Different representations of diacritics.
+  - Ligatures (characters that are formed by combining two or more letters).
+  - These limitations can lead to confusion and homograph attacks.
+- **Limited Character Set**
+- **Complexity of Implementation**
+- **Compatibility Challenges**
+- **Limited Validation**
+- **Limited Support by DNS Infrastructure**
+- **Language-Specific Rules**
+
+</div>
+
+---
+
+## Introduction to Label Generation Rules (LGRs)
+
+- The primary objective of LGRs is to provide a comprehensive and well-defined set of guidelines:
+- These guidelines help determine the validity of individual label variants within a specific script or language context.
+- To achieve this, LGRs encompass a range of rules that address various aspects:
+    - character variants.
+    - context-dependent variants.
+    - script-specific rules.
+    - and other considerations unique to the language or script in question.
+- By establishing these rules, LGRs ensure consistency and predictability in the handling of IDNs across different DNS systems and applications.
+- The primary goals of LGRs are to:
+    - Ensure the stability and predictability of IDNs.
+    - Promote linguistic diversity and inclusivity.
+    - Enhance security and prevent abuse.
+
+---
+
+## Evolution of LGR Formats
+
+<span class="hl">From Text-Based to XML-Based Standardization (RFCs 3743, 4690, and 7940):</span>
+
+<div class="obs-card">
+
+- The transition from text-based to XML-based standardization:
+    - marks a significant milestone.
+- The transition involves:
+    - introduction of standardized formats: structured and machine readable formats.
+    - Prior to this evolution, LGRs were primarily defined using text-based formats.
+- IETF introduced a series of RFCs that established XML-based standards for LGRs:
+    - **RFC 3743:** the concept of Repertoire.
+    - **RFC 4690:** introduced an XML-based format called the "IDL" (Implementation Definition Language).
+    - **RFC 7940:** This specification extended the IDL format and introduced the concept of "LGR" as a comprehensive XML-based representation of a Label Generation Rule set.
+- Defined the schema and elements for describing the repertoire, rules, metadata, and other relevant information within an LGR.
+
+</div>
+
+---
+
+## Advantages of XML-based LGR Format
+
+<details>
+<summary>Structure and Organization</summary>
+
+It allows for the hierarchical organization of rules, classes, variants, and other elements, making it easier to navigate and process the LGR information.
+
+</details>
+
+<details>
+<summary>Machine-Readable</summary>
+
+It allows for automated parsing, validation, and transformation of LGR data using existing XML processing tools and libraries.
+
+</details>
+
+<details>
+<summary>Extensibility</summary>
+
+Its extensibility enables the representation of more complex rules and language-specific considerations that may be necessary for specific scripts or languages.
+
+</details>
+
+<details>
+<summary>Internationalization Support</summary>
+
+Supports Unicode characters and encoding schemes, making it suitable for representing LGR data that encompasses a wide range of scripts and languages.
+
+</details>
+
+<details>
+<summary>Interoperability</summary>
+
+It enables the exchange of LGR data between registries, registrars, and other entities involved in IDN management, fostering consistency and compatibility across implementations.
+
+</details>
+
+<details>
+<summary>Versioning and Updates</summary>
+
+It facilitates the tracking of changes, additions, and modifications to LGRs over time, ensuring that the most up-to-date rules and guidelines are used.
+
+</details>
+
+---
+
+## Example: Section-by-Section Illustration of an LGR Definition
+
+<div class="info-card">
+
+<span class="hl">XML Declaration</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="lgr1"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="lgr1">
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+```
+
+  </div>
+</div>
+
+This line indicates that the document is an XML file with version 1.0 and encoded in UTF-8.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">LGR Element</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="lgr2"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="lgr2">
+
+```xml
+<lgr xmlns="urn:ietf:params:xml:ns:lgr-1.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="urn:ietf:params:xml:ns:lgr-1.0
+                         https://www.iana.org/assignments/lgr/lgr-1.0.xsd"
+     repertoire="urn:ietf:params:xml:ns:unicode-1.0">
+```
+
+  </div>
+</div>
+
+- `xmlns:` Specifies the XML namespace for LGR elements.
+- `xmlns:xsi:` Declares the XML Schema Instance namespace.
+- `xsi:schemaLocation:` Points to the schema location for validation.
+- `repertoire:` Indicates the XML namespace for Unicode.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">Metadata Section</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="lgr3"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="lgr3">
+
+```xml
+<!-- Metadata Element -->
+<metadata>
+  <version>1.0</version>
+  <language>am</language>
+  <description>Label Generation Rules for Ethiopic script (Amharic)</description>
+  <author>አበበ ከበደ</author>
+</metadata>
+```
+
+  </div>
+</div>
+
+- `version:` Specifies the version of the LGR.
+- `language:` Indicates the language (Amharic in this case).
+- `description:` Provides a description of the Label Generation Rules.
+- `author:` Identifies the author of the LGR.
+
+</div>
+
+<div class="info-card">
+
+<span class="hl">Rules Section</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="lgr4"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="lgr4">
+
+```xml
+<rules>
+  <!-- Classes for different character types -->
+  <class id="consonant">
+    <description>Ethiopic consonants</description>
+    <rule>[ሀ-፼]</rule>
+  </class>
+  <!-- Additional classes for vowels, punctuation, digits, etc. -->
+</rules>
+```
+
+  </div>
+</div>
+
+This section defines various classes of characters (consonants, vowels, punctuation, digits, etc.) with corresponding rules specifying the character ranges.
+
+</div>
+
+---
+
+## Example: Full LGR Definition for Ethiopic Script
+
+<span class="hl">Rules Section</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="lgr-full"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="lgr-full">
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<lgr xmlns="urn:ietf:params:xml:ns:lgr-1.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="urn:ietf:params:xml:ns:lgr-1.0
+                         https://www.iana.org/assignments/lgr/lgr-1.0.xsd"
+     repertoire="urn:ietf:params:xml:ns:unicode-1.0">
+  <metadata>
+    <version>1.0</version>
+    <language>am</language>
+    <description>Label Generation Rules for Ethiopic script (Amharic)</description>
+    <author>አበበ ከበደ</author>
+  </metadata>
+  <rules>
+    <class id="consonant">
+      <description>Ethiopic consonants</description>
+      <rule>[ሀ-ፖ]</rule>
+    </class>
+    <class id="vowel">
+      <description>Ethiopic vowels</description>
+      <rule>[አኡኢኣኤእኦ]</rule>
+    </class>
+    <class id="punctuation">
+      <description>Ethiopic punctuation marks</description>
+      <rule>[፠-፧]</rule>
+    </class>
+    <class id="digit">
+      <description>Ethiopic digits</description>
+      <rule>[፩-፼]</rule>
+    </class>
+    <class id="joiner">
+      <description>Joiner character</description>
+      <rule>፡</rule>
+    </class>
+    <class id="diacritic">
+      <description>Ethiopic diacritic characters</description>
+      <rule>[፡-፦]</rule>
+    </class>
+  </rules>
+</lgr>
+```
+
+  </div>
+</div>
+
+---
+
+## Variant Labels and their Definition in LGRs
+
+<details>
+<summary>Base Label:</summary>
+
+<div class="obs-card">
+
+The base label is the original label for which variant labels are defined. It serves as the starting point for generating the variants.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var1"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var1">
+
+```xml
+<BaseLabel>አማርኛ</BaseLabel>
+```
+
+  </div>
+</div>
+
+Specifies the base label, which is the primary representation of the label.
+
+</div>
+
+</details>
+
+<details>
+<summary>Variant Type:</summary>
+
+This specifies the type or category of the variant label, such as:  
+The next XML code fragments define variant labels with different types: diacritics, script variation, and transliteration.
+
+<details>
+<summary>Variant with diacritics - Diactrics Element:</summary>
+
+<div class="obs-card">
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var2"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var2">
+
+```xml
+<VariantLabel>
+  <Type>Diacritics</Type>
+  <Rules>
+    <AddDiacritics>
+      <!-- No Diacritic Specified -->
+    </AddDiacritics>
+  </Rules>
+</VariantLabel>
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Variant Labels Element - Script Variant Element:</summary>
+
+<div class="obs-card">
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var3"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var3">
+
+```xml
+<VariantLabel>
+  <Type>ScriptVariant</Type>
+  <Rules>
+    <ScriptVariation>ዐማርኛ</ScriptVariation>
+  </Rules>
+</VariantLabel>
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Variant Labels Element - Transliteration Variant Element:</summary>
+
+<div class="obs-card">
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var4"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var4">
+
+```xml
+<VariantLabel>
+  <Type>Transliteration</Type>
+  <Rules>
+    <Transliteration>Amharic</Transliteration>
+  </Rules>
+</VariantLabel>
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+</details>
+
+<details>
+<summary>Variant Rules:</summary>
+
+Variant rules define the transformations or modifications applied to the base label to generate the variant labels.
+
+</details>
+
+<details>
+<summary>Contextual Rules:</summary>
+
+<div class="obs-card">
+
+Contextual rules define variant transformations based on the surrounding context or neighboring characters.
+
+The above XML code fragment defines contextual rules where the addition of a character depends on a specific condition (`አ in this case`).
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var5"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var5">
+
+```xml
+<ContextualRules>
+  <ContextRule>
+    <Condition>አ</Condition>
+    <Action>
+      <AddCharacter>ዐ</AddCharacter>
+    </Action>
+  </ContextRule>
+</ContextualRules>
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+<details>
+<summary>Actions:</summary>
+
+Actions specify the operations applied to the base label to generate variant labels.
+
+</details>
+
+<details>
+<summary>Mapping or Mapping Tables:</summary>
+
+<div class="obs-card">
+
+Mapping tables are used to explicitly define the mapping between a base label and its variant labels.
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var6"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var6">
+
+```xml
+<MappingTables>
+  <Mapping>
+    <Base>አማርኛ</Base>
+    <Variants>
+      <Variant>ዐማርኛ</Variant>
+      <!-- Additional variant mappings -->
+    </Variants>
+  </Mapping>
+</MappingTables>
+```
+
+  </div>
+</div>
+
+The above XML code fragment defines explicit mappings, associating the base label with its variants.
+
+</div>
+
+</details>
+
+<details>
+<summary><span class="hl">Validity and Stability:</span></summary>
+
+<div class="obs-card">
+
+Variant labels defined in LGRs may have specific validity and stability criteria.
+
+<span class="hl">Validity and Stability Criteria Elements:</span>
+
+Specifies validity criteria for variants, indicating stability (High in this case).
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var7"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var7">
+
+```xml
+<ValidityCriteria>
+  <ValidVariant>
+    <Variant>ዐማርኛ</Variant>
+    <Stability>High</Stability>
+  </ValidVariant>
+</ValidityCriteria>
+```
+
+  </div>
+</div>
+
+</div>
+
+</details>
+
+---
+
+## Example: Full XML Code for Defining Label Variants in Ethiopic Script
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="xml" data-target="var-full"><span class="lang-icon lang-icon--sql"></span>XML</button>
+  </div>
+  <div class="lang-block active" data-lang="xml" data-group="var-full">
+
+```xml
+<LGR>
+  <!-- Base Label -->
+  <BaseLabel>አማርኛ</BaseLabel>
+
+  <!-- Variant Label with Diacritics -->
+  <VariantLabel>
+    <Type>Diacritics</Type>
+    <Rules>
+      <AddDiacritics>
+        <!-- No Diacritic Specified -->
+      </AddDiacritics>
+    </Rules>
+  </VariantLabel>
+
+  <!-- Variant Label with Script Variation -->
+  <VariantLabel>
+    <Type>ScriptVariant</Type>
+    <Rules>
+      <ScriptVariation>ዐማርኛ</ScriptVariation>
+    </Rules>
+  </VariantLabel>
+
+  <!-- Variant Label with Transliteration -->
+  <VariantLabel>
+    <Type>Transliteration</Type>
+    <Rules>
+      <Transliteration>Amharic</Transliteration>
+    </Rules>
+  </VariantLabel>
+
+  <!-- Contextual Rules -->
+  <ContextualRules>
+    <ContextRule>
+      <Condition>አ</Condition>
+      <Action>
+        <AddCharacter>ዐ</AddCharacter>
+      </Action>
+    </ContextRule>
+  </ContextualRules>
+
+  <!-- Actions -->
+  <Actions>
+    <GlobalAction>
+      <SubstituteCharacters>
+        <Substitution>
+          <Original>አ</Original>
+          <Replacement>ዐ</Replacement>
+        </Substitution>
+      </SubstituteCharacters>
+    </GlobalAction>
+  </Actions>
+
+  <!-- Mapping Tables -->
+  <MappingTables>
+    <Mapping>
+      <Base>አማርኛ</Base>
+      <Variants>
+        <Variant>ዐማርኛ</Variant>
+      </Variants>
+    </Mapping>
+  </MappingTables>
+
+  <!-- Validity and Stability Criteria -->
+  <ValidityCriteria>
+    <ValidVariant>
+      <Variant>ዐማርኛ</Variant>
+      <Stability>High</Stability>
+    </ValidVariant>
+  </ValidityCriteria>
+</LGR>
+```
+
+  </div>
+</div>
+
+---
+
+## Supplementary/Complementary Rules to Variant Labels Definition in LGRs
+
+<div class="info-card">
+
+- **Diacritic Rule:** This rule type involves adding or removing diacritics from the base label.
+- **Transliteration Rule:** Transliteration rules define the transformation of a label from one script or character set to another.
+- **Contextual Rule:** Contextual rules consider the context or neighboring characters to determine the generation of variant labels.
+- **Ligature Rule:** Ligature rules define the transformation of a sequence of characters into a ligature or a single character representation.
+- **Case Rule:** Case rules specify the transformation of a label's case, such as changing between uppercase and lowercase letters.
+- **Abbreviation Rule:** Abbreviation rules define the transformation of a label into an abbreviated form.
+- **Phonetic Rule:** Phonetic rules involve the transformation of a label based on phonetic representations.
+
+</div>
+
+---
+
+## Application of LGRs
+
+<span class="hl">Python Example on Label Verification and Variant Identification:</span>
+
+<div class="code-switcher">
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="python" data-target="app1"><span class="lang-icon lang-icon--python"></span>Python</button>
+    <button class="lang-btn" data-lang="java" data-target="app1"><span class="lang-icon lang-icon--java"></span>Java</button>
+  </div>
+  <div class="lang-block active" data-lang="python" data-group="app1">
+
+```python
+import xml.etree.ElementTree as ET
+
+class LGRValidator:
+    def __init__(self, lgr_data):
+        self.lgr_tree = ET.ElementTree(ET.fromstring(lgr_data))
+        self.root = self.lgr_tree.getroot()
+        self.base_label = self.root.find("BaseLabel").text
+        self.variant_labels = self._get_variant_labels()
+
+    def validate_label(self, label):
+        if not isinstance(label, str):
+            raise TypeError("Label must be a string")
+        return label == self.base_label
+
+    def get_variant_labels(self):
+        return self.variant_labels
+
+    def _get_variant_labels(self):
+        variant_labels = set()
+        for variant_label in self.root.findall("VariantLabel"):
+            variant_type_element = variant_label.find("Type")
+            if variant_type_element is not None and variant_type_element.text:
+                variant_type = variant_type_element.text
+                variant = None
+                if variant_type == "Diacritics":
+                    diacritics_element = variant_label.find("Rules/AddDiacritics/Diacritic")
+                    if diacritics_element is not None and diacritics_element.text:
+                        diacritics = [d.text for d in variant_label.findall("Rules/AddDiacritics/Diacritic")]
+                        variant = self._apply_diacritics(label=self.base_label, diacritics=diacritics)
+                elif variant_type == "ScriptVariant":
+                    script_variation_element = variant_label.find("Rules/ScriptVariation")
+                    if script_variation_element is not None and script_variation_element.text:
+                        variant = self._apply_script_variation(
+                            label=self.base_label,
+                            script_variation=script_variation_element.text
+                        )
+                elif variant_type == "Transliteration":
+                    transliteration_element = variant_label.find("Rules/Transliteration")
+                    if transliteration_element is not None and transliteration_element.text:
+                        variant = self._apply_transliteration(
+                            label=self.base_label,
+                            transliteration=transliteration_element.text
+                        )
+                if variant and variant != self.base_label:
+                    variant_labels.add(variant)
+        return variant_labels
+
+    def _apply_diacritics(self, label, diacritics):
+        return label + ''.join(diacritics)
+
+    def _apply_script_variation(self, label, script_variation):
+        return script_variation
+
+    def _apply_transliteration(self, label, transliteration):
+        return transliteration
+
+def read_lgr_from_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
+
+# Specify the path to your LGR file
+lgr_file_path = 'lgr_ethiopic_variant.xml'
+lgr_data = read_lgr_from_file(lgr_file_path)
+validator = LGRValidator(lgr_data)
+
+label = "አማርኛ"
+is_valid = validator.validate_label(label)
+print(f"Is '{label}' valid? {is_valid}")
+
+variant_labels = validator.get_variant_labels()
+print(f"Variant labels for '{label}':")
+for variant_label in variant_labels:
+    if variant_label != label:
+        print(variant_label)
+```
+
+  </div>
+  <div class="lang-block" data-lang="java" data-group="app1">
+
+```java
+import org.w3c.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.ParserConfigurationException;
+
+class LGRValidator {
+    private Document lgrDocument;
+    private String baseLabel;
+    private Set<String> variantLabels;
+
+    public LGRValidator(String lgrData)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        if (Files.isRegularFile(Paths.get(lgrData))) {
+            this.lgrDocument = builder.parse(Paths.get(lgrData).toFile());
+        } else {
+            this.lgrDocument = builder.parse(new InputSource(new StringReader(lgrData)));
+        }
+        this.lgrDocument.getDocumentElement().normalize();
+        this.baseLabel = this.getNodeTextContent("BaseLabel");
+        this.variantLabels = this.extractVariantLabels();
+    }
+
+    public boolean validateLabel(String label) {
+        return label != null && label.equals(baseLabel);
+    }
+
+    public Set<String> getVariantLabels() {
+        return variantLabels;
+    }
+
+    private String getNodeTextContent(String tagName) {
+        NodeList nodes = lgrDocument.getElementsByTagName(tagName);
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent().trim();
+        }
+        return "";
+    }
+
+    private Set<String> extractVariantLabels() {
+        Set<String> variants = new HashSet<>();
+        NodeList variantLabelNodes = lgrDocument.getElementsByTagName("VariantLabel");
+        for (int i = 0; i < variantLabelNodes.getLength(); i++) {
+            Element variantLabel = (Element) variantLabelNodes.item(i);
+            NodeList typeNodes = variantLabel.getElementsByTagName("Type");
+            if (typeNodes.getLength() > 0) {
+                String type = typeNodes.item(0).getTextContent().trim();
+                String variant = null;
+                if (type.equals("ScriptVariant")) {
+                    NodeList svNodes = variantLabel.getElementsByTagName("ScriptVariation");
+                    if (svNodes.getLength() > 0) variant = svNodes.item(0).getTextContent().trim();
+                } else if (type.equals("Transliteration")) {
+                    NodeList tlNodes = variantLabel.getElementsByTagName("Transliteration");
+                    if (tlNodes.getLength() > 0) variant = tlNodes.item(0).getTextContent().trim();
+                }
+                if (variant != null && !variant.equals(baseLabel)) {
+                    variants.add(variant);
+                }
+            }
+        }
+        return variants;
+    }
+}
+```
+
+  </div>
+</div>
+
+<div class="info-card">
+
+<span class="hl">Both Python and Java produce the same output:</span>
+
+```
+Is 'አማርኛ' valid? True
+Variant labels for 'አማርኛ':
+ዐማርኛ
+Amharic
+```
+
+</div>
+
+---
+
+## References & Author
+
+<div class="meta-card">
+
+<span class="hl">References:</span>
+
+1. Hoffman, P., & Dürst, M. (2010, July). Internationalized Domain Names in Applications (IDNA2008) (RFC 5893). Retrieved from [https://www.ietf.org/rfc/](https://www.ietf.org/rfc/).
+2. Internet Engineering Task Force (IETF). (2023). IDNA2008 — Internationalized Domain Names in Applications. Retrieved from [https://www.ietf.org/](https://www.ietf.org/).
+3. Cloudflare, Inc. (2023). Understanding and Addressing IDNA2008 Limitations. Retrieved from [https://developers.cloudflare.com/](https://developers.cloudflare.com/).
+4. Internet Engineering Task Force (IETF). (2018, July). Label Generation Rules (LGR) for the ASCII Scripts (RFC 8195). Retrieved from [https://www.ietf.org/rfc/](https://www.ietf.org/rfc/).
+5. Unicode Consortium. (2023). Unicode Technical Standard #46: Unicode IDNA Compatibility Processing. Retrieved from [https://www.unicode.org/reports/tr46/](https://www.unicode.org/reports/tr46/).
+
+</div>
+
+<div class="meta-card">
+
+<span class="hl">Author:</span>
+
+<p class="meta-author"><strong>Dessalegn Mequanint Yehuala,</strong> <a href="mailto:dessalegn.mequanint@aau.edu.et">dessalegn.mequanint@aau.edu.et</a></p>
+
+</div>
+
+<div class="meta-card">
+
+<p class="meta-license">2024 Creative Commons License - Attribution 4.0 International (CC BY 4.0).</p>
+
+</div>
