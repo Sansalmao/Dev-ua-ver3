@@ -284,28 +284,32 @@ const today = fmtDate(new Date());
                         </div>
                         <span style="font-size:.6875rem;color:var(--gray-400)">Al aprobar, el profesor podrá crear comunidades</span>
                     </div>
-                    <div class="request-list" id="pending-list">
+                    <div class="flex flex-col gap-3" id="pending-list">
                         {pendingTeachers.length === 0 ? (
                             <div class="empty-state">No hay profesores pendientes de verificación</div>
                         ) : pendingTeachers.map((t) => (
-                            <div class="request-card" id={`req-${t.id}`} data-req={t.id}>
-                                <div class="req-avatar-info">
+                            <div
+                                class="request-card flex items-center gap-3.5 rounded-(--radius) border border-(--gray-200) bg-(--white) px-5 py-3.5 shadow-(--shadow-sm) transition-[opacity,transform] duration-300 data-[busy=1]:pointer-events-none data-[busy=1]:opacity-50"
+                                id={`req-${t.id}`}
+                                data-req={t.id}
+                            >
+                                <div class="flex min-w-40 items-center gap-3">
                                     <div class="avatar av-md av-amber">{t.initials}</div>
                                     <div>
-                                        <div class="req-name">{t.name}</div>
-                                        <div class="req-email">{t.email}</div>
+                                        <div class="text-[0.8125rem] font-semibold text-(--gray-800)">{t.name}</div>
+                                        <div class="mt-0.5 text-[0.6875rem] text-(--gray-400)">{t.email}</div>
                                     </div>
                                 </div>
-                                <div class="req-tema-wrap">
-                                    <div class="req-tema-label">Institución</div>
-                                    <div class="req-tema">{t.institution || "No declarada"}</div>
+                                <div class="min-w-0 flex-1 px-4">
+                                    <div class="mb-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.06em] text-(--gray-400)">Institución</div>
+                                    <div class="overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] font-medium text-(--gray-700)">{t.institution || "No declarada"}</div>
                                 </div>
-                                <div class="req-right">
+                                <div class="flex shrink-0 flex-col items-end gap-1.5">
                                     {t.wantsCommunity && <span class="badge badge-amber">Desea crear comunidad</span>}
                                     {t.country && <span class="badge badge-gray">{t.country}</span>}
-                                    <span class="req-date">{t.date}</span>
+                                    <span class="text-[0.6875rem] text-(--gray-400)">{t.date}</span>
                                 </div>
-                                <div class="req-actions">
+                                <div class="ml-2 flex shrink-0 items-center gap-2">
                                     <button class="btn btn-danger" onclick={`handleRequest('${t.id}','REJECT')`}>Rechazar</button>
                                     <button class="btn btn-primary" onclick={`handleRequest('${t.id}','APPROVE')`}>Aprobar</button>
                                 </div>
@@ -363,7 +367,7 @@ const today = fmtDate(new Date());
                         <input class="search-input" id="search-comm" type="text" placeholder="Buscar por nombre o facilitador…" oninput="filterCommunities()"/>
                     </div>
                     <div class="select-wrap">
-                        <select class="stage-select" id="filter-stage" onchange="filterCommunities()">
+                        <select class="filter-select" id="filter-stage" onchange="filterCommunities()">
                             <option value="all">Todas las etapas</option>
                             <option value="conceptos_clave">Conceptos Clave</option>
                             <option value="implementacion_tecnica">Implementación Técnica</option>
@@ -472,7 +476,7 @@ const today = fmtDate(new Date());
                         <input class="search-input" id="search-user" type="text" placeholder="Buscar por nombre o email…" oninput="filterUsers()"/>
                     </div>
                     <div class="select-wrap">
-                        <select class="stage-select" id="filter-profile" onchange="filterUsers()">
+                        <select class="filter-select" id="filter-profile" onchange="filterUsers()">
                             <option value="all">Todos los perfiles</option>
                             <option value="PROFESOR">Profesores</option>
                             <option value="ESTUDIANTE">Estudiantes</option>
@@ -706,23 +710,11 @@ html,body{
   border-radius:9999px;font-size:.6875rem;font-weight:700;
 }
 
-/* ── REQUEST CARDS ─────────────────────────────────────── */
-.request-list{display:flex;flex-direction:column;gap:.75rem}
-.request-card{
-  background:var(--white);border:1px solid var(--gray-200);
-  border-radius:var(--radius);padding:.875rem 1.25rem;
-  box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:.875rem;
-  transition:opacity .3s,transform .3s;
-}
-.req-avatar-info{display:flex;align-items:center;gap:.75rem;min-width:160px}
-.req-name{font-size:.8125rem;font-weight:600;color:var(--gray-800)}
-.req-email{font-size:.6875rem;color:var(--gray-400);margin-top:.125rem}
-.req-tema-wrap{flex:1;min-width:0;padding:0 1rem}
-.req-tema-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);font-weight:600;margin-bottom:.125rem}
-.req-tema{font-size:.8125rem;font-weight:500;color:var(--gray-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.req-right{display:flex;flex-direction:column;align-items:flex-end;gap:.375rem;flex-shrink:0}
-.req-date{font-size:.6875rem;color:var(--gray-400)}
-.req-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0;margin-left:.5rem}
+/* ── REQUEST CARDS ───────────────────────────────────────
+   Migrado a Tailwind en el markup (panel "Profesores por verificar", D1 / T2.9).
+   Se conserva la clase-marcador `.request-card` (sin estilos) porque el JS
+   la consulta en updatePendingUI(); el estado data-busy se maneja ahora con
+   la variante Tailwind data-[busy=1]. */
 
 /* ── BUTTONS ───────────────────────────────────────────── */
 .btn{
@@ -869,7 +861,7 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
 }
 .badge-gray{ background:var(--gray-100); color:var(--gray-600); border:1px solid var(--gray-200); }
 .muted-note{ font-size:.6875rem; color:var(--gray-400); }
-.request-card[data-busy="1"]{ opacity:.5; pointer-events:none; }
+/* data-busy del request-card ahora vive en Tailwind: data-[busy=1]:opacity-50 */
 
 </style>
 
@@ -1055,6 +1047,9 @@ tbody td{padding:.875rem 1rem;font-size:.8125rem;color:var(--gray-700);border-bo
     });
 
     updatePendingUI();
+</script>
+<script>
+    import "../lib/enhance-selects";
 </script>
 </body>
 </html>
