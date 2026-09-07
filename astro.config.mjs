@@ -8,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
 
   output: "server",
-  adapter: node({ mode: "standalone" }),
+  adapter: vercel(),
 
   security: {
     checkOrigin: false,

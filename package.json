@@ -17,6 +17,7 @@
     "@astrojs/mdx": "7.0.2",
     "@astrojs/node": "^11.0.2",
     "@astrojs/react": "^6.0.1",
+    "@astrojs/vercel": "^11.0.10",
     "@better-auth/prisma-adapter": "^1.6.23",
     "@libsql/client": "^0.17.4",
     "@lucide/astro": "^1.24.0",
