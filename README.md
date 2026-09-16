@@ -178,10 +178,73 @@ Sentry se configura en `sentry.client.config.js` y `sentry.server.config.js`
 
 ---
 
-## 8. Despliegue (Render)
+## 8. Despliegue
 
-Es **una sola** aplicación SSR: va como **Web Service** (Node), no como Static
-Site.
+Es **una sola** aplicación SSR (`output: "server"`), no un sitio estático —
+en cualquier plataforma va como servicio/función con servidor, no como
+Static Site.
+
+**Importante:** el adapter de Astro (`astro.config.mjs`) determina el
+formato de salida del build, y es específico de cada plataforma — el
+proyecto no puede estar configurado para Render y Vercel al mismo tiempo.
+Cambiar de plataforma implica cambiar el adapter (ver cada sección) antes de
+desplegar ahí.
+
+### 8.1 Vercel
+
+Requiere el adapter `@astrojs/vercel`:
+
+```javascript
+// astro.config.mjs
+import vercel from "@astrojs/vercel";
+// ...
+export default defineConfig({
+  output: "server",
+  adapter: vercel(),
+  // ...
+});
+```
+
+Instalación del paquete (y remoción del adapter de Node, si estaba puesto):
+
+```bash
+npm install @astrojs/vercel
+npm uninstall @astrojs/node
+```
+
+Las variables de entorno se configuran en Project Settings → Environment
+Variables (Vercel no lee el `.env` del repo): `DATABASE_URL` (o
+`TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN`, que tienen prioridad),
+`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (dominio real, con `https://`),
+`TURNSTILE_SECRET_KEY`, `PUBLIC_TURNSTILE_SITE_KEY` y, para source maps,
+`SENTRY_AUTH_TOKEN`. Cambiar o agregar variables requiere un nuevo deploy
+para que tomen efecto.
+
+Un **404: NOT_FOUND de la plataforma** (no de la app) al visitar el sitio
+desplegado suele indicar que el adapter configurado no es el de Vercel —
+Vercel no tiene cómo enrutar las páginas SSR sin él.
+
+### 8.2 Render
+
+Requiere el adapter `@astrojs/node`:
+
+```javascript
+// astro.config.mjs
+import node from "@astrojs/node";
+// ...
+export default defineConfig({
+  output: "server",
+  adapter: node({ mode: "standalone" }),
+  // ...
+});
+```
+
+```bash
+npm install @astrojs/node
+npm uninstall @astrojs/vercel
+```
+
+Se despliega como **Web Service** (Node), con:
 
 ```
 Build:  npm install && npx prisma generate && npm run build
@@ -190,14 +253,18 @@ Start:  node ./dist/server/entry.mjs
 
 Variables del servicio: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`,
 `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (dominio real), `TURNSTILE_SECRET_KEY`,
-`PUBLIC_TURNSTILE_SITE_KEY` y, si querés source maps, `SENTRY_AUTH_TOKEN`.
+`PUBLIC_TURNSTILE_SITE_KEY` y, para source maps, `SENTRY_AUTH_TOKEN`.
 
-### Antes de publicar
+### 8.3 Antes de publicar (cualquiera de las dos plataformas)
 
-- [ ] Llaves de Turnstile **reales** (site key **y** secret).
-- [ ] `BETTER_AUTH_SECRET` propio de producción.
+- [ ] Llaves de Turnstile **reales** (site key **y** secret), con el dominio
+      de destino agregado a la lista de dominios permitidos en el dashboard
+      de Cloudflare Turnstile.
+- [ ] `BETTER_AUTH_SECRET` propio de producción (distinto al de desarrollo).
 - [ ] `BETTER_AUTH_URL` apuntando al dominio real.
 - [ ] Esquema aplicado en Turso (`apply-turso-schema.mjs`).
-- [ ] Revisar `security.checkOrigin` en `astro.config.mjs` (hoy en `false`).
-- [ ] Crear el usuario admin a mano (`isAdmin: true`): no hay endpoint público.
-- [ ] Ver `docs/checklist-cierre.md` (pruebas T3.10 / T4.5 / T4.10).
+- [ ] Revisión de `security.checkOrigin` en `astro.config.mjs` (hoy en
+      `false`).
+- [ ] Creación del usuario admin a mano (`isAdmin: true`): no existe
+      endpoint público para esto.
+- [ ] Revisión de `docs/checklist-cierre.md` (pruebas T3.10 / T4.5 / T4.10).
