@@ -7,6 +7,7 @@ import MetadataCard from "../components/MetadataCard.astro";
 import TabsNav from "../components/TabsNav.astro";
 import TabsPanel from "../components/TabsPanel.astro";
 import AuthModal from "../components/AuthModal.astro";
+import Toast from "../components/Toast.astro";
 import type { ModuleSection } from "../lib/module-schema";
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
     progreso?: number;
     filename: string;
     sections?: ModuleSection[];
+    temaId?: string | null;
 }
 
 const {
@@ -37,6 +39,7 @@ const {
     progreso = 0,
     filename,
     sections = [],
+    temaId = null,
 } = Astro.props;
 
 const hasNav = sections.length > 0;
@@ -46,25 +49,53 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
 <BaseLayout title={title} description={description}>
     <NavBar slot="navbar" />
 
-    <div class="module-wrap">
+    <div class="module-wrap" data-tema-id={temaId}>
         <div class="module-topbar">
             <BreadCrumb padre={padre} padreHref={padreHref} actual={titulo} />
-            <a href="/" class="btn-back-ruta" id="btn-back-ruta">
-                <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                >
-                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
-                </svg>
-                Volver a la ruta
-            </a>
+            <div class="module-topbar-actions">
+                {
+                    temaId && (
+                        <button
+                            type="button"
+                            class="btn-back-ruta btn-marcar-completo"
+                            id="btn-marcar-completo"
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            <span id="btn-marcar-completo-label">
+                                Marcar como completado
+                            </span>
+                        </button>
+                    )
+                }
+                <a href="/" class="btn-back-ruta" id="btn-back-ruta">
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    >
+                        <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                    </svg>
+                    Volver a la ruta
+                </a>
+            </div>
         </div>
         <PageHeader titulo={titulo} descripcion={subtitulo} />
         <MetadataCard
@@ -103,7 +134,7 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
         </div>
     </div>
 
-    <AuthModal />
+    <Toast />
 
     <script>
         // ═══════════════════════════════════════════════════════════════════
@@ -500,6 +531,35 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
 
     .module-topbar :global(.breadcrumb) {
         margin-bottom: 0;
+    }
+
+    .module-topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-marcar-completo {
+        background: var(--text);
+    }
+
+    .btn-marcar-completo:hover {
+        background: #23272b;
+    }
+
+    .btn-marcar-completo.is-completo {
+        background: #1a7f4a;
+        cursor: default;
+    }
+
+    .btn-marcar-completo.is-completo:hover {
+        background: #1a7f4a;
+        transform: none;
+    }
+
+    .btn-marcar-completo:disabled {
+        opacity: 0.9;
     }
 
     .btn-back-ruta {

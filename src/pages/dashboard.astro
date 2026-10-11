@@ -11,8 +11,14 @@ if (!user) {
 // ── Identidad del usuario logueado (para el pie del sidebar) ─────────────────
 const meRecord = await prisma.user.findUnique({
     where: { id: user.userId },
-    select: { displayName: true, email: true },
+    select: {
+        displayName: true,
+        email: true,
+        teacherVerificationStatus: true,
+        hasCompletedRouteAPreview: true,
+    },
 });
+
 const meName = meRecord?.displayName?.trim() || meRecord?.email || "Usuario";
 function computeInitials(name: string) {
     const base = name.includes("@") ? name.split("@")[0] : name;
@@ -98,6 +104,16 @@ const bootstrap = { meId: user.userId, communities, routes };
 const communityIds = communities.map((c) => c.id);
 const ownedIdsArr = [...ownedIds];
 const isProfesor = user.profileType === "PROFESOR";
+
+const puedeCrearComunidad =
+    isProfesor && meRecord?.teacherVerificationStatus === "VERIFIED";
+
+// ── T4.4 — Preview de la Ruta A ────────────────
+// Exención automática: si el usuario ya pertenece a una comunidad en etapa 2,
+// no tiene sentido mostrarle el preview de la Ruta A
+const yaEnEtapa2 = communities.some((c) => c.stage === "IMPLEMENTACION_TECNICA");
+const mostrarRoutePreviewCta =
+    !meRecord?.hasCompletedRouteAPreview && !yaEnEtapa2;
 
 const [
     totalChallenges,
@@ -422,13 +438,106 @@ const feed = feedItems
 
             <!-- ═══ MAIN ═══ -->
             <div id="main">
-                <header class="topbar">
-                    <div class="topbar-title">
-                        &gt;_ Comunidad de Práctica <span>/ UA WG LACNOG</span>
-                    </div>
-                </header>
+            <header class="topbar">
+                <div class="topbar-title">
+                    &gt;_ Comunidad de Práctica <span>/ UA WG LACNOG</span>
+                </div>
+                {
+                    puedeCrearComunidad && (
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            id="btn-open-crear-comunidad"
+                        >
+                            + Crear comunidad
+                        </button>
+                    )
+                }
+            </header>
 
-                <div class="view-tabs">
+            {
+                puedeCrearComunidad && (
+                    <div
+                        class="table-card hidden"
+                        id="crear-comunidad-panel"
+                        style="margin:0 20px 16px"
+                    >
+                        <div class="table-header">
+                            <div class="table-title">Nueva comunidad</div>
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                id="btn-close-crear-comunidad"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                        <form
+                            id="form-crear-comunidad"
+                            style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;max-width:460px"
+                        >
+                            <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--text)">
+                                Nombre de la comunidad
+                                <input
+                                    type="text"
+                                    id="cc-name"
+                                    name="name"
+                                    required
+                                    minlength="3"
+                                    placeholder="Ej. UA LACNOG — Cohorte 2026"
+                                    class="filter-select"
+                                    style="cursor:text"
+                                />
+                            </label>
+                            <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--text)">
+                                Tema
+                                <input
+                                    type="text"
+                                    id="cc-topic"
+                                    name="topic"
+                                    required
+                                    minlength="3"
+                                    placeholder="Ej. Aceptación Universal"
+                                    class="filter-select"
+                                    style="cursor:text"
+                                />
+                            </label>
+                            <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--text)">
+                                Público objetivo
+                                <select
+                                    id="cc-track"
+                                    name="profileTrack"
+                                    class="filter-select"
+                                >
+                                    <option value="TEACHER"
+                                        >Profesores/Instructores</option
+                                    >
+                                    <option value="STUDENT"
+                                        >Estudiantes</option
+                                    >
+                                </select>
+                            </label>
+                            <div
+                                id="cc-error"
+                                class="hidden"
+                                style="font-size:12px;color:var(--danger,#c0392b);font-weight:700"
+                            >
+                            </div>
+                            <div style="display:flex;gap:10px;margin-top:4px">
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary btn-sm"
+                                    id="btn-submit-crear-comunidad"
+                                >
+                                    Crear comunidad
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )
+            }
+
+            <div class="view-tabs">
                     <div
                         class="view-tab active"
                         data-view="overview"
@@ -654,7 +763,28 @@ const feed = feedItems
 
                     <!-- ══ RUTAS ══ -->
                     <section id="skills-view" class="view-section">
-                        <div
+                                            {
+                                                mostrarRoutePreviewCta && (
+                                                    <div
+                                                        class="info-banner"
+                                                        id="route-preview-cta"
+                                                        style="justify-content:space-between;flex-wrap:wrap"
+                                                    >
+                                                        <span>
+                                                            👋 Este es un primer vistazo a tus
+                                                            rutas de aprendizaje.
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-dark btn-sm"
+                                                            id="btn-route-preview-done"
+                                                        >
+                                                            Continuar
+                                                        </button>
+                                                    </div>
+                                                )
+                                            }
+                                            <div
                             id="skills-admin-banner"
                             class="info-banner hidden"
                         >
@@ -1353,6 +1483,10 @@ const feed = feedItems
                 gap: 8px;
             }
             .info-banner.hidden {
+                display: none;
+            }
+            #crear-comunidad-panel.hidden,
+            #cc-error.hidden {
                 display: none;
             }
 
@@ -3252,9 +3386,172 @@ const feed = feedItems
                     });
             }
 
+            /* ── CREAR COMUNIDAD (profesor verificado) ──
+             * El endpoint POST /api/communities (T3.1) ya existía en el backend,
+             * pero no había ningún punto de la UI que lo llamara: un profesor
+             * recién aprobado por el admin no tenía forma de crear su comunidad.
+             */
+            function initCrearComunidad() {
+                var openBtn = document.getElementById(
+                    "btn-open-crear-comunidad",
+                );
+                var closeBtn = document.getElementById(
+                    "btn-close-crear-comunidad",
+                );
+                var panel = document.getElementById("crear-comunidad-panel");
+                var form = document.getElementById("form-crear-comunidad");
+                var errBox = document.getElementById("cc-error");
+                var submitBtn = document.getElementById(
+                    "btn-submit-crear-comunidad",
+                );
+                if (!openBtn || !panel || !form) return;
+
+                function showError(msg) {
+                    errBox.textContent = msg;
+                    errBox.classList.remove("hidden");
+                }
+                function hideError() {
+                    errBox.classList.add("hidden");
+                    errBox.textContent = "";
+                }
+
+                openBtn.addEventListener("click", function () {
+                    panel.classList.remove("hidden");
+                    hideError();
+                    openBtn.disabled = true;
+                    panel.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest",
+                    });
+                });
+
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", function () {
+                        panel.classList.add("hidden");
+                        hideError();
+                        openBtn.disabled = false;
+                    });
+                }
+
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    hideError();
+
+                    var name = document
+                        .getElementById("cc-name")
+                        .value.trim();
+                    var topic = document
+                        .getElementById("cc-topic")
+                        .value.trim();
+                    var profileTrack =
+                        document.getElementById("cc-track").value;
+
+                    if (name.length < 3) {
+                        showError(
+                            "El nombre es obligatorio (mín. 3 caracteres).",
+                        );
+                        return;
+                    }
+                    if (topic.length < 3) {
+                        showError(
+                            "El tema es obligatorio (mín. 3 caracteres).",
+                        );
+                        return;
+                    }
+
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = "Creando…";
+
+                    fetch("/api/communities", {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name: name, topic: topic, profileTrack: profileTrack }),
+                    })
+                        .then(function (res) {
+                            return res.text().then(function (raw) {
+                                var data = raw ? JSON.parse(raw) : null;
+                                if (!res.ok)
+                                    throw new Error(
+                                        (data &&
+                                            (data.error || data.message)) ||
+                                            "HTTP " + res.status,
+                                    );
+                                return data;
+                            });
+                        })
+                        .then(function (data) {
+                            toast(
+                                "✓ Comunidad \"" +
+                                    (data.community
+                                        ? data.community.name
+                                        : name) +
+                                    '" creada',
+                            );
+                            /* La página necesita recargar datos del servidor
+                             * (communities/routes vienen del frontmatter). */
+                            window.location.reload();
+                        })
+                        .catch(function (err) {
+                            showError(
+                                err.message || "No se pudo crear la comunidad.",
+                            );
+                        })
+                        .finally(function () {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = "Crear comunidad";
+                        });
+                });
+            }
+
+            /* ── PREVIEW DE LA RUTA A ── */
+            function initRoutePreviewCta() {
+                var banner = document.getElementById("route-preview-cta");
+                var btn = document.getElementById("btn-route-preview-done");
+                if (!banner || !btn) return;
+
+                btn.addEventListener("click", function () {
+                    btn.disabled = true;
+                    btn.textContent = "Guardando…";
+
+                    fetch("/api/users/me/route-preview-progress", {
+                        method: "PATCH",
+                        credentials: "include",
+                        headers: { Accept: "application/json" },
+                    })
+                        .then(function (res) {
+                            return res.text().then(function (raw) {
+                                var data = raw ? JSON.parse(raw) : null;
+                                if (!res.ok)
+                                    throw new Error(
+                                        (data &&
+                                            (data.error || data.message)) ||
+                                            "HTTP " + res.status,
+                                    );
+                                return data;
+                            });
+                        })
+                        .then(function () {
+                            banner.remove();
+                            toast("✓ Progreso guardado");
+                        })
+                        .catch(function (err) {
+                            toast(
+                                "⚠ " +
+                                    (err.message ||
+                                        "No se pudo guardar el progreso."),
+                            );
+                            btn.disabled = false;
+                            btn.textContent = "Continuar";
+                        });
+                });
+            }
+
             /* ── INIT ── */
             (function () {
                 renderSkills();
+                initCrearComunidad();
+                initRoutePreviewCta();
 
                 var list = bootstrap.communities || [];
                 if (list.length > 0) {

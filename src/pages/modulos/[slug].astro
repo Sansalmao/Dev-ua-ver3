@@ -2,6 +2,7 @@
 export const prerender = true;
 import ModuleLayout from "../../layouts/ModuleLayout.astro";
 import { moduleFrontmatterSchema } from "../../lib/module-schema";
+import { temaIdPorSlug } from "../../lib/rutas";
 
 export async function getStaticPaths() {
     const modules = import.meta.glob<{
@@ -48,6 +49,9 @@ export async function getStaticPaths() {
 
 // 9. Recibir props de la ruta
 const { Content, frontmatter } = Astro.props;
+
+// 10. Resolver el id de tema (store de progreso) a partir del slug de la URL.
+const temaId = temaIdPorSlug(Astro.params.slug ?? "");
 ---
 
 <ModuleLayout
@@ -63,6 +67,7 @@ const { Content, frontmatter } = Astro.props;
     progreso={frontmatter.progress}
     filename={frontmatter.title.toLowerCase().replace(/\s+/g, "-") + ".md"}
     sections={frontmatter.sections}
+    temaId={temaId}
 >
     <Content />
 </ModuleLayout>

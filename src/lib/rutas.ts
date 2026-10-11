@@ -338,6 +338,14 @@ export function resolverRuta(rol: string, ruta: string): string {
   return rol === "educator" ? "educator_basica" : "learner_basica";
 }
 
+// ── Slug → id de tema ─────────────────────────────────────────────────────────
+export function temaIdPorSlug(slug: string): string | null {
+  for (const ruta of Object.values(RUTAS)) {
+    const tema = ruta.temas.find((t) => t.slug === slug);
+    if (tema) return tema.id;
+  }
+  return null;
+}
 // ── Íconos SVG ────────────────────────────────────────────────────────────────
 
 export const ICONS: Record<string, string> = {
