@@ -154,6 +154,50 @@ const [
     }),
 ]);
 
+// ── Directorio de comunidades (explorar / solicitar unirse) ─────────────────
+const [allCommunitiesRaw, myJoinRequests] = await Promise.all([
+    prisma.community.findMany({
+        select: {
+            id: true,
+            name: true,
+            topic: true,
+            profileTrack: true,
+            stage: true,
+            teacher: { select: { displayName: true, email: true } },
+            _count: {
+                select: { joinRequests: { where: { status: "APPROVED" } } },
+            },
+        },
+        orderBy: { createdAt: "desc" },
+    }),
+    prisma.joinRequest.findMany({
+        where: { requesterId: user.userId },
+        select: { communityId: true, status: true },
+    }),
+]);
+const myRequestByCommunity = new Map(
+    myJoinRequests.map((r) => [r.communityId, r.status]),
+);
+const communityIdSet = new Set(communityIds);
+const communityDirectory = allCommunitiesRaw.map((c) => ({
+    id: c.id,
+    name: c.name,
+    topic: c.topic,
+    profileTrackLabel:
+        String(c.profileTrack).toUpperCase() === "TEACHER"
+            ? "Profesores/Instructores"
+            : "Estudiantes",
+    stageLabel:
+        c.stage === "IMPLEMENTACION_TECNICA"
+            ? "Implementación Técnica"
+            : "Conceptos Clave",
+    teacherName: c.teacher?.displayName || c.teacher?.email || "—",
+    memberCount: c._count.joinRequests,
+    isOwned: ownedIds.has(c.id),
+    isMember: communityIdSet.has(c.id) && !ownedIds.has(c.id),
+    requestStatus: myRequestByCommunity.get(c.id) || null,
+}));
+
 const kpis = {
     challengesDone: myApproved,
     challengesTotal: totalChallenges,
@@ -357,6 +401,22 @@ const feed = feedItems
                             ></path><path d="M6 13V9h4v4"></path></svg
                         >
                         <span>Skills / Rutas</span>
+                    </div>
+                    <div
+                        class="sb-item"
+                        data-nav="communities-view"
+                        onclick="navTo('communities-view',this)"
+                    >
+                        <svg
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><circle cx="8" cy="8" r="6.5"></circle><path
+                                d="M8 1.5c2 2 2 11 0 13M8 1.5c-2 2-2 11 0 13M1.7 5.5h12.6M1.7 10.5h12.6"
+                            ></path></svg
+                        >
+                        <span>Comunidades</span>
                     </div>
                     <div
                         class="sb-item"
@@ -586,6 +646,24 @@ const feed = feedItems
                                 d="M6 13V9h4v4"></path></svg
                         >
                         Rutas de Aprendizaje
+                    </div>
+                    <div
+                        class="view-tab"
+                        data-view="communities-view"
+                        onclick="switchView('communities-view',this)"
+                    >
+                        <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            ><circle cx="8" cy="8" r="6.5"></circle><path
+                                d="M8 1.5c2 2 2 11 0 13M8 1.5c-2 2-2 11 0 13M1.7 5.5h12.6M1.7 10.5h12.6"
+                            ></path></svg
+                        >
+                        Comunidades
                     </div>
                     <div
                         class="view-tab"
@@ -825,6 +903,119 @@ const feed = feedItems
                         <div class="skills-grid" id="skills-grid"></div>
                     </section>
 
+                    <!-- ══ COMUNIDADES (explorar / solicitar unirse) ══ -->
+                    <section id="communities-view" class="view-section">
+                        <div class="table-card">
+                            <div class="table-header">
+                                <div class="table-title">
+                                    Comunidades disponibles
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="members-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Comunidad</th>
+                                            <th>Perfil</th>
+                                            <th>Etapa</th>
+                                            <th>Profesor</th>
+                                            <th>Miembros</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            communityDirectory.length === 0 ? (
+                                                <tr>
+                                                    <td
+                                                        colspan="6"
+                                                        class="muted-sm"
+                                                        style="text-align:center;padding:24px"
+                                                    >
+                                                        Todavía no hay
+                                                        comunidades creadas en
+                                                        la plataforma.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                communityDirectory.map(
+                                                    (c) => (
+                                                        <tr>
+                                                            <td>
+                                                                <div style="font-weight:700">
+                                                                    {c.name}
+                                                                </div>
+                                                                <div class="muted-sm">
+                                                                    {c.topic}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                {
+                                                                    c.profileTrackLabel
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                {c.stageLabel}
+                                                            </td>
+                                                            <td>
+                                                                {
+                                                                    c.teacherName
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                {
+                                                                    c.memberCount
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                {c.isOwned ? (
+                                                                    <span class="role-pill role-admin">
+                                                                        Tu
+                                                                        comunidad
+                                                                    </span>
+                                                                ) : c.isMember ? (
+                                                                    <span class="role-pill role-manager">
+                                                                        Ya eres
+                                                                        miembro
+                                                                    </span>
+                                                                ) : c.requestStatus ===
+                                                                  "PENDING" ? (
+                                                                    <span class="role-pill role-member">
+                                                                        Solicitud
+                                                                        enviada
+                                                                    </span>
+                                                                ) : c.requestStatus ===
+                                                                  "REJECTED" ? (
+                                                                    <span
+                                                                        class="role-pill role-member"
+                                                                        title="Tu solicitud anterior fue rechazada"
+                                                                    >
+                                                                        Rechazada
+                                                                    </span>
+                                                                ) : (
+                                                                    <button
+                                                                        type="button"
+                                                                        class="btn btn-primary btn-sm btn-join-community"
+                                                                        data-community-id={
+                                                                            c.id
+                                                                        }
+                                                                    >
+                                                                        Solicitar
+                                                                        unirse
+                                                                    </button>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )
+                                            )
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- ══ MIEMBROS ══ -->
                     <section id="members-view" class="view-section">
                         {
@@ -845,12 +1036,13 @@ const feed = feedItems
                                         la tuya, aquí verás a sus miembros, su
                                         rol y su progreso.
                                     </p>
-                                    <a
+                                    <button
+                                        type="button"
                                         class="btn btn-primary btn-sm"
-                                        href="/"
+                                        onclick="goToCommunitiesTab()"
                                     >
                                         Explorar comunidades
-                                    </a>
+                                    </button>
                                 </div>
                             ) : (
                                 <>
@@ -911,8 +1103,11 @@ const feed = feedItems
                                                             </th>
                                                         </>
                                                         <>
-                                                            <th style="min-width:140px">
-                                                                Progreso
+                                                            <th style="min-width:120px">
+                                                                Retos
+                                                            </th>
+                                                            <th style="min-width:120px">
+                                                                Módulos
                                                             </th>
                                                             <th>Acciones</th>
                                                         </>
@@ -2667,11 +2862,15 @@ const feed = feedItems
                                 initials: initialsFrom(display),
                                 color: colorFor(m.id),
                                 role: roleLower(m.role),
-                                progress:
-                                    typeof m.progress === "number"
-                                        ? m.progress
-                                        : 0,
-                                ruta: stageLabelEs(comm.stage),
+                                                                progress:
+                                                                    typeof m.progress === "number"
+                                                                        ? m.progress
+                                                                        : 0,
+                                                                moduleProgress:
+                                                                    typeof m.moduleProgress === "number"
+                                                                        ? m.moduleProgress
+                                                                        : 0,
+                                                                ruta: stageLabelEs(comm.stage),
                                 isMe: m.id === bootstrap.meId,
                             };
                         });
@@ -2819,6 +3018,19 @@ const feed = feedItems
                     '.view-tab[data-view="' + id + '"]',
                 );
                 if (tab) switchView(id, tab);
+
+                /* Usado por los enlaces "Explorar comunidades" (vacíos de
+                             * Miembros/Rutas): salta directo a la pestaña Comunidades. */
+                            function goToCommunitiesTab() {
+                                var sbItem = document.querySelector(
+                                    '.sb-item[data-nav="communities-view"]',
+                                );
+                                var tab = document.querySelector(
+                                    '.view-tab[data-view="communities-view"]',
+                                );
+                                if (sbItem) navTo("communities-view", sbItem);
+                                else if (tab) switchView("communities-view", tab);
+                            }
             }
             /* ── RBAC ── */
 
@@ -2872,9 +3084,11 @@ const feed = feedItems
                 }
 
                 /* ── VISTA ADMIN / MANAGER: tabla completa ── */
-                theadRow.innerHTML =
-                    "<th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>" +
-                    '<th style="min-width:140px">Progreso</th><th>Acciones</th>';
+                                theadRow.innerHTML =
+                                    "<th>Miembro</th><th>Rol</th><th>Ruta de Skills</th>" +
+                                    '<th style="min-width:120px">Retos</th>' +
+                                    '<th style="min-width:120px">Módulos</th>' +
+                                    "<th>Acciones</th>";
 
                 members.forEach(function (m) {
                     var isRestricted =
@@ -2946,6 +3160,11 @@ const feed = feedItems
                         m.progress +
                         '%"></div></div><span class="prog-pct">' +
                         m.progress +
+                        "%</span></div></td>" +
+                        '<td><div class="prog-cell"><div class="gp-bar-wrap"><div class="gp-bar teal" style="width:' +
+                        m.moduleProgress +
+                        '%"></div></div><span class="prog-pct">' +
+                        m.moduleProgress +
                         "%</span></div></td>" +
                         "<td>" +
                         actions +
@@ -3153,7 +3372,7 @@ const feed = feedItems
 
                 if (filtered.length === 0) {
                     var msg = skillRoutes.length === 0
-                        ? 'Todavía no perteneces a ninguna comunidad. <a href="/" style="color:var(--accent);font-weight:700">Explorar comunidades</a>'
+                        ? 'Todavía no perteneces a ninguna comunidad. <a href="javascript:void(0)" onclick="goToCommunitiesTab()" style="color:var(--accent);font-weight:700">Explorar comunidades</a>'
                         : "Ninguna ruta coincide con los filtros seleccionados";
                     grid.innerHTML =
                         '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text-secondary);font-size:12.5px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius)">' +
@@ -3547,13 +3766,71 @@ const feed = feedItems
                 });
             }
 
+            /* ── EXPLORAR / SOLICITAR UNIRSE A COMUNIDADES ── */
+            function initCommunitiesBrowse() {
+                document
+                    .querySelectorAll(".btn-join-community")
+                    .forEach(function (btn) {
+                        btn.addEventListener("click", function () {
+                            var communityId = btn.dataset.communityId;
+                            btn.disabled = true;
+                            var originalLabel = btn.textContent;
+                            btn.textContent = "Enviando…";
+
+                            fetch(
+                                "/api/communities/" +
+                                    communityId +
+                                    "/join-requests",
+                                {
+                                    method: "POST",
+                                    credentials: "include",
+                                    headers: { Accept: "application/json" },
+                                },
+                            )
+                                .then(function (res) {
+                                    return res.text().then(function (raw) {
+                                        var data = raw
+                                            ? JSON.parse(raw)
+                                            : null;
+                                        if (!res.ok)
+                                            throw new Error(
+                                                (data &&
+                                                    (data.error ||
+                                                        data.message)) ||
+                                                    "HTTP " + res.status,
+                                            );
+                                        return data;
+                                    });
+                                })
+                                .then(function () {
+                                    toast("✓ Solicitud enviada");
+                                    var pill = document.createElement("span");
+                                    pill.className =
+                                        "role-pill role-member";
+                                    pill.textContent = "Solicitud enviada";
+                                    btn.replaceWith(pill);
+                                })
+                                .catch(function (err) {
+                                    toast(
+                                        "⚠ " +
+                                            (err.message ||
+                                                "No se pudo enviar la solicitud."),
+                                    );
+                                    btn.disabled = false;
+                                    btn.textContent = originalLabel;
+                                });
+                        });
+                    });
+            }
+
             /* ── INIT ── */
             (function () {
-                renderSkills();
-                initCrearComunidad();
-                initRoutePreviewCta();
+                            renderSkills();
+                            initCrearComunidad();
+                            initRoutePreviewCta();
+                            initCommunitiesBrowse();
 
-                var list = bootstrap.communities || [];
+                            var list = bootstrap.communities || [];
                 if (list.length > 0) {
                     /* Comunidad por defecto: la primera (propias van antes que membresías). */
                     state.communityId = list[0].id;

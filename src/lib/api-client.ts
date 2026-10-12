@@ -180,6 +180,7 @@ export function getCommunityMembers(communityId: string) {
       isOwner: boolean;
       joinedAt: string | null;
       progress: number;
+      moduleProgress: number;
     }>;
     memberCount: number;
   }>(`/api/communities/${communityId}/members`);

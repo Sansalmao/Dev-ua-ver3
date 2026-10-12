@@ -134,7 +134,103 @@ const defaultPanel = sections[0]?.items[0]?.panelId ?? "";
         </div>
     </div>
 
+    <AuthModal />
     <Toast />
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // PROGRESO DEL MÓDULO (ua_skills_v2)
+        // ═══════════════════════════════════════════════════════════════════
+        import { saveTopicProgress } from "../lib/api-client";
+
+        const STORAGE_KEY = "ua_skills_v2";
+        const temaId = document
+            .querySelector<HTMLElement>(".module-wrap")
+            ?.dataset.temaId;
+
+        function cargarEstado() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const p = JSON.parse(raw);
+                    if (p && typeof p === "object")
+                        return {
+                            rol: p.rol ?? null,
+                            ruta: p.ruta ?? null,
+                            temas: p.temas ?? {},
+                        };
+                }
+            } catch (e) {}
+            return { rol: null, ruta: null, temas: {} };
+        }
+
+        if (temaId) {
+            const store = cargarEstado();
+
+            function guardar() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+                } catch (e) {}
+            }
+
+            function setTema(id: string, cambios: Record<string, unknown>) {
+                store.temas[id] = {
+                    ...(store.temas[id] ?? {
+                        visitado: false,
+                        completado: false,
+                    }),
+                    ...cambios,
+                };
+                guardar();
+
+                const est = store.temas[id] as {
+                    visitado: boolean;
+                    completado: boolean;
+                };
+                // Siempre se intenta (ver nota arriba) — 401 silencioso si es invitado.
+                saveTopicProgress(id, {
+                    visitado: Boolean(est.visitado),
+                    completado: Boolean(est.completado),
+                }).catch(() => {
+                    /* Silencioso: el progreso local ya quedó guardado. */
+                });
+            }
+
+            // Entrar al módulo cuenta como "visitado" (por si se llegó por
+            // URL directa, sin pasar por la grilla).
+            const actual = store.temas[temaId!];
+            if (!actual?.completado) setTema(temaId!, { visitado: true });
+
+            const btn = document.getElementById(
+                "btn-marcar-completo",
+            ) as HTMLButtonElement | null;
+            const btnLabel = document.getElementById(
+                "btn-marcar-completo-label",
+            );
+
+            function reflejarCompletado() {
+                if (!btn || !btnLabel) return;
+                const completado = Boolean(store.temas[temaId!]?.completado);
+                btn.classList.toggle("is-completo", completado);
+                btn.disabled = completado;
+                btnLabel.textContent = completado
+                    ? "✓ Completado"
+                    : "Marcar como completado";
+            }
+
+            reflejarCompletado();
+
+            btn?.addEventListener("click", () => {
+                setTema(temaId!, { visitado: true, completado: true });
+                reflejarCompletado();
+                document.dispatchEvent(
+                    new CustomEvent("toast:show", {
+                        detail: { message: "✓ Módulo completado — progreso guardado" },
+                    }),
+                );
+            });
+        }
+    </script>
 
     <script>
         // ═══════════════════════════════════════════════════════════════════

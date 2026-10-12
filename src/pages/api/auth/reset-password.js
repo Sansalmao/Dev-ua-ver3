@@ -65,10 +65,9 @@ export async function POST({ request }) {
     }
 
     // 3. Cerrar las sesiones activas: tras cambiar la clave hay que volver a
-    //    entrar. Si el método interno cambia de nombre entre versiones, no es
-    //    crítico para el reset en sí.
+    //    entrar.
     try {
-      await ctx.internalAdapter.deleteSessions(user.id);
+      await ctx.internalAdapter.deleteUserSessions(user.id);
     } catch (e) {
       console.warn("[auth/reset-password] No se pudieron cerrar sesiones:", e);
     }

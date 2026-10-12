@@ -1,7 +1,7 @@
 import { prisma } from "@lib/prisma.js";
 import { requireUser, AuthError, toErrorResponse } from "@lib/auth.js";
 import { getUserCommunityContext } from "@lib/community-context.js";
-import { getMemberProgress } from "@lib/progress.js";
+import { getMemberProgress, getModuleProgress } from "@lib/progress.js";
 
 export async function GET({ params, locals }) {
   try {
@@ -49,15 +49,9 @@ export async function GET({ params, locals }) {
     const communityRef = { id: community.id, stage: community.stage };
 
     // ── RBAC (server-side) ───────────────────────────────────────────────────
-    // El rol del solicitante EN ESTA comunidad se resuelve contra la base, nunca
-    // con lo que manda el cliente. El dueño es ADMIN de forma derivada.
-    //
     // Reglas:
     //   • ADMIN / MANAGER → ven el listado completo (con ruta y progreso).
     //   • MEMBER          → solo su propia fila.
-    //
-    // Antes esto se filtraba SOLO en el navegador: la API devolvía los datos de
-    // todos los miembros a cualquiera con la consola abierta.
     const isOwner = community.teacher.id === user.userId;
     const myJoin = approved.find((jr) => jr.requester.id === user.userId);
     const viewerRole = isOwner ? "ADMIN" : (myJoin?.role ?? "MEMBER");
@@ -66,31 +60,43 @@ export async function GET({ params, locals }) {
     // El total sí es visible para todos (es un agregado, no datos de nadie).
     const memberCount = approved.length + 1;
 
-    const ownerEntry = async () => {
-      const p = await getMemberProgress(community.teacher.id, communityRef);
-      return {
-        id: community.teacher.id,
-        email: community.teacher.email,
-        displayName: community.teacher.displayName,
-        role: "ADMIN",
-        isOwner: true,
-        joinedAt: null,
-        progress: p.percent,
-      };
-    };
+    // Dos métricas de progreso, independientes entre sí:
+        //   • `progress`       → % de retos de código con entrega APROBADA.
+        //   • `moduleProgress` → % de módulos de contenido (TopicProgress)
+        //                        marcados `completado` en la Ruta A del usuario.
+        const ownerEntry = async () => {
+          const [p, mp] = await Promise.all([
+            getMemberProgress(community.teacher.id, communityRef),
+            getModuleProgress(community.teacher.id, "PROFESOR"),
+          ]);
+          return {
+            id: community.teacher.id,
+            email: community.teacher.email,
+            displayName: community.teacher.displayName,
+            role: "ADMIN",
+            isOwner: true,
+            joinedAt: null,
+            progress: p.percent,
+            moduleProgress: mp.percent,
+          };
+        };
 
-    const memberEntry = async (jr) => {
-      const p = await getMemberProgress(jr.requester.id, communityRef);
-      return {
-        id: jr.requester.id,
-        email: jr.requester.email,
-        displayName: jr.requester.displayName,
-        role: jr.role,
-        isOwner: false,
-        joinedAt: jr.reviewedAt ?? jr.createdAt,
-        progress: p.percent,
-      };
-    };
+        const memberEntry = async (jr) => {
+          const [p, mp] = await Promise.all([
+            getMemberProgress(jr.requester.id, communityRef),
+            getModuleProgress(jr.requester.id, jr.requester.profileType),
+          ]);
+          return {
+            id: jr.requester.id,
+            email: jr.requester.email,
+            displayName: jr.requester.displayName,
+            role: jr.role,
+            isOwner: false,
+            joinedAt: jr.reviewedAt ?? jr.createdAt,
+            progress: p.percent,
+            moduleProgress: mp.percent,
+          };
+        };
 
     let members;
     if (canSeeAll) {
@@ -114,7 +120,6 @@ export async function GET({ params, locals }) {
           profileTrack: community.profileTrack,
           stage: community.stage,
         },
-        // El cliente ya no tiene que deducir su rol (ni puede falsearlo).
         viewerRole,
         members,
         memberCount,
