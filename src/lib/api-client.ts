@@ -169,6 +169,52 @@ export function requestToJoinCommunity(communityId: string) {
   );
 }
 
+
+export function leaveCommunity(communityId: string) {
+  return apiFetch<{ ok: true; previousStatus: JoinRequestStatus }>(
+    `/api/communities/${communityId}/leave`,
+    { method: "POST" },
+  );
+}
+
+export function getCommunityJoinRequests(
+  communityId: string,
+  status: JoinRequestStatus = "PENDING",
+) {
+  return apiFetch<{
+    requests: Array<{
+      id: string;
+      status: JoinRequestStatus;
+      rejectReason: string | null;
+      createdAt: string;
+      requester: {
+        id: string;
+        email: string;
+        displayName: string | null;
+        profileType: ProfileType;
+      };
+    }>;
+  }>(`/api/communities/${communityId}/join-requests?status=${status}`);
+}
+
+export function reviewJoinRequest(
+  joinRequestId: string,
+  action: "APPROVE" | "REJECT",
+  rejectReason?: string,
+) {
+  return apiFetch<{
+    joinRequest: {
+      id: string;
+      status: JoinRequestStatus;
+      rejectReason: string | null;
+      reviewedAt: string | null;
+    };
+  }>(`/api/join-requests/${joinRequestId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ action, rejectReason }),
+  });
+}
+
 export function getCommunityMembers(communityId: string) {
   return apiFetch<{
     community: Pick<Community, "id" | "name" | "profileTrack" | "stage">;

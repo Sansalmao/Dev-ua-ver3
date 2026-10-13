@@ -454,7 +454,7 @@ const feed = feedItems
                         >
                         <span>Retos</span>
                         <span class="sb-badge teal" id="sb-pending-count"
-                            >3</span
+                            >0</span
                         >
                     </div>
 
@@ -1063,6 +1063,21 @@ const feed = feedItems
                                         son visibles únicamente para Admin y
                                         Manager.
                                     </div>
+                                    <div
+                                        class="table-card"
+                                        id="join-requests-card"
+                                        style="margin-bottom:16px;display:none"
+                                    >
+                                        <div class="table-header">
+                                            <div class="table-title">
+                                                Solicitudes pendientes
+                                            </div>
+                                        </div>
+                                        <div
+                                            id="join-requests-list"
+                                            style="padding:4px 20px 16px"
+                                        />
+                                    </div>
                                     <div class="table-card">
                                         <div class="table-header">
                                             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0">
@@ -1090,6 +1105,15 @@ const feed = feedItems
                                                     </select>
                                                 )}
                                             </div>
+                                            <button
+                                                type="button"
+                                                id="btn-leave-community"
+                                                class="btn btn-outline btn-sm"
+                                                style="display:none"
+                                                onclick="leaveCurrentCommunity()"
+                                            >
+                                                Salir de la comunidad
+                                            </button>
                                         </div>
                                         <div class="overflow-x-auto">
                                             <table class="members-table">
@@ -2889,7 +2913,24 @@ const feed = feedItems
                             roleBadge.setAttribute("data-role", state.role);
                         }
 
+                        /* "Salir de la comunidad": nunca para el dueño — en
+                           la fila de miembros solo el dueño tiene role
+                           "admin" (members.js: ownerEntry() es la única que
+                           lo asigna); la API tampoco lo permitiría, pero
+                           ocultar el botón de antemano evita el error. */
+                        var leaveBtn = document.getElementById(
+                            "btn-leave-community",
+                        );
+                        if (leaveBtn) {
+                            var me = members.filter(function (m) {
+                                return m.isMe;
+                            })[0];
+                            leaveBtn.style.display =
+                                me && me.role !== "admin" ? "" : "none";
+                        }
+
                         renderMembers();
+                        loadJoinRequests(communityId);
                     })
                     .catch(function (err) {
                         members = [];
@@ -2897,10 +2938,200 @@ const feed = feedItems
                         var tb = document.getElementById("members-tbody");
                         if (tb)
                             tb.innerHTML =
-                                '<tr><td colspan="5" style="padding:18px;color:#b23b3b">No se pudieron cargar los miembros: ' +
+                                '<tr><td colspan="6" style="padding:18px;color:#b23b3b">No se pudieron cargar los miembros: ' +
                                 err.message +
                                 "</td></tr>";
                         toast("⚠ " + err.message);
+                    });
+            }
+
+            /* ── SOLICITUDES PENDIENTES (solo dueño de la comunidad) ── */
+            function loadJoinRequests(communityId) {
+                var card = document.getElementById("join-requests-card");
+                var list = document.getElementById("join-requests-list");
+                if (!card || !list) return;
+
+                if (state.role !== "admin") {
+                    card.style.display = "none";
+                    list.innerHTML = "";
+                    return;
+                }
+
+                card.style.display = "";
+                list.innerHTML =
+                    '<div class="muted-sm" style="padding:8px 0">Cargando solicitudes…</div>';
+
+                fetch(
+                    "/api/communities/" +
+                        communityId +
+                        "/join-requests?status=PENDING",
+                    { credentials: "include", headers: { Accept: "application/json" } },
+                )
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        renderJoinRequests(data.requests || []);
+                    })
+                    .catch(function (err) {
+                        list.innerHTML =
+                            '<div class="muted-sm" style="padding:8px 0;color:#b23b3b">No se pudieron cargar las solicitudes: ' +
+                            err.message +
+                            "</div>";
+                    });
+            }
+
+            function renderJoinRequests(requests) {
+                var list = document.getElementById("join-requests-list");
+                if (!list) return;
+
+                if (requests.length === 0) {
+                    list.innerHTML =
+                        '<div class="muted-sm" style="padding:8px 0">No hay solicitudes pendientes.</div>';
+                    return;
+                }
+
+                list.innerHTML = requests
+                    .map(function (r) {
+                        var display =
+                            r.requester.displayName || r.requester.email;
+                        var profileLabel =
+                            r.requester.profileType === "PROFESOR"
+                                ? "Profesor"
+                                : "Estudiante";
+                        return (
+                            '<div class="jr-row" data-jr-id="' +
+                            r.id +
+                            '" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">' +
+                            "<div><div style=\"font-weight:700\">" +
+                            display +
+                            '</div><div class="muted-sm">' +
+                            r.requester.email +
+                            " · " +
+                            profileLabel +
+                            '</div></div><div class="sol-actions-v2">' +
+                            '<button class="sol-action-btn sol-btn-approve" onclick=\'approveJoinRequest(this,' +
+                            JSON.stringify(r.id) +
+                            ")'>Aprobar</button>" +
+                            '<button class="sol-action-btn sol-btn-reject" onclick=\'rejectJoinRequest(this,' +
+                            JSON.stringify(r.id) +
+                            ")'>Rechazar</button>" +
+                            "</div></div>"
+                        );
+                    })
+                    .join("");
+            }
+
+            function approveJoinRequest(btn, id) {
+                reviewJoinRequest(btn, id, "APPROVE");
+            }
+            function rejectJoinRequest(btn, id) {
+                reviewJoinRequest(btn, id, "REJECT");
+            }
+
+            function reviewJoinRequest(btn, id, action) {
+                var row = btn.closest(".jr-row");
+                if (row) row.style.opacity = "0.5";
+                var buttons = row ? row.querySelectorAll("button") : [btn];
+                buttons.forEach(function (b) {
+                    b.disabled = true;
+                });
+
+                fetch("/api/join-requests/" + id, {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({ action: action }),
+                })
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function () {
+                        toast(
+                            action === "APPROVE"
+                                ? "✓ Solicitud aprobada"
+                                : "✗ Solicitud rechazada",
+                        );
+                        if (state.communityId) {
+                            loadJoinRequests(state.communityId);
+                            loadMembers(state.communityId);
+                        }
+                    })
+                    .catch(function (err) {
+                        if (row) row.style.opacity = "";
+                        buttons.forEach(function (b) {
+                            b.disabled = false;
+                        });
+                        toast("⚠ " + err.message);
+                    });
+            }
+
+            /* ── SALIR DE UNA COMUNIDAD (miembro, no dueño) ── */
+            function leaveCurrentCommunity() {
+                if (!state.communityId) return;
+                var comm = currentCommunity();
+                var nombre = comm ? comm.name : "esta comunidad";
+
+                if (
+                    !window.confirm(
+                        'Vas a salir de "' +
+                            nombre +
+                            '". Si quieres volver a entrar, tendrás que solicitarlo de nuevo. ¿Continuar?',
+                    )
+                ) {
+                    return;
+                }
+
+                var btn = document.getElementById("btn-leave-community");
+                if (btn) btn.disabled = true;
+
+                fetch(
+                    "/api/communities/" + state.communityId + "/leave",
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { Accept: "application/json" },
+                    },
+                )
+                    .then(function (res) {
+                        return res.text().then(function (raw) {
+                            var data = raw ? JSON.parse(raw) : null;
+                            if (!res.ok)
+                                throw new Error(
+                                    (data && (data.error || data.message)) ||
+                                        "HTTP " + res.status,
+                                );
+                            return data;
+                        });
+                    })
+                    .then(function () {
+                        toast("✓ Saliste de \"" + nombre + '"');
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 600);
+                    })
+                    .catch(function (err) {
+                        if (btn) btn.disabled = false;
+                        toast("⚠ " + (err.message || "No se pudo salir de la comunidad."));
                     });
             }
 
@@ -3839,8 +4070,12 @@ const feed = feedItems
                     loadMembers(state.communityId);
                     loadSubmissions(state.communityId);
                 } else {
-                    var sbCount = document.getElementById("sb-members-count");
-                    if (sbCount) sbCount.textContent = "0";
+                  var sbCount = document.getElementById("sb-members-count");
+                  if (sbCount) sbCount.textContent = "0";
+                  var sbPending = document.getElementById(
+                    "sb-pending-count",
+                  );
+                  if (sbPending) sbPending.textContent = "0";
                 }
             })();
         </script>
